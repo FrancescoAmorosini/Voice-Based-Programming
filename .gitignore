@@ -1,0 +1,4 @@
+/node_modules
+/vocoder/node_modules
+/vocoder/.vscode
+/vocoder/out
