@@ -26,9 +26,10 @@
 		],
 		"menus": {
 			"editor/title":[
-				{
+				{	
 					"command": "vocoder.captureAudio",
-					"group": "navigation"
+					"group": "navigation",
+					"when": "resourceLangId == python"
 				}
 			]
 		}

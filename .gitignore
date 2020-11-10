@@ -2,3 +2,5 @@
 /vocoder/node_modules
 /vocoder/.vscode
 /vocoder/out
+**/*.wav
+vocoder/src/bash/output.wav
