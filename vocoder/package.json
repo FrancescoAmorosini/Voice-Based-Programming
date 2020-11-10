@@ -10,16 +10,28 @@
 		"Other"
 	],
 	"activationEvents": [
-		"onCommand:vocoder.helloWorld"
+		"onCommand:vocoder.captureAudio"
 	],
 	"main": "./out/extension.js",
 	"contributes": {
 		"commands": [
 			{
-				"command": "vocoder.helloWorld",
-				"title": "Hello World"
+				"command": "vocoder.captureAudio",
+				"title": "Vocoder: Voice-Based Input",
+				"icon":{
+					"dark": "./style/micw.ico",
+					"light": "./style/mic.ico"
+				}
 			}
-		]
+		],
+		"menus": {
+			"editor/title":[
+				{
+					"command": "vocoder.captureAudio",
+					"group": "navigation"
+				}
+			]
+		}
 	},
 	"scripts": {
 		"vscode:prepublish": "npm run compile",
