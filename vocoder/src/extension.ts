@@ -3,13 +3,20 @@ const { exec } = require("child_process");
 const path = require('path');
 
 let cwd = path.resolve(__dirname, '../src');
-let isActivated = false;
+let shell = '';
+let ext = '';
+
+//Detecting OS
+exec("ls", (error: any, stdout: any, stderr: any) => {
+    if (stderr) {shell = 'scripts/cmd'; ext = '.cmd';}
+    else {shell = 'scripts/bash'; ext = '.sh';}
+});
 
 export function activate(context: vscode.ExtensionContext) {
     console.log('Activating che extension...');
-    var platform = navigator.platform;
-    console.log(platform);
-    exec("check.cmd", {cwd: path.resolve(cwd, 'bash')}, (error: any, stdout: any, stderr: any) => {
+
+    //Environment setup
+    exec(`check${ext}`, {cwd: path.resolve(cwd, shell)}, (error: any, stdout: any, stderr: any) => {
         if (error) {
             console.log(`error: ${error.message}`);
             return;
@@ -19,20 +26,18 @@ export function activate(context: vscode.ExtensionContext) {
             return;
         }
         if (stdout.includes('dsd-env')) {
-            isActivated = true;
             console.log('environment is ready!');
             vscode.window.showInformationMessage('Everything is ready! Let\'s code!');
             
         }
         else {
-            
             vscode.window.withProgress({
                 location: vscode.ProgressLocation.Notification,
                 title: "We are setting up your environment, it might take a few minutes...",
                 cancellable: false
             }, (progress, token) => {
                 return new Promise((resolve:any) => {
-                    exec("setup.cmd", {cwd: path.resolve(cwd, 'bash')}, (error: any, stdout: any, stderr: any) => {
+                    exec(`setup${ext}`, {cwd: path.resolve(cwd, shell)}, (error: any, stdout: any, stderr: any) => {
                         if (error) {
                             console.log(`error: ${error.message}`);
                             return;
@@ -52,9 +57,9 @@ export function activate(context: vscode.ExtensionContext) {
         console.log(`stdout: ${stdout}`);
     });
 
-    //DISPOSABLES
+    //Disposable functions
 	let disposable = vscode.commands.registerCommand('vocoder.captureAudio', () => {
-        exec("audiorecorder.cmd", {cwd: path.resolve(cwd, 'bash')}, (error: any, stdout: any, stderr: any) => {
+        exec(`audiorecorder${ext}`, {cwd: path.resolve(cwd, shell)}, (error: any, stdout: any, stderr: any) => {
             if (error) {
                 console.log(`error: ${error.message}`);
                 return;

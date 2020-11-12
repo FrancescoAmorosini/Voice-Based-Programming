@@ -5,12 +5,23 @@ const vscode = require("vscode");
 const { exec } = require("child_process");
 const path = require('path');
 let cwd = path.resolve(__dirname, '../src');
-let isActivated = false;
+let shell = '';
+let ext = '';
+//Detecting OS
+exec("ls", (error, stdout, stderr) => {
+    if (stderr) {
+        shell = 'scripts/cmd';
+        ext = '.cmd';
+    }
+    else {
+        shell = 'scripts/bash';
+        ext = '.sh';
+    }
+});
 function activate(context) {
     console.log('Activating che extension...');
-    var platform = navigator.platform;
-    console.log(platform);
-    exec("check.cmd", { cwd: path.resolve(cwd, 'bash') }, (error, stdout, stderr) => {
+    //Environment setup
+    exec(`check${ext}`, { cwd: path.resolve(cwd, shell) }, (error, stdout, stderr) => {
         if (error) {
             console.log(`error: ${error.message}`);
             return;
@@ -20,7 +31,6 @@ function activate(context) {
             return;
         }
         if (stdout.includes('dsd-env')) {
-            isActivated = true;
             console.log('environment is ready!');
             vscode.window.showInformationMessage('Everything is ready! Let\'s code!');
         }
@@ -31,7 +41,7 @@ function activate(context) {
                 cancellable: false
             }, (progress, token) => {
                 return new Promise((resolve) => {
-                    exec("setup.cmd", { cwd: path.resolve(cwd, 'bash') }, (error, stdout, stderr) => {
+                    exec(`setup${ext}`, { cwd: path.resolve(cwd, shell) }, (error, stdout, stderr) => {
                         if (error) {
                             console.log(`error: ${error.message}`);
                             return;
@@ -49,9 +59,9 @@ function activate(context) {
         }
         console.log(`stdout: ${stdout}`);
     });
-    //DISPOSABLES
+    //Disposable functions
     let disposable = vscode.commands.registerCommand('vocoder.captureAudio', () => {
-        exec("audiorecorder.cmd", { cwd: path.resolve(cwd, 'bash') }, (error, stdout, stderr) => {
+        exec(`audiorecorder${ext}`, { cwd: path.resolve(cwd, shell) }, (error, stdout, stderr) => {
             if (error) {
                 console.log(`error: ${error.message}`);
                 return;
