@@ -1,6 +1,5 @@
 /node_modules
 /vocoder/node_modules
-/vocoder/.vscode
 **/*.wav
 vocoder/src/bash/output.wav
 **/*.DS_Store
