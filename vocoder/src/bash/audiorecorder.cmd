@@ -1,2 +1,2 @@
-conda activate dsd-env && ^
+conda activate dsd-enk && ^
 python ../audioRecorder.py

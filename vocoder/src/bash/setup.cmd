@@ -1,2 +1,1 @@
-conda update conda && ^
-conda env list
+conda create --name dsd-enk --file conda.txt

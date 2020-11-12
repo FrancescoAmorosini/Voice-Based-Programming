@@ -10,7 +10,8 @@
 		"Other"
 	],
 	"activationEvents": [
-		"onCommand:vocoder.captureAudio"
+		"onCommand:vocoder.captureAudio",
+		"onLanguage:python"
 	],
 	"main": "./out/extension.js",
 	"contributes": {
