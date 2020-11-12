@@ -1,0 +1,6 @@
+**/*.DS_Store
+/node_modules
+/vocoder/node_modules
+/vocoder/.vscode
+/vocoder/out
+**/*.wav
