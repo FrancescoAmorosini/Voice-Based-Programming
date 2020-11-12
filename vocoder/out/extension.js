@@ -19,7 +19,7 @@ function activate(context) {
             console.log(`stderr: ${stderr}`);
             return;
         }
-        if (stdout.includes('dsd-enk')) {
+        if (stdout.includes('dsd-env')) {
             isActivated = true;
             console.log('environment is ready!');
             vscode.window.showInformationMessage('Everything is ready! Let\'s code!');
