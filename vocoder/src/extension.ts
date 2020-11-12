@@ -1,8 +1,8 @@
 import * as vscode from 'vscode';
 const { exec } = require("child_process");
 const path = require('path');
+const cwd = path.resolve(__dirname, '../src');
 
-let cwd = path.resolve(__dirname, '../src');
 let shell = '';
 let ext = '';
 
@@ -25,7 +25,7 @@ export function activate(context: vscode.ExtensionContext) {
             console.log(`stderr: ${stderr}`);
             return;
         }
-        if (stdout.includes('dsd-env')) {
+        if (stdout.includes('dsd-end')) {
             console.log('environment is ready!');
             vscode.window.showInformationMessage('Everything is ready! Let\'s code!');
             
