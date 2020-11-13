@@ -1,1 +1,1 @@
-conda create --name dsd-env --file ../conda.txt
+conda create -y --name dsd-env --file ../conda.txt

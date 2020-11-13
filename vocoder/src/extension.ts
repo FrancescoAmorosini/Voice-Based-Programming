@@ -5,18 +5,24 @@ const cwd = path.resolve(__dirname, '../src');
 
 let shell = '';
 let ext = '';
+let pre = '';
 
-//Detecting OS
-exec("ls", (error: any, stdout: any, stderr: any) => {
-    if (stderr) {shell = 'scripts/cmd'; ext = '.cmd';}
-    else {shell = 'scripts/bash'; ext = '.sh';}
-});
+let detectOS =  new Promise(function (resolve, reject) {
+                    exec("ls", (error: any, stdout: any, stderr: any) => {
+                        if (stderr) { shell = 'scripts/cmd'; ext = '.cmd'; }
+                        else { shell = 'scripts/bash'; ext = '.sh'; pre = './'; }
+                        resolve();
+                    });
+                });
 
-export function activate(context: vscode.ExtensionContext) {
-    console.log('Activating che extension...');
+export async function activate(context: vscode.ExtensionContext) {
+    console.log('Activating the extension...');
+
+    //Waiting completion of OS detection
+    await detectOS;
 
     //Environment setup
-    exec(`check${ext}`, {cwd: path.resolve(cwd, shell)}, (error: any, stdout: any, stderr: any) => {
+    exec(`${pre}check${ext}`, {cwd: path.resolve(cwd, shell)}, (error: any, stdout: any, stderr: any) => {
         if (error) {
             console.log(`error: ${error.message}`);
             return;
@@ -37,13 +43,17 @@ export function activate(context: vscode.ExtensionContext) {
                 cancellable: false
             }, (progress, token) => {
                 return new Promise((resolve:any) => {
-                    exec(`setup${ext}`, {cwd: path.resolve(cwd, shell)}, (error: any, stdout: any, stderr: any) => {
+                    exec(`${pre}setup${ext}`, {cwd: path.resolve(cwd, shell)}, (error: any, stdout: any, stderr: any) => {
                         if (error) {
+                            resolve(`error: ${error.message}`);
                             console.log(`error: ${error.message}`);
+                            vscode.window.showErrorMessage('Environment was not loaded successfully');
                             return;
                         }
                         if (stderr) {
+                            resolve(`stderr: ${stderr}`);
                             console.log(`stderr: ${stderr}`);
+                            vscode.window.showErrorMessage('Environment was not loaded successfully');
                             return;
                         }
                         resolve(`stdout: ${stdout}`);
@@ -59,20 +69,44 @@ export function activate(context: vscode.ExtensionContext) {
 
     //Disposable functions
 	let disposable = vscode.commands.registerCommand('vocoder.captureAudio', () => {
-        exec(`audiorecorder${ext}`, {cwd: path.resolve(cwd, shell)}, (error: any, stdout: any, stderr: any) => {
-            if (error) {
-                console.log(`error: ${error.message}`);
-                return;
-            }
-            if (stderr) {
-                console.log(`stderr: ${stderr}`);
-                return;
-            }
-            console.log(`stdout: ${stdout}`);
+        vscode.window.withProgress({
+            location: vscode.ProgressLocation.Notification,
+            title: "Recording...",
+            cancellable: false
+        }, (progress, token) => {
+            return new Promise((resolve:any) => {
+                exec(`${pre}audiorecorder${ext}`, {cwd: path.resolve(cwd, shell)}, (error: any, stdout: any, stderr: any) => {
+                    if (error) {
+                        resolve(`error: ${error.message}`);
+                        console.log(`error: ${error.message}`);
+                        vscode.window.showErrorMessage('Recording failed');
+                        writeOnEditor(error.message); //to be moved --> here is the only place where I (Serena) can see a result
+                        return;
+                    }
+                    if (stderr) {
+                        resolve(`stderr: ${stderr}`);
+                        console.log(`stderr: ${stderr}`);
+                        vscode.window.showErrorMessage('Recording failed');
+                        return;
+                    }
+                    console.log(`stdout: ${stdout}`);
+                    resolve(`stdout: ${stdout}`);
+                });
+            });
         });
 	});
     
 	context.subscriptions.push(disposable);
+}
+
+function writeOnEditor(s: string){
+    const editor = vscode.window.activeTextEditor;
+		if(!editor){
+			vscode.window.showWarningMessage('No editor available to write on');
+			return;
+		}
+		const position = editor.selection.active;
+		editor.edit( (edit) => { edit.insert(position,s)} );
 }
 
 // this method is called when your extension is deactivated
