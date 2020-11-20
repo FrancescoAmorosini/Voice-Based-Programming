@@ -20,8 +20,8 @@
 				"command": "vocoder.captureAudio",
 				"title": "Vocoder: Voice-Based Input",
 				"icon":{
-					"dark": "./style/micw.ico",
-					"light": "./style/mic.ico"
+					"dark": "./style/white_mic.ico",
+					"light": "./style/black_mic.ico"
 				}
 			}
 		],

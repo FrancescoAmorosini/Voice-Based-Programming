@@ -92,7 +92,6 @@ function activate(context) {
                             resolve(`error: ${error.message}`);
                             console.log(`error: ${error.message}`);
                             vscode.window.showErrorMessage('Recording failed');
-                            writeOnEditor(error.message); //to be moved --> here is the only place where I (Serena) can see a result
                             return;
                         }
                         if (stderr) {
@@ -103,6 +102,7 @@ function activate(context) {
                         }
                         console.log(`stdout: ${stdout}`);
                         resolve(`stdout: ${stdout}`);
+                        writeOnEditor(stdout); //to be moved where the response from python will be captured
                     });
                 });
             });
