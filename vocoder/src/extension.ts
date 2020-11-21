@@ -90,7 +90,8 @@ export async function activate(context: vscode.ExtensionContext) {
                     }
                     console.log(`stdout: ${stdout}`);
                     resolve(`stdout: ${stdout}`);
-                    writeOnEditor(stdout); //to be moved where the response from python will be captured
+                    writeOnEditor(stdout); //to be removed
+                    elaborateCommand();
                 });
             });
         });
@@ -99,14 +100,49 @@ export async function activate(context: vscode.ExtensionContext) {
 	context.subscriptions.push(disposable);
 }
 
+function elaborateCommand(){
+    exec(`${pre}audiointerpreter${ext}`, {cwd: path.resolve(cwd, shell)}, (error: any, stdout: any, stderr: any) => {
+        if (error) {
+            console.log(`error: ${error.message}`);
+            vscode.window.showErrorMessage('Audio processing failed');
+            return;
+        }
+        if (stderr) {
+            console.log(`stderr: ${stderr}`);
+            vscode.window.showErrorMessage('Audio processing failed');
+            return;
+        }
+        console.log(`stdout: ${stdout}`);
+        if(stdout.startsWith("vocoder-undo")){ // discuss with backend to agree on naming
+            vscode.commands.executeCommand("undo");
+            return;
+        }
+        if(stdout.startsWith("vocoder-delete")){ // discuss with backend to agree on naming
+            writeOnEditor('');
+            return;
+        }
+        writeOnEditor(stdout);
+    });
+}
+
 function writeOnEditor(s: string){
     const editor = vscode.window.activeTextEditor;
-		if(!editor){
-			vscode.window.showWarningMessage('No editor available to write on');
-			return;
-		}
-		const position = editor.selection.active;
-		editor.edit( (edit) => { edit.insert(position,s)} );
+    if(!editor){
+        vscode.window.showWarningMessage('No editor available to write on');
+        return;
+    }
+    const currSel = editor.selection;
+    editor.edit( (edit) => { edit.replace(currSel,s)} );
+
+    // computation of new position of the cursor
+
+    // line from which the selection starts: does not depend on which direction the sel is made (start>end)
+    const currLine = currSel.start.line;
+    const writtenLines = s.split(/\r\n|\r|\n/).length;
+    // create a position where to put the cursor: at the end of what just written
+    const newEnd = new vscode.Position(currLine + writtenLines - 1,0);
+    // set the selection to an empty one where defined
+    editor.selection = new vscode.Selection(newEnd,newEnd);
 }
 
 // this method is called when your extension is deactivated
