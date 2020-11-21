@@ -14,19 +14,29 @@ const vscode = require("vscode");
 const { exec } = require("child_process");
 const path = require('path');
 const cwd = path.resolve(__dirname, '../src');
+const os_1 = require("os");
 let shell = '';
 let ext = '';
 let pre = '';
-let detectOS = new Promise(function (resolve, reject) {
-    exec("ls", (error, stdout, stderr) => {
+//DETECT OS
+if (os_1.platform() === 'win32') {
+    shell = 'scripts/cmd';
+    ext = '.cmd';
+}
+else {
+    shell = 'scripts/bash';
+    ext = '.sh';
+    pre = './';
+}
+//DETECT ANACONDA
+let detectConda = new Promise(function (resolve, reject) {
+    exec("conda --version", (error, stdout, stderr) => {
         if (stderr) {
-            shell = 'scripts/cmd';
-            ext = '.cmd';
+            shell = shell.concat('/venv');
+            console.log(path.resolve(cwd, shell));
         }
         else {
-            shell = 'scripts/bash';
-            ext = '.sh';
-            pre = './';
+            shell = path.join(shell, 'conda');
         }
         resolve();
     });
@@ -34,8 +44,7 @@ let detectOS = new Promise(function (resolve, reject) {
 function activate(context) {
     return __awaiter(this, void 0, void 0, function* () {
         console.log('Activating the extension...');
-        //Waiting completion of OS detection
-        yield detectOS;
+        yield detectConda;
         //Environment setup
         exec(`${pre}check${ext}`, { cwd: path.resolve(cwd, shell) }, (error, stdout, stderr) => {
             if (error) {
@@ -46,7 +55,7 @@ function activate(context) {
                 console.log(`stderr: ${stderr}`);
                 return;
             }
-            if (stdout.includes('dsd-end')) {
+            if (stdout.includes('dsd-env')) {
                 console.log('environment is ready!');
                 vscode.window.showInformationMessage('Everything is ready! Let\'s code!');
             }
@@ -83,7 +92,7 @@ function activate(context) {
         let disposable = vscode.commands.registerCommand('vocoder.captureAudio', () => {
             vscode.window.withProgress({
                 location: vscode.ProgressLocation.Notification,
-                title: "Recording...",
+                title: "Please, speak your command after the acoustic signal",
                 cancellable: false
             }, (progress, token) => {
                 return new Promise((resolve) => {

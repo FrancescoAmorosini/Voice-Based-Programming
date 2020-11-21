@@ -2,24 +2,36 @@ import * as vscode from 'vscode';
 const { exec } = require("child_process");
 const path = require('path');
 const cwd = path.resolve(__dirname, '../src');
+import { platform } from 'os';
 
 let shell = '';
 let ext = '';
 let pre = '';
 
-let detectOS =  new Promise(function (resolve, reject) {
-                    exec("ls", (error: any, stdout: any, stderr: any) => {
-                        if (stderr) { shell = 'scripts/cmd'; ext = '.cmd'; }
-                        else { shell = 'scripts/bash'; ext = '.sh'; pre = './'; }
-                        resolve();
-                    });
-                });
+//DETECT OS
+if (platform() === 'win32'){
+    shell = 'scripts/cmd'; 
+    ext = '.cmd';
+}
+else{
+    shell = 'scripts/bash'; 
+    ext = '.sh'; 
+    pre = './'; 
+}
+
+//DETECT ANACONDA
+let detectConda =new Promise(function (resolve, reject) {
+    exec("conda --version", (error:any, stdout:any, stderr:any) => {
+        if (stderr){ shell = shell.concat('/venv'); console.log(path.resolve(cwd, shell));}
+        else{shell = path.join(shell, 'conda');}
+        resolve();
+    });
+}); 
 
 export async function activate(context: vscode.ExtensionContext) {
     console.log('Activating the extension...');
 
-    //Waiting completion of OS detection
-    await detectOS;
+    await detectConda;
 
     //Environment setup
     exec(`${pre}check${ext}`, {cwd: path.resolve(cwd, shell)}, (error: any, stdout: any, stderr: any) => {
@@ -31,7 +43,7 @@ export async function activate(context: vscode.ExtensionContext) {
             console.log(`stderr: ${stderr}`);
             return;
         }
-        if (stdout.includes('dsd-end')) {
+        if (stdout.includes('dsd-env')) {
             console.log('environment is ready!');
             vscode.window.showInformationMessage('Everything is ready! Let\'s code!');
             
@@ -71,7 +83,7 @@ export async function activate(context: vscode.ExtensionContext) {
 	let disposable = vscode.commands.registerCommand('vocoder.captureAudio', () => {
         vscode.window.withProgress({
             location: vscode.ProgressLocation.Notification,
-            title: "Recording...",
+            title: "Please, speak your command after the acoustic signal",
             cancellable: false
         }, (progress, token) => {
             return new Promise((resolve:any) => {
@@ -106,7 +118,7 @@ function writeOnEditor(s: string){
 			return;
 		}
 		const position = editor.selection.active;
-		editor.edit( (edit) => { edit.insert(position,s)} );
+		editor.edit( (edit) => { edit.insert(position,s);} );
 }
 
 // this method is called when your extension is deactivated

@@ -19,15 +19,15 @@
 			{
 				"command": "vocoder.captureAudio",
 				"title": "Vocoder: Voice-Based Input",
-				"icon":{
+				"icon": {
 					"dark": "./style/white_mic.ico",
 					"light": "./style/black_mic.ico"
 				}
 			}
 		],
 		"menus": {
-			"editor/title":[
-				{	
+			"editor/title": [
+				{
 					"command": "vocoder.captureAudio",
 					"group": "navigation",
 					"when": "resourceLangId == python"
@@ -55,5 +55,8 @@
 		"mocha": "^8.1.3",
 		"typescript": "^4.0.2",
 		"vscode-test": "^1.4.0"
+	},
+	"dependencies": {
+		"os": "^0.1.1"
 	}
 }

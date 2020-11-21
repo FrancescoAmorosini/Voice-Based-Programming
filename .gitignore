@@ -2,6 +2,7 @@
 /vocoder/node_modules
 /vocoder/.vscode
 /vocoder/out
+/dsd-env
 **/*.wav
 vocoder/src/bash/output.wav
 **/*.DS_Store
