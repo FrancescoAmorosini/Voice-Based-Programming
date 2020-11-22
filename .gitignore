@@ -4,3 +4,6 @@
 /vocoder/.vscode
 /vocoder/out
 **/*.wav
+/dsd-env
+vocoder/src/bash/output.wav
+
