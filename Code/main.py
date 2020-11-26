@@ -1,36 +1,6 @@
 from wit import Wit
 import sys
-import pyjulius3
-import queue
-import re
-from word2number import w2n
-
-#
-# # Initialize and try to connect
-# client = pyjulius3.Client('localhost', 10500)
-# try:
-#     client.connect()
-# except pyjulius3.ConnectionError:
-#     print('Start julius as module first!')
-#     sys.exit(1)
-#
-# # Start listening to the server
-# client.start()
-#
-# try:
-#     while 1:
-#         try:
-#
-#             result = client.results.get(False)
-#
-#         except queue.Empty:
-#             continue
-#
-#         if isinstance(result, pyjulius3.Sentence):
-#           print('Sentence "%s" recognized with score %.2f' % (result, result.score))
-# except KeyboardInterrupt:
-#     print('Exiting...')
-#     client.disconnect()  # disconnect from julius
+# from word2number import w2n
 
 print('Number of arguments:', len(sys.argv), 'arguments.')
 print('Argument List:', str(sys.argv))
