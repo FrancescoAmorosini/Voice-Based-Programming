@@ -9,6 +9,8 @@ let shell = '';
 let ext = '';
 let pre = '';
 
+const outputChannel = vscode.window.createOutputChannel("vocoder");
+
 //DETECT OS
 if (platform() === 'win32'){
     shell = 'scripts/cmd'; 
@@ -23,16 +25,25 @@ else{
 //DETECT ANACONDA
 let detectConda =new Promise(function (resolve, reject) {
     exec("conda --version", (error:any, stdout:any, stderr:any) => {
-        if (stderr){ shell = shell.concat('/venv'); console.log(path.resolve(cwd, shell));}
-        else{shell = path.join(shell, 'conda');}
+        if (stderr){ 
+            shell = shell.concat('/venv'); 
+            outputChannel.appendLine('Anaconda is not installed, the extension will work fine but you may experience performance drops');
+            vscode.window.showWarningMessage('We suggest to install Anaconda (or Miniconda) for a better user experience');
+            
+        }
+        else{
+            shell = path.join(shell, 'conda'); 
+            outputChannel.appendLine('Anaconda has been detected!');
+        }
         resolve();
     });
 }); 
 
 export async function activate(context: vscode.ExtensionContext) {
     console.log('Activating the extension...');
-
+    
     await detectConda;
+    outputChannel.show();
 
     //Environment setup
     exec(`${pre}check${ext}`, {cwd: path.resolve(cwd, shell)}, (error: any, stdout: any, stderr: any) => {
@@ -145,7 +156,7 @@ function writeOnEditor(s: string){
         return;
     }
     const currSel = editor.selection;
-    editor.edit( (edit) => { edit.replace(currSel,s)} );
+    editor.edit( (edit) => { edit.replace(currSel,s);} );
 
     // computation of new position of the cursor
 
