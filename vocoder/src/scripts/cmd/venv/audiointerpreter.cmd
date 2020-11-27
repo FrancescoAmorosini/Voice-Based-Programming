@@ -1,2 +1,2 @@
 ..\..\..\..\..\dsd-env\Scripts\activate &&^
-python ..\..\audioInterpreter.py
+python ..\..\..\..\..\Code\audioInterpreter.py

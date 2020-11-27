@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 const { exec } = require("child_process");
 const path = require('path');
 const cwd = path.resolve(__dirname, '../src');
+const backend = path.resolve(__dirname, '../../Code');
 import { platform } from 'os';
 
 let shell = '';
@@ -102,7 +103,7 @@ export async function activate(context: vscode.ExtensionContext) {
                     }
                     console.log(`stdout: ${stdout}`);
                     resolve(`stdout: ${stdout}`);
-                    writeOnEditor(stdout); //to be removed
+                    //writeOnEditor(stdout); //to be removed
                     elaborateCommand();
                 });
             });
