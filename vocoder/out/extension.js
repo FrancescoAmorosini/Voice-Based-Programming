@@ -14,10 +14,12 @@ const vscode = require("vscode");
 const { exec } = require("child_process");
 const path = require('path');
 const cwd = path.resolve(__dirname, '../src');
+const backend = path.resolve(__dirname, '../../Code');
 const os_1 = require("os");
 let shell = '';
 let ext = '';
 let pre = '';
+const outputChannel = vscode.window.createOutputChannel("vocoder");
 //DETECT OS
 if (os_1.platform() === 'win32') {
     shell = 'scripts/cmd';
@@ -31,12 +33,14 @@ else {
 //DETECT ANACONDA
 let detectConda = new Promise(function (resolve, reject) {
     exec("conda --version", (error, stdout, stderr) => {
-        if (stderr) {
+        if (!stderr) {
             shell = shell.concat('/venv');
-            console.log(path.resolve(cwd, shell));
+            outputChannel.appendLine('Anaconda is not installed, the extension will work fine but you may experience performance drops');
+            vscode.window.showWarningMessage('We suggest to install Anaconda (or Miniconda) for a better user experience');
         }
         else {
             shell = path.join(shell, 'conda');
+            outputChannel.appendLine('Anaconda has been detected!');
         }
         resolve();
     });
@@ -45,6 +49,7 @@ function activate(context) {
     return __awaiter(this, void 0, void 0, function* () {
         console.log('Activating the extension...');
         yield detectConda;
+        outputChannel.show();
         //Environment setup
         exec(`${pre}check${ext}`, { cwd: path.resolve(cwd, shell) }, (error, stdout, stderr) => {
             if (error) {
@@ -111,7 +116,7 @@ function activate(context) {
                         }
                         console.log(`stdout: ${stdout}`);
                         resolve(`stdout: ${stdout}`);
-                        writeOnEditor(stdout); //to be removed
+                        //writeOnEditor(stdout); //to be removed
                         elaborateCommand();
                     });
                 });

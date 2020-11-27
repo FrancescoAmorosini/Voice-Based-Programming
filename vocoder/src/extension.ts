@@ -25,7 +25,7 @@ else{
 //DETECT ANACONDA
 let detectConda =new Promise(function (resolve, reject) {
     exec("conda --version", (error:any, stdout:any, stderr:any) => {
-        if (stderr){ 
+        if (!stderr){ 
             shell = shell.concat('/venv'); 
             outputChannel.appendLine('Anaconda is not installed, the extension will work fine but you may experience performance drops');
             vscode.window.showWarningMessage('We suggest to install Anaconda (or Miniconda) for a better user experience');
