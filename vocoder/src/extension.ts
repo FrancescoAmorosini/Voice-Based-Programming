@@ -150,15 +150,29 @@ function elaborateCommand(){
             return;
         }
         console.log(`stdout: ${stdout}`);
-        if(stdout.startsWith("vocoder-undo")){ // discuss with backend to agree on naming
+
+        const sections = stdout.split("dsd-section");
+        if(sections.length!=2){
+            console.log(`Bad format from backend processing: no dsd-section found or more than one found`);
+            vscode.window.showErrorMessage('Code processing failed');
+            return;
+        }
+        const vocoderSec = sections[1];
+        if(vocoderSec.includes("vocoder-undo")){
             vscode.commands.executeCommand("undo");
             return;
         }
-        if(stdout.startsWith("vocoder-delete")){ // discuss with backend to agree on naming
+        if(vocoderSec.includes("vocoder-delete")){
             writeOnEditor('');
             return;
         }
-        writeOnEditor(stdout);
+        const codeSec = vocoderSec.split("vocoder-code-block")
+        if(codeSec.length!=2){
+            console.log(`Bad format from backend processing: no command or code-block section found`);
+            vscode.window.showErrorMessage('Code processing failed');
+            return;
+        }
+        writeOnEditor(codeSec[1]);
     });
 }
 
