@@ -1,48 +1,97 @@
-from wit import Wit
 import sys
-import pyjulius3
-import queue
-import re
+
+from wit import Wit
+
 from word2number import w2n
 
-#
-# # Initialize and try to connect
-# client = pyjulius3.Client('localhost', 10500)
-# try:
-#     client.connect()
-# except pyjulius3.ConnectionError:
-#     print('Start julius as module first!')
-#     sys.exit(1)
-#
-# # Start listening to the server
-# client.start()
-#
-# try:
-#     while 1:
-#         try:
-#
-#             result = client.results.get(False)
-#
-#         except queue.Empty:
-#             continue
-#
-#         if isinstance(result, pyjulius3.Sentence):
-#           print('Sentence "%s" recognized with score %.2f' % (result, result.score))
-# except KeyboardInterrupt:
-#     print('Exiting...')
-#     client.disconnect()  # disconnect from julius
 
-print('Number of arguments:', len(sys.argv), 'arguments.')
-print('Argument List:', str(sys.argv))
+def snake_to_camel(variablename):
+    return ''.join(word.capitalize() or '_' for word in variablename.split(' '))
+
+
+# takes a string and converts it to operations and variables
+def parse(string):
+    expression_operators = ['plus', 'minus', 'asterisk', 'multiplication', 'division', 'modulo', 'mod', 'multiply',
+                            'multiplied']
+    op_out = []  # This holds the operators that are found in the string (left to right)
+    num_out = []  # this holds the non-operators that are found in the string (left to right)
+    buffer = []
+    words = string.split(" ")
+    for word in words:  # examine 1 word at a time
+        try:
+            if word in expression_operators:
+                VariableName = ""
+                flag = False
+                for index in buffer:
+                    flag = True
+                    VariableName = VariableName + index
+                if flag:
+                    num_out.append(VariableName)
+                    flag = False
+                buffer = []
+                # found an operator.
+                if word == "plus":
+                    op_out.append("+")
+                if word == "minus":
+                    op_out.append("-")
+                if word == "division":
+                    op_out.append("÷")
+                if word == "modulo":
+                    op_out.append("%")
+                if word == "mod":
+                    op_out.append("%")
+                if word == "multiply":
+                    op_out.append("*")
+                if word == "multiply":
+                    op_out.append("*")
+                if word == "asterisk":
+                    op_out.append("*")
+                if word == "multiplication":
+                    op_out.append("*")
+            elif str(w2n.word_to_num(word)).isnumeric():
+                # if it is a valid number.  Just accumulate this number in num_out.
+                digit = w2n.word_to_num(word)
+                num_out.append(digit)
+        except ValueError:
+            # else this is a variable name so convert it
+            buffer.append(snake_to_camel(word))
+    if buffer:
+        VariableName = ""
+        flag = False
+        for index in buffer:
+            flag = True
+            VariableName = VariableName + index
+        if flag:
+            num_out.append(VariableName)
+
+    return num_out, op_out
+
+
+# print('Number of arguments:', len(sys.argv), 'arguments.')
+# print('Argument List:', str(sys.argv))
 client = Wit("3OXTFKTQZFCKO3PEYBN3VYS23BDRCVRC")
-with open('CommentHelloWorld.wav', 'rb') as f:
+with open('declare expression.wav', 'rb') as f:
     resp = client.speech(f, {'Content-Type': 'audio/wav'})
-print('Yay, got Wit.ai response: ' + str(resp) + '\n')
+# print('Wit.ai response: ' + str(resp) + '\n')
 message = ""
 if_else = 0
-while(True):
+while True:
     if resp['intents'][0]['name'] == 'DeclareVariable':
-        print("This Message is an DeclareVariable")
+        if resp['intents'][0]['confidence'] > 0.75:
+            if 'VariableName:VariableName' in resp['entities']:
+                if 'Expression:Expression' in resp['entities']:
+                    variables, operators = parse(resp['entities']['Expression:Expression'][0]['body'])
+                    output_string = ""
+                    counter = -1
+                    for variable in variables:
+                        if counter >= 0:
+                            output_string += " " + operators[counter] + " "
+                        output_string += str(variable)
+                        counter += 1
+                    print(snake_to_camel(
+                        resp['entities']['VariableName:VariableName'][0]['body']) + ' = ' + output_string)
+                else:
+                    print(snake_to_camel(resp['entities']['VariableName:VariableName'][0]['body']) + ' = None\n')
 
     if resp['intents'][0]['name'] == 'IfElseStatement':
         if_else = 1
@@ -67,29 +116,41 @@ while(True):
                 expresion = expresion.replace("times", "*")
                 expresion = expresion.replace("divided by", "/")
                 exp[x] += expresion
-            if resp['entities']['comparisons:comparisons'][0]['body'] == 'equal to' or resp['entities']['comparisons:comparisons'][0]['body'] == 'is equal to':
-                message  += "if " + exp[0] + "==" + exp[1] + " :\n\t"# + resp['entities']['command:command'][0]['body'] + "\nelse: \n\t" + resp['entities']['command:command'][1]['body']
-                #print("if " + exp[0] + " == " + exp[1] +
+            if resp['entities']['comparisons:comparisons'][0]['body'] == 'equal to' or \
+                    resp['entities']['comparisons:comparisons'][0]['body'] == 'is equal to':
+                message += "if " + exp[0] + "==" + exp[
+                    1] + " :\n\t"  # + resp['entities']['command:command'][0]['body'] + "\nelse: \n\t" + resp['entities']['command:command'][1]['body']
+                # print("if " + exp[0] + " == " + exp[1] +
                 #    " :\n\t " + resp['entities']['command:command'][0]['body'] + "\nelse:\n\t" + resp['entities']['command:command'][1]['body'])
-            if resp['entities']['comparisons:comparisons'][0]['body'] == 'non equal to' or resp['entities']['comparisons:comparisons'][0]['body'] == 'is non equal to':
-                message  += "if " + exp[0] + "!=" + exp[1] + " :\n\t"# + resp['entities']['command:command'][0]['body'] + "\nelse: \n\t" + resp['entities']['command:command'][1]['body']
-                #print("if " + exp[0] + " < " + exp[1] +
+            if resp['entities']['comparisons:comparisons'][0]['body'] == 'non equal to' or \
+                    resp['entities']['comparisons:comparisons'][0]['body'] == 'is non equal to':
+                message += "if " + exp[0] + "!=" + exp[
+                    1] + " :\n\t"  # + resp['entities']['command:command'][0]['body'] + "\nelse: \n\t" + resp['entities']['command:command'][1]['body']
+                # print("if " + exp[0] + " < " + exp[1] +
                 #      " :\n\t " + resp['entities']['command:command'][0]['body'] + "\nelse:\n\t" + resp['entities']['command:command'][1]['body'])
-            if resp['entities']['comparisons:comparisons'][0]['body'] == 'greater than' or resp['entities']['comparisons:comparisons'][0]['body'] == 'is greater than':
-                message  += "if " + exp[0] + ">" + exp[1] + " :\n\t"# + resp['entities']['command:command'][0]['body'] + "\nelse: \n\t" + resp['entities']['command:command'][1]['body']
-                #print("if " + exp[0] + " == " + exp[1] +
+            if resp['entities']['comparisons:comparisons'][0]['body'] == 'greater than' or \
+                    resp['entities']['comparisons:comparisons'][0]['body'] == 'is greater than':
+                message += "if " + exp[0] + ">" + exp[
+                    1] + " :\n\t"  # + resp['entities']['command:command'][0]['body'] + "\nelse: \n\t" + resp['entities']['command:command'][1]['body']
+                # print("if " + exp[0] + " == " + exp[1] +
                 #      " :\n\t " + resp['entities']['command:command'][0]['body'] + "\nelse:\n\t" + resp['entities']['command:command'][1]['body'])
-            if resp['entities']['comparisons:comparisons'][0]['body'] == 'less than' or resp['entities']['comparisons:comparisons'][0]['body'] == 'is less than':
-                message  += "if " + exp[0] + "<" + exp[1] + " :\n\t"# + resp['entities']['command:command'][0]['body'] + "\nelse: \n\t" + resp['entities']['command:command'][1]['body']
-                #print("if " + exp[0] + " < " + exp[1] +
+            if resp['entities']['comparisons:comparisons'][0]['body'] == 'less than' or \
+                    resp['entities']['comparisons:comparisons'][0]['body'] == 'is less than':
+                message += "if " + exp[0] + "<" + exp[
+                    1] + " :\n\t"  # + resp['entities']['command:command'][0]['body'] + "\nelse: \n\t" + resp['entities']['command:command'][1]['body']
+                # print("if " + exp[0] + " < " + exp[1] +
                 #      " :\n\t " + resp['entities']['command:command'][0]['body'] + "\nelse:\n\t" + resp['entities']['command:command'][1]['body'])
-            if resp['entities']['comparisons:comparisons'][0]['body'] == 'greater or equal to' or resp['entities']['comparisons:comparisons'][0]['body'] == 'is greater or equal to':
-                message  += "if " + exp[0] + ">=" + exp[1] + " :\n\t"# + resp['entities']['command:command'][0]['body'] + "\nelse: \n\t" + resp['entities']['command:command'][1]['body']
-                #print("if " + exp[0] + " < " + exp[1] +
+            if resp['entities']['comparisons:comparisons'][0]['body'] == 'greater or equal to' or \
+                    resp['entities']['comparisons:comparisons'][0]['body'] == 'is greater or equal to':
+                message += "if " + exp[0] + ">=" + exp[
+                    1] + " :\n\t"  # + resp['entities']['command:command'][0]['body'] + "\nelse: \n\t" + resp['entities']['command:command'][1]['body']
+                # print("if " + exp[0] + " < " + exp[1] +
                 #      " :\n\t " + resp['entities']['command:command'][0]['body'] + "\nelse:\n\t" + resp['entities']['command:command'][1]['body'])
-            if resp['entities']['comparisons:comparisons'][0]['body'] == 'less or equal to' or resp['entities']['comparisons:comparisons'][0]['body'] == 'is less or equal to':
-                message  += "if " + exp[0] + "<=" + exp[1] + " :\n\t"# + resp['entities']['command:command'][0]['body'] + "\nelse: \n\t" + resp['entities']['command:command'][1]['body']
-                #print("if " + exp[0] + " < " + exp[1] +
+            if resp['entities']['comparisons:comparisons'][0]['body'] == 'less or equal to' or \
+                    resp['entities']['comparisons:comparisons'][0]['body'] == 'is less or equal to':
+                message += "if " + exp[0] + "<=" + exp[
+                    1] + " :\n\t"  # + resp['entities']['command:command'][0]['body'] + "\nelse: \n\t" + resp['entities']['command:command'][1]['body']
+                # print("if " + exp[0] + " < " + exp[1] +
                 #      " :\n\t " + resp['entities']['command:command'][0]['body'] + "\nelse:\n\t" + resp['entities']['command:command'][1]['body'])
 
     if resp['intents'][0]['name'] == 'IfStatements':
@@ -113,29 +174,35 @@ while(True):
                     expresion = expresion.replace("times", "*")
                     expresion = expresion.replace("divided by", "/")
                     exp[x] += expresion
-                if resp['entities']['comparisons:comparisons'][0]['body'] == 'equal to' or resp['entities']['comparisons:comparisons'][0]['body'] == 'is equal to':
+                if resp['entities']['comparisons:comparisons'][0]['body'] == 'equal to' or \
+                        resp['entities']['comparisons:comparisons'][0]['body'] == 'is equal to':
                     message += "if " + exp[0] + " == " + exp[1] + " :\n\t"
-                    #print("if " + exp[0] + " == " + exp[1] +
+                    # print("if " + exp[0] + " == " + exp[1] +
                     #    " :\n\t")
-                if resp['entities']['comparisons:comparisons'][0]['body'] == 'non equal to' or resp['entities']['comparisons:comparisons'][0]['body'] == 'is non equal to':
+                if resp['entities']['comparisons:comparisons'][0]['body'] == 'non equal to' or \
+                        resp['entities']['comparisons:comparisons'][0]['body'] == 'is non equal to':
                     message += "if " + exp[0] + " != " + exp[1] + " :\n\t "
-                    #print("if " + exp[0] + " != " + exp[1] +
+                    # print("if " + exp[0] + " != " + exp[1] +
                     #    " :\n\t " + resp['entities']['command:command'][0]['body'])
-                if resp['entities']['comparisons:comparisons'][0]['body'] == 'greater than' or resp['entities']['comparisons:comparisons'][0]['body'] == 'is greater than':
+                if resp['entities']['comparisons:comparisons'][0]['body'] == 'greater than' or \
+                        resp['entities']['comparisons:comparisons'][0]['body'] == 'is greater than':
                     message += "if " + exp[0] + " > " + exp[1] + " :\n\t "
-                    #print("if " + exp[0] + " == " + exp[1] +
+                    # print("if " + exp[0] + " == " + exp[1] +
                     #    " :\n\t " + resp['entities']['command:command'][0]['body'])
-                if resp['entities']['comparisons:comparisons'][0]['body'] == 'less than' or resp['entities']['comparisons:comparisons'][0]['body'] == 'is less than':
+                if resp['entities']['comparisons:comparisons'][0]['body'] == 'less than' or \
+                        resp['entities']['comparisons:comparisons'][0]['body'] == 'is less than':
                     message += "if " + exp[0] + " < " + exp[1] + " :\n\t "
-                    #print("if " + exp[0] + " < " + exp[1] +
+                    # print("if " + exp[0] + " < " + exp[1] +
                     #    " :\n\t " + resp['entities']['command:command'][0]['body'])
-                if resp['entities']['comparisons:comparisons'][0]['body'] == 'greater or equal to' or resp['entities']['comparisons:comparisons'][0]['body'] == 'is greater or equal to':
+                if resp['entities']['comparisons:comparisons'][0]['body'] == 'greater or equal to' or \
+                        resp['entities']['comparisons:comparisons'][0]['body'] == 'is greater or equal to':
                     message += "if " + exp[0] + " >= " + exp[1] + " :\n\t "
-                    #print("if " + exp[0] + " < " + exp[1] +
+                    # print("if " + exp[0] + " < " + exp[1] +
                     #    " :\n\t " + resp['entities']['command:command'][0]['body'])
-                if resp['entities']['comparisons:comparisons'][0]['body'] == 'less or equal to' or resp['entities']['comparisons:comparisons'][0]['body'] == 'is less or equal to':
+                if resp['entities']['comparisons:comparisons'][0]['body'] == 'less or equal to' or \
+                        resp['entities']['comparisons:comparisons'][0]['body'] == 'is less or equal to':
                     message += "if " + exp[0] + " <= " + exp[1] + " :\n\t "
-                    #print("if " + exp[0] + " < " + exp[1] +
+                    # print("if " + exp[0] + " < " + exp[1] +
                     #    " :\n\t " + resp['entities']['command:command'][0]['body'])
             else:
                 message += "if (#) :\n\t#"
@@ -158,21 +225,15 @@ while(True):
             expresion = expresion.replace("times", "*")
             expresion = expresion.replace("divided by", "/")
             message += '# ' + expresion
-    if 'command:command' not in resp['entities'] and (if_else == 2 or if_else == 0) :
+    if 'command:command' not in resp['entities'] and (if_else == 2 or if_else == 0):
         print(message)
         break
-    
-    if if_else == 2 :
+
+    if if_else == 2:
         message += "\nelse: \n\t"
         resp = client.message(command_else)
-    if if_else == 1 :
+    if if_else == 1:
         resp = client.message(command_if)
         if_else = 2
-    if if_else == 0 :    
+    if if_else == 0:
         resp = client.message(resp['entities']['command:command'][0]['body'])
-
-#print(w2n.word_to_num("two million three thousand nine hundred and eighty four"))
-# print("This is one line of code"
-#      "this is the same line so they should not be separated"
-#      "\n this one is a new line i want to see if its noticed")
-#print("this is a new print command")
