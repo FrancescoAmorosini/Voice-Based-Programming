@@ -1,9 +1,10 @@
 import * as vscode from 'vscode';
+import { platform } from 'os';
 const { exec } = require("child_process");
 const path = require('path');
+
 const cwd = path.resolve(__dirname, '../src');
-const backend = path.resolve(__dirname, '../../Code');
-import { platform } from 'os';
+const landingURI = vscode.Uri.file(path.resolve(__dirname, '../landing.md'));
 
 let shell = '';
 let ext = '';
@@ -11,7 +12,7 @@ let pre = '';
 
 const outputChannel = vscode.window.createOutputChannel("vocoder");
 
-//DETECT OS
+//Detect OS
 if (platform() === 'win32'){
     shell = 'scripts/cmd'; 
     ext = '.cmd';
@@ -22,45 +23,52 @@ else{
     pre = './'; 
 }
 
-//DETECT ANACONDA
+//Detect anaconda
 let detectConda =new Promise(function (resolve, reject) {
     exec("conda --version", (error:any, stdout:any, stderr:any) => {
-        if (!stderr){ 
+        if (stderr){ 
             shell = shell.concat('/venv'); 
-            outputChannel.appendLine('Anaconda is not installed, the extension will work fine but you may experience performance drops');
+            outputChannel.appendLine('WARNING: Anaconda is not installed, the extension will work fine but you may experience performance drops');
             vscode.window.showWarningMessage('We suggest to install Anaconda (or Miniconda) for a better user experience');
-            
         }
         else{
             shell = path.join(shell, 'conda'); 
-            outputChannel.appendLine('Anaconda has been detected!');
+            outputChannel.appendLine('--- Anaconda has been detected! ---');
         }
         resolve();
     });
 }); 
 
+// ------ PROLOGUE END -------
+
 export async function activate(context: vscode.ExtensionContext) {
     console.log('Activating the extension...');
     
     await detectConda;
+
+    outputChannel.appendLine('Activating vocoder...');
     outputChannel.show();
 
     //Environment setup
     exec(`${pre}check${ext}`, {cwd: path.resolve(cwd, shell)}, (error: any, stdout: any, stderr: any) => {
         if (error) {
             console.log(`error: ${error.message}`);
+            outputChannel.appendLine(error.message);
             return;
         }
         if (stderr) {
             console.log(`stderr: ${stderr}`);
+            outputChannel.appendLine(stderr.message);
             return;
         }
         if (stdout.includes('dsd-env')) {
             console.log('environment is ready!');
-            vscode.window.showInformationMessage('Everything is ready! Let\'s code!');
+            outputChannel.appendLine('--- dsd-env has been detected! ---');
+            vscode.window.showInformationMessage('Everything is ready! Let\'s code!'); 
             
         }
-        else {
+        else { 
+            vscode.commands.executeCommand('markdown.showPreview', landingURI);
             vscode.window.withProgress({
                 location: vscode.ProgressLocation.Notification,
                 title: "We are setting up your environment, it might take a few minutes...",
@@ -71,17 +79,20 @@ export async function activate(context: vscode.ExtensionContext) {
                         if (error) {
                             resolve(`error: ${error.message}`);
                             console.log(`error: ${error.message}`);
+                            outputChannel.append(error.message);
                             vscode.window.showErrorMessage('Environment was not loaded successfully');
                             return;
                         }
                         if (stderr) {
                             resolve(`stderr: ${stderr}`);
                             console.log(`stderr: ${stderr}`);
+                            outputChannel.append(stderr.message);
                             vscode.window.showErrorMessage('Environment was not loaded successfully');
                             return;
                         }
                         resolve(`stdout: ${stdout}`);
-                        console.log('environment is ready!');
+                        outputChannel.appendLine('Modules successfully installed');
+                        console.log('Environment is ready!');
                         vscode.window.showInformationMessage('Everything is ready! Let\'s code!');
                     });
                 });
@@ -103,12 +114,14 @@ export async function activate(context: vscode.ExtensionContext) {
                     if (error) {
                         resolve(`error: ${error.message}`);
                         console.log(`error: ${error.message}`);
+                        outputChannel.append(error.message);
                         vscode.window.showErrorMessage('Recording failed');
                         return;
                     }
                     if (stderr) {
                         resolve(`stderr: ${stderr}`);
                         console.log(`stderr: ${stderr}`);
+                        outputChannel.append(stderr.message);
                         vscode.window.showErrorMessage('Recording failed');
                         return;
                     }
