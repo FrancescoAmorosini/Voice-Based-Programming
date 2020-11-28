@@ -49,7 +49,7 @@ export async function activate(context: vscode.ExtensionContext) {
     outputChannel.appendLine('Activating vocoder...');
     outputChannel.show();
 
-    //Environment setup
+    //Environment check
     exec(`${pre}check${ext}`, {cwd: path.resolve(cwd, shell)}, (error: any, stdout: any, stderr: any) => {
         if (error) {
             console.log(`error: ${error.message}`);
@@ -68,7 +68,9 @@ export async function activate(context: vscode.ExtensionContext) {
             
         }
         else { 
+            //Display landing page
             vscode.commands.executeCommand('markdown.showPreview', landingURI);
+            //Environment setup
             vscode.window.withProgress({
                 location: vscode.ProgressLocation.Notification,
                 title: "We are setting up your environment, it might take a few minutes...",
@@ -152,7 +154,7 @@ function elaborateCommand(){
         console.log(`stdout: ${stdout}`);
 
         const sections = stdout.split("dsd-section");
-        if(sections.length!=2){
+        if(sections.length!==2){
             console.log(`Bad format from backend processing: no dsd-section found or more than one found`);
             vscode.window.showErrorMessage('Code processing failed');
             return;
@@ -166,8 +168,8 @@ function elaborateCommand(){
             writeOnEditor('');
             return;
         }
-        const codeSec = vocoderSec.split("vocoder-code-block")
-        if(codeSec.length!=2){
+        const codeSec = vocoderSec.split("vocoder-code-block");
+        if(codeSec.length!==2){
             console.log(`Bad format from backend processing: no command or code-block section found`);
             vscode.window.showErrorMessage('Code processing failed');
             return;
