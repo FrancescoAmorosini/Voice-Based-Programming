@@ -136,7 +136,25 @@ export async function activate(context: vscode.ExtensionContext) {
         });
 	});
     
+    // when first loading the extension give a default setting
+    //( or reload setting from a file)
+    vscode.commands.executeCommand('setContext', 'vocoder:isSnake', false);
+
+    let toSnake = vscode.commands.registerCommand('vocoder.toSnake', () => {
+        vscode.window.showInformationMessage('Switching to Snake Case');
+        //code to actually change some variable / setting
+		vscode.commands.executeCommand('setContext', 'vocoder:isSnake', true);
+    });
+
+    let toCamel = vscode.commands.registerCommand('vocoder.toCamel', () => {
+        vscode.window.showInformationMessage('Switching to Camel Case');
+        //code to actually change some variable / setting
+		vscode.commands.executeCommand('setContext', 'vocoder:isSnake', false);
+    });
+    
 	context.subscriptions.push(disposable);
+    context.subscriptions.push(toSnake);
+    context.subscriptions.push(toCamel);
 }
 
 function elaborateCommand(){

@@ -23,7 +23,23 @@
 					"dark": "./style/white_mic.ico",
 					"light": "./style/black_mic.ico"
 				}
-			}
+			},
+			{
+                "command": "vocoder.toSnake",
+                "title": "Vocoder: To Snake Case",
+                "icon": {
+                    "dark": "./style/white_camel.ico",
+                    "light": "./style/black_camel.ico"
+                }
+            },
+            {
+                "command": "vocoder.toCamel",
+                "title": "Vocoder: To Camel Case",
+                "icon": {
+                    "dark": "./style/white_snake.ico",
+                    "light": "./style/black_snake.ico"
+                }
+            }
 		],
 		"menus": {
 			"editor/title": [
@@ -31,7 +47,17 @@
 					"command": "vocoder.captureAudio",
 					"group": "navigation",
 					"when": "resourceLangId == python"
-				}
+				},
+                {
+                    "command": "vocoder.toSnake",
+                    "group": "navigation",
+                    "when": "vocoder:isSnake == false && resourceLangId == python"
+                },
+                {
+                    "command": "vocoder.toCamel",
+                    "group": "navigation",
+                    "when": "vocoder:isSnake == true && resourceLangId == python"
+                }
 			]
 		}
 	},

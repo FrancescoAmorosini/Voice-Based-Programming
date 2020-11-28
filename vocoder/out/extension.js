@@ -52,7 +52,7 @@ function activate(context) {
         yield detectConda;
         outputChannel.appendLine('Activating vocoder...');
         outputChannel.show();
-        //Environment setup
+        //Environment check
         exec(`${pre}check${ext}`, { cwd: path.resolve(cwd, shell) }, (error, stdout, stderr) => {
             if (error) {
                 console.log(`error: ${error.message}`);
@@ -70,7 +70,9 @@ function activate(context) {
                 vscode.window.showInformationMessage('Everything is ready! Let\'s code!');
             }
             else {
+                //Display landing page
                 vscode.commands.executeCommand('markdown.showPreview', landingURI);
+                //Environment setup
                 vscode.window.withProgress({
                     location: vscode.ProgressLocation.Notification,
                     title: "We are setting up your environment, it might take a few minutes...",
@@ -93,8 +95,8 @@ function activate(context) {
                                 return;
                             }
                             resolve(`stdout: ${stdout}`);
-                            outputChannel.append(stdout.message);
-                            console.log('environment is ready!');
+                            outputChannel.appendLine('Modules successfully installed');
+                            console.log('Environment is ready!');
                             vscode.window.showInformationMessage('Everything is ready! Let\'s code!');
                         });
                     });
@@ -114,27 +116,41 @@ function activate(context) {
                         if (error) {
                             resolve(`error: ${error.message}`);
                             console.log(`error: ${error.message}`);
-                            //outputChannel.append(error.message);
+                            outputChannel.append(error.message);
                             vscode.window.showErrorMessage('Recording failed');
                             return;
                         }
                         if (stderr) {
                             resolve(`stderr: ${stderr}`);
                             console.log(`stderr: ${stderr}`);
-                            //outputChannel.append(stderr.message);
+                            outputChannel.append(stderr.message);
                             vscode.window.showErrorMessage('Recording failed');
                             return;
                         }
                         console.log(`stdout: ${stdout}`);
                         resolve(`stdout: ${stdout}`);
-                        //outputChannel.show();
                         //writeOnEditor(stdout); //to be removed
                         elaborateCommand();
                     });
                 });
             });
         });
+        // when first loading the extension give a default setting
+        //( or reload setting from a file)
+        vscode.commands.executeCommand('setContext', 'vocoder:isSnake', false);
+        let toSnake = vscode.commands.registerCommand('vocoder.toSnake', () => {
+            vscode.window.showInformationMessage('Switching to Snake Case');
+            //code to actually change some variable / setting
+            vscode.commands.executeCommand('setContext', 'vocoder:isSnake', true);
+        });
+        let toCamel = vscode.commands.registerCommand('vocoder.toCamel', () => {
+            vscode.window.showInformationMessage('Switching to Camel Case');
+            //code to actually change some variable / setting
+            vscode.commands.executeCommand('setContext', 'vocoder:isSnake', false);
+        });
         context.subscriptions.push(disposable);
+        context.subscriptions.push(toSnake);
+        context.subscriptions.push(toCamel);
     });
 }
 exports.activate = activate;
@@ -151,15 +167,28 @@ function elaborateCommand() {
             return;
         }
         console.log(`stdout: ${stdout}`);
-        if (stdout.startsWith("vocoder-undo")) { // discuss with backend to agree on naming
+        const sections = stdout.split("dsd-section");
+        if (sections.length !== 2) {
+            console.log(`Bad format from backend processing: no dsd-section found or more than one found`);
+            vscode.window.showErrorMessage('Code processing failed');
+            return;
+        }
+        const vocoderSec = sections[1];
+        if (vocoderSec.includes("vocoder-undo")) {
             vscode.commands.executeCommand("undo");
             return;
         }
-        if (stdout.startsWith("vocoder-delete")) { // discuss with backend to agree on naming
+        if (vocoderSec.includes("vocoder-delete")) {
             writeOnEditor('');
             return;
         }
-        writeOnEditor(stdout);
+        const codeSec = vocoderSec.split("vocoder-code-block");
+        if (codeSec.length !== 2) {
+            console.log(`Bad format from backend processing: no command or code-block section found`);
+            vscode.window.showErrorMessage('Code processing failed');
+            return;
+        }
+        writeOnEditor(codeSec[1]);
     });
 }
 function writeOnEditor(s) {
