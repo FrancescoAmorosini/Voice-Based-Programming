@@ -88,10 +88,10 @@ while True:
                             output_string += " " + operators[counter] + " "
                         output_string += str(variable)
                         counter += 1
-                    print(snake_to_camel(
+                    print("dsd-section\nvocoder-code-block\n" +snake_to_camel(
                         resp['entities']['VariableName:VariableName'][0]['body']) + ' = ' + output_string)
                 else:
-                    print(snake_to_camel(resp['entities']['VariableName:VariableName'][0]['body']) + ' = None\n')
+                    print("dsd-section\nvocoder-code-block\n" +snake_to_camel(resp['entities']['VariableName:VariableName'][0]['body']) + ' = None\n')
 
     if resp['intents'][0]['name'] == 'IfElseStatement':
         if_else = 1
