@@ -1,15 +1,18 @@
 import * as vscode from 'vscode';
+import { platform } from 'os';
 const { exec } = require("child_process");
 const path = require('path');
+
 const cwd = path.resolve(__dirname, '../src');
-const backend = path.resolve(__dirname, '../../Code');
-import { platform } from 'os';
+const landingURI = vscode.Uri.file(path.resolve(__dirname, '../landing.md'));
 
 let shell = '';
 let ext = '';
 let pre = '';
 
-//DETECT OS
+const outputChannel = vscode.window.createOutputChannel("vocoder");
+
+//Detect OS
 if (platform() === 'win32'){
     shell = 'scripts/cmd'; 
     ext = '.cmd';
@@ -20,36 +23,54 @@ else{
     pre = './'; 
 }
 
-//DETECT ANACONDA
+//Detect anaconda
 let detectConda =new Promise(function (resolve, reject) {
     exec("conda --version", (error:any, stdout:any, stderr:any) => {
-        if (stderr){ shell = shell.concat('/venv'); console.log(path.resolve(cwd, shell));}
-        else{shell = path.join(shell, 'conda');}
+        if (stderr){ 
+            shell = shell.concat('/venv'); 
+            outputChannel.appendLine('WARNING: Anaconda is not installed, the extension will work fine but you may experience performance drops');
+            vscode.window.showWarningMessage('We suggest to install Anaconda (or Miniconda) for a better user experience');
+        }
+        else{
+            shell = path.join(shell, 'conda'); 
+            outputChannel.appendLine('--- Anaconda has been detected! ---');
+        }
         resolve();
     });
 }); 
 
+// ------ PROLOGUE END -------
+
 export async function activate(context: vscode.ExtensionContext) {
     console.log('Activating the extension...');
-
+    
     await detectConda;
 
-    //Environment setup
+    outputChannel.appendLine('Activating vocoder...');
+    outputChannel.show();
+
+    //Environment check
     exec(`${pre}check${ext}`, {cwd: path.resolve(cwd, shell)}, (error: any, stdout: any, stderr: any) => {
         if (error) {
             console.log(`error: ${error.message}`);
+            outputChannel.appendLine(error.message);
             return;
         }
         if (stderr) {
             console.log(`stderr: ${stderr}`);
+            outputChannel.appendLine(stderr.message);
             return;
         }
         if (stdout.includes('dsd-env')) {
             console.log('environment is ready!');
-            vscode.window.showInformationMessage('Everything is ready! Let\'s code!');
+            outputChannel.appendLine('--- dsd-env has been detected! ---');
+            vscode.window.showInformationMessage('Everything is ready! Let\'s code!'); 
             
         }
-        else {
+        else { 
+            //Display landing page
+            vscode.commands.executeCommand('markdown.showPreview', landingURI);
+            //Environment setup
             vscode.window.withProgress({
                 location: vscode.ProgressLocation.Notification,
                 title: "We are setting up your environment, it might take a few minutes...",
@@ -60,17 +81,20 @@ export async function activate(context: vscode.ExtensionContext) {
                         if (error) {
                             resolve(`error: ${error.message}`);
                             console.log(`error: ${error.message}`);
+                            outputChannel.append(error.message);
                             vscode.window.showErrorMessage('Environment was not loaded successfully');
                             return;
                         }
                         if (stderr) {
                             resolve(`stderr: ${stderr}`);
                             console.log(`stderr: ${stderr}`);
+                            outputChannel.append(stderr.message);
                             vscode.window.showErrorMessage('Environment was not loaded successfully');
                             return;
                         }
                         resolve(`stdout: ${stdout}`);
-                        console.log('environment is ready!');
+                        outputChannel.appendLine('Modules successfully installed');
+                        console.log('Environment is ready!');
                         vscode.window.showInformationMessage('Everything is ready! Let\'s code!');
                     });
                 });
@@ -92,12 +116,14 @@ export async function activate(context: vscode.ExtensionContext) {
                     if (error) {
                         resolve(`error: ${error.message}`);
                         console.log(`error: ${error.message}`);
+                        outputChannel.append(error.message);
                         vscode.window.showErrorMessage('Recording failed');
                         return;
                     }
                     if (stderr) {
                         resolve(`stderr: ${stderr}`);
                         console.log(`stderr: ${stderr}`);
+                        outputChannel.append(stderr.message);
                         vscode.window.showErrorMessage('Recording failed');
                         return;
                     }
@@ -126,15 +152,29 @@ function elaborateCommand(){
             return;
         }
         console.log(`stdout: ${stdout}`);
-        if(stdout.startsWith("vocoder-undo")){ // discuss with backend to agree on naming
+
+        const sections = stdout.split("dsd-section");
+        if(sections.length!==2){
+            console.log(`Bad format from backend processing: no dsd-section found or more than one found`);
+            vscode.window.showErrorMessage('Code processing failed');
+            return;
+        }
+        const vocoderSec = sections[1];
+        if(vocoderSec.includes("vocoder-undo")){
             vscode.commands.executeCommand("undo");
             return;
         }
-        if(stdout.startsWith("vocoder-delete")){ // discuss with backend to agree on naming
+        if(vocoderSec.includes("vocoder-delete")){
             writeOnEditor('');
             return;
         }
-        writeOnEditor(stdout);
+        const codeSec = vocoderSec.split("vocoder-code-block");
+        if(codeSec.length!==2){
+            console.log(`Bad format from backend processing: no command or code-block section found`);
+            vscode.window.showErrorMessage('Code processing failed');
+            return;
+        }
+        writeOnEditor(codeSec[1]);
     });
 }
 
@@ -145,7 +185,7 @@ function writeOnEditor(s: string){
         return;
     }
     const currSel = editor.selection;
-    editor.edit( (edit) => { edit.replace(currSel,s)} );
+    editor.edit( (edit) => { edit.replace(currSel,s);} );
 
     // computation of new position of the cursor
 

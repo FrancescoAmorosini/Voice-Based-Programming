@@ -3,6 +3,7 @@
 /vocoder/node_modules
 /vocoder/.vscode
 /vocoder/out
+.vscode
 **/*.wav
 /dsd-env
 vocoder/src/bash/output.wav

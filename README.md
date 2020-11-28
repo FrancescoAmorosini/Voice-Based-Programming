@@ -1,4 +1,4 @@
-# Voice-Based-Programming
+# Vocoder: Voice-Based-Programming
 
 ### Sponsors 
 Fernando Castor, Federal University of Pernambuco, Brazil.
