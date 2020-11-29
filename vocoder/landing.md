@@ -1,20 +1,79 @@
 # Welcome to Vocoder!
 
-![Vocoder logo](https://github.com/FrancescoAmorosini/Voice-Based-Programming/blob/front-end/vocoder%2Fstyle%2Flogo.jpg)
+![Vocoder logo](style/logo.jpg)
 
 
 ## Why voice-based programming?
 Thousands of software developers suffer from repetitive strain injuries such as carpal tunnel syndrome and tendonitis. Support for programming by voice has the potential to increase the productivity of developers afflicted by these problems. In addition, it can enable individuals with upper-body motor impairments, e.g, due to spinal cord injuries or strokes, to write code.
 
+## Prerequisites
+For Vocoder to work properly you will need to have `npm` installed on your machine. If you don't, you can get it on [npm's official website](https://www.npmjs.com/get-npm)  for free.
+### Performance
+We also suggest you to have `conda` installed on your machine. This will allow Vocoder to work on a virtual environment with noticeably better time performances, with respect to any virtual environment created by the default tools availble on your machine. You can get `anaconda`, or its lighter version `miniconda`, for free on [conda's official website](https://docs.conda.io/projects/conda/en/latest/user-guide/install/download.html).
+
+## Available languages
+Vocoder is currently able to support voice-based programming for Python code. Make sure to be working on a `.py` file in order to use the extension.
+
 ## Usage
-* This is a bullet list
-* `package.json` this is a code snippet
-  * The sample plugin registers a command and defines its title and command name. With this information VS Code can show the command in the command palette. It doesn’t yet need to load the plugin.
+Vocoder has a simple and intuitive interface. To input any voice command you just need to:
+
+* Place your **_cursor_** where you want the action to be taken
+* Press the **_michrophone button_** on the upper right of the editor
+* Wait for the **_beep_** acoustic signal 
+* **_Say_** your command
+
+That's it!
+
+You can also choose the naming convention you prefer by toggling the snake-camel button on the upper right of the editor to have your identifiers formatted in `camelCase` or in `snake_case`
 
 ## Available Commands
+Vocoder provides a set of coding commands as well as a few editing commands that may be useful when programming. Its underlying machine-learning approach allows you to have few alternatives to input the same command. Here you have all available commands with examples of usage.
 
-1. This is a list
-2. aaa
-    1. [This is a link](https://code.visualstudio.com/api/working-with-extensions/bundling-extension)
+### Coding Commands
+Place the cursor where you want your next code block to be inserted. You can also select a piece of your code to be replaced by the next inputed command.
 
->This is a quote
+* Variable declaration: 
+  > **Declare** _variable_name_
+
+  > **Declare** _variable_name_ **equals** _expression_
+
+* Assignment
+  > **Assign** _expression_  **to**  _variable_name_
+
+  > **Assign** _variable_name_ **equals** _expression_
+
+  > **Assign** _variable_name_ **the value** _expression_
+
+* Comment
+  > **Add comment** _text_
+
+  > **Create comment** _text_
+
+* If statement
+  > **Create if statement**
+
+  > **If** _expression_ _comparison_ _expression_ **then** _command_
+
+  > **If** _expression_ **then** _command_
+
+  When creating a non-empty if statement it is possible to input the first instruction within the statement. Note that it cannot be another if based statement.
+
+* If-else statement
+  > **Create if else statement**
+
+  > **If** _expression_ _comparison_ _expression_ **then** _command_ **else** _command_
+
+  > **If** _expression_ **then** _command_ **else** _command_
+
+  When creating a non-empty if-else statement it is possible to input the first instruction within the statement. Note that it cannot be another if based statement.
+
+### Editing Commands
+* Undo
+  > **Undo**
+
+  Allows you to revert the last action, both when it is a voice command and when it is keyboard input.
+
+* Delete
+  > **Delete**
+  
+  Deletes the selected text in the editor
