@@ -6,12 +6,34 @@ from word2number import w2n
 
 
 def snake_to_camel(variablename):
-    return ''.join(word.capitalize() or '_' for word in variablename.split(' '))
+    return ''.join(
+        word.capitalize() or '_' for word in variablename.split(' '))
+
+
+
+def parse_declare_variable(response):
+    if response['intents'][0]['confidence'] > 0.75:
+        if 'VariableName:VariableName' in response['entities']:
+            if 'Expression:Expression' in response['entities']:
+                variables, operators = parse(resp['entities']['Expression:Expression'][0]['body'])
+                output_string = ""
+                counter = -1
+                for variable in variables:
+                    if counter >= 0:
+                        output_string += " " + operators[counter] + " "
+                    output_string += str(variable)
+                    counter += 1
+                print("dsd-section\nvocoder-code-block\n" + snake_to_camel(
+                    resp['entities']['VariableName:VariableName'][0]['body']) + ' = ' + output_string)
+            else:
+                print("dsd-section\nvocoder-code-block\n" + snake_to_camel(
+                    resp['entities']['VariableName:VariableName'][0]['body']) + ' = None\n')
 
 
 # takes a string and converts it to operations and variables
 def parse(string):
-    expression_operators = ['plus', 'minus', 'asterisk', 'multiplication', 'division', 'modulo', 'mod', 'multiply',
+    expression_operators = ['plus', 'minus', 'times', 'asterisk', 'multiplication', 'division', 'modulo', 'mod',
+                            'multiply',
                             'multiplied']
     op_out = []  # This holds the operators that are found in the string (left to right)
     num_out = []  # this holds the non-operators that are found in the string (left to right)
@@ -48,6 +70,8 @@ def parse(string):
                     op_out.append("*")
                 if word == "multiplication":
                     op_out.append("*")
+                if word == "times":
+                    op_out.append("*")
             elif str(w2n.word_to_num(word)).isnumeric():
                 # if it is a valid number.  Just accumulate this number in num_out.
                 digit = w2n.word_to_num(word)
@@ -78,20 +102,7 @@ if_else = 0
 while True:
     if resp['intents'][0]['name'] == 'DeclareVariable':
         if resp['intents'][0]['confidence'] > 0.75:
-            if 'VariableName:VariableName' in resp['entities']:
-                if 'Expression:Expression' in resp['entities']:
-                    variables, operators = parse(resp['entities']['Expression:Expression'][0]['body'])
-                    output_string = ""
-                    counter = -1
-                    for variable in variables:
-                        if counter >= 0:
-                            output_string += " " + operators[counter] + " "
-                        output_string += str(variable)
-                        counter += 1
-                    print("dsd-section\nvocoder-code-block\n" +snake_to_camel(
-                        resp['entities']['VariableName:VariableName'][0]['body']) + ' = ' + output_string)
-                else:
-                    print("dsd-section\nvocoder-code-block\n" +snake_to_camel(resp['entities']['VariableName:VariableName'][0]['body']) + ' = None\n')
+            parse_declare_variable(resp)
 
     if resp['intents'][0]['name'] == 'IfElseStatement':
         if_else = 1
