@@ -6,10 +6,23 @@ from word2number import w2n
 
 nested_if = False
 
-def snake_to_camel(variablename):
-    return ''.join(
-        word.capitalize() or '_' for word in variablename.split(' '))
 
+def decapitalize(s):
+    if not s:  # check that s is not empty string
+        return s
+    return s[0].lower() + s[1:]
+
+
+def snake_to_camel(variablename):
+    count = 0
+    combinedString = ""
+    for word in variablename.split(' '):
+        if count == 0:
+            combinedString += decapitalize(word)
+        else:
+            combinedString += word.capitalize()
+        count += 1
+    return combinedString
 
 
 def parse_declare_variable(response):
@@ -23,15 +36,19 @@ def parse_declare_variable(response):
                     output_string += " " + operators[counter] + " "
                 output_string += str(variable)
                 counter += 1
-            if nested_if == True :
-                print("\t" + snake_to_camel(response['entities']['VariableName:VariableName'][0]['body']) + ' = ' + output_string)
+            if nested_if == True:
+                print("\t" + snake_to_camel(
+                    response['entities']['VariableName:VariableName'][0]['body']) + ' = ' + output_string)
             else:
-                print(snake_to_camel(response['entities']['VariableName:VariableName'][0]['body']) + ' = ' + output_string)
+                print(snake_to_camel(
+                    response['entities']['VariableName:VariableName'][0]['body']) + ' = ' + output_string)
         else:
-            if nested_if == True :
+            if nested_if == True:
                 print("\t" + snake_to_camel(response['entities']['VariableName:VariableName'][0]['body']) + ' = None\n')
             else:
                 print(snake_to_camel(response['entities']['VariableName:VariableName'][0]['body']) + ' = None\n')
+
+
 def parse_if_else_statement(response):
     variables, operators = parse(response['entities']['Expression:Expression'][0]['body'])
     output_string = ""
@@ -49,23 +66,30 @@ def parse_if_else_statement(response):
             output_string2 += " " + operators2[counter] + " "
         output_string2 += str(variable2)
         counter += 1
-    if response['entities']['comparisons:comparisons'][0]['body'] == 'equal to' or response['entities']['comparisons:comparisons'][0]['body'] == 'is equal to':
+    if response['entities']['comparisons:comparisons'][0]['body'] == 'equal to' or \
+            response['entities']['comparisons:comparisons'][0]['body'] == 'is equal to':
         print("if " + output_string + "==" + output_string2 + " :")
 
-    if response['entities']['comparisons:comparisons'][0]['body'] == 'non equal to' or response['entities']['comparisons:comparisons'][0]['body'] == 'is non equal to':
+    if response['entities']['comparisons:comparisons'][0]['body'] == 'non equal to' or \
+            response['entities']['comparisons:comparisons'][0]['body'] == 'is non equal to':
         print("if " + output_string + "!=" + output_string2 + " :")
 
-    if response['entities']['comparisons:comparisons'][0]['body'] == 'greater than' or response['entities']['comparisons:comparisons'][0]['body'] == 'is greater than':
+    if response['entities']['comparisons:comparisons'][0]['body'] == 'greater than' or \
+            response['entities']['comparisons:comparisons'][0]['body'] == 'is greater than':
         print("if " + output_string + ">" + output_string2 + " :")
 
-    if response['entities']['comparisons:comparisons'][0]['body'] == 'less than' or response['entities']['comparisons:comparisons'][0]['body'] == 'is less than':
+    if response['entities']['comparisons:comparisons'][0]['body'] == 'less than' or \
+            response['entities']['comparisons:comparisons'][0]['body'] == 'is less than':
         print("if " + output_string + "<" + output_string2 + " :")
 
-    if response['entities']['comparisons:comparisons'][0]['body'] == 'greater or equal to' or response['entities']['comparisons:comparisons'][0]['body'] == 'is greater or equal to':
+    if response['entities']['comparisons:comparisons'][0]['body'] == 'greater or equal to' or \
+            response['entities']['comparisons:comparisons'][0]['body'] == 'is greater or equal to':
         print("if " + output_string + ">=" + output_string2 + " :")
 
-    if response['entities']['comparisons:comparisons'][0]['body'] == 'less or equal to' or response['entities']['comparisons:comparisons'][0]['body'] == 'is less or equal to':
+    if response['entities']['comparisons:comparisons'][0]['body'] == 'less or equal to' or \
+            response['entities']['comparisons:comparisons'][0]['body'] == 'is less or equal to':
         print("if " + output_string + "<=" + output_string2 + " :")
+
 
 def parse_if_statement(response):
     if 'command:command' in response['entities']:
@@ -85,39 +109,47 @@ def parse_if_statement(response):
                 output_string2 += " " + operators2[counter] + " "
             output_string2 += str(variable2)
             counter += 1
-        if response['entities']['comparisons:comparisons'][0]['body'] == 'equal to' or response['entities']['comparisons:comparisons'][0]['body'] == 'is equal to':
+        if response['entities']['comparisons:comparisons'][0]['body'] == 'equal to' or \
+                response['entities']['comparisons:comparisons'][0]['body'] == 'is equal to':
             print("if " + output_string + "==" + output_string2 + " :")
 
-        if response['entities']['comparisons:comparisons'][0]['body'] == 'non equal to' or response['entities']['comparisons:comparisons'][0]['body'] == 'is non equal to':
+        if response['entities']['comparisons:comparisons'][0]['body'] == 'non equal to' or \
+                response['entities']['comparisons:comparisons'][0]['body'] == 'is non equal to':
             print("if " + output_string + "!=" + output_string2 + " :")
 
-        if response['entities']['comparisons:comparisons'][0]['body'] == 'greater than' or response['entities']['comparisons:comparisons'][0]['body'] == 'is greater than':
+        if response['entities']['comparisons:comparisons'][0]['body'] == 'greater than' or \
+                response['entities']['comparisons:comparisons'][0]['body'] == 'is greater than':
             print("if " + output_string + ">" + output_string2 + " :")
 
-        if response['entities']['comparisons:comparisons'][0]['body'] == 'less than' or response['entities']['comparisons:comparisons'][0]['body'] == 'is less than':
+        if response['entities']['comparisons:comparisons'][0]['body'] == 'less than' or \
+                response['entities']['comparisons:comparisons'][0]['body'] == 'is less than':
             print("if " + output_string + "<" + output_string2 + " :")
 
-        if response['entities']['comparisons:comparisons'][0]['body'] == 'greater or equal to' or response['entities']['comparisons:comparisons'][0]['body'] == 'is greater or equal to':
+        if response['entities']['comparisons:comparisons'][0]['body'] == 'greater or equal to' or \
+                response['entities']['comparisons:comparisons'][0]['body'] == 'is greater or equal to':
             print("if " + output_string + ">=" + output_string2 + " :")
 
-        if response['entities']['comparisons:comparisons'][0]['body'] == 'less or equal to' or response['entities']['comparisons:comparisons'][0]['body'] == 'is less or equal to':
+        if response['entities']['comparisons:comparisons'][0]['body'] == 'less or equal to' or \
+                response['entities']['comparisons:comparisons'][0]['body'] == 'is less or equal to':
             print("if " + output_string + "<=" + output_string2 + " :\n\t ")
     else:
         print("if #Condition :\n\t#Command")
 
+
 def parse_add_comment(response):
-    if len(response['entities']['CommentText:CommentText'][0]['body']) > 120 :
+    if len(response['entities']['CommentText:CommentText'][0]['body']) > 120:
         words = response['entities']['CommentText:CommentText'][0]['body'].split(" ")
         out = "#"
         for i in range(0, int(len(words) / 2)):
             out += " " + words[i]
         print(out)
-        out="#"
+        out = "#"
         for i in range(int(len(words) / 2), len(words)):
             out += " " + words[i]
         print(out)
     else:
         print("# " + response['entities']['CommentText:CommentText'][0]['body'])
+
 
 # takes a string and converts it to operations and variables
 def parse(string):
@@ -128,17 +160,17 @@ def parse(string):
     num_out = []  # this holds the non-operators that are found in the string (left to right)
     buffer = []
     words = string.split(" ")
+    variableDetectionFlag = False
     for word in words:  # examine 1 word at a time
         try:
             if word in expression_operators:
                 VariableName = ""
-                flag = False
                 for index in buffer:
-                    flag = True
+                    variableDetectionFlag = True
                     VariableName = VariableName + index
-                if flag:
+                if variableDetectionFlag:
                     num_out.append(VariableName)
-                    flag = False
+                    variableDetectionFlag = False
                 buffer = []
                 # found an operator.
                 if word == "plus":
@@ -167,14 +199,17 @@ def parse(string):
                 num_out.append(digit)
         except ValueError:
             # else this is a variable name so convert it
-            buffer.append(snake_to_camel(word))
+            if variableDetectionFlag:
+                buffer.append(word.capitalize())
+            else:
+                buffer.append(decapitalize(word))
+                variableDetectionFlag = True
     if buffer:
         VariableName = ""
-        flag = False
         for index in buffer:
-            flag = True
+            variableDetectionFlag = True
             VariableName = VariableName + index
-        if flag:
+        if variableDetectionFlag:
             num_out.append(VariableName)
 
     return num_out, op_out
@@ -183,8 +218,8 @@ def parse(string):
 # print('Number of arguments:', len(sys.argv), 'arguments.')
 # print('Argument List:', str(sys.argv))
 client = Wit("3OXTFKTQZFCKO3PEYBN3VYS23BDRCVRC")
-with open('CommentHelloWorld.wav', 'rb') as f:
-    resp = client.speech(f, {'Content-Type': 'audio/wav'})  
+with open('declare expression.wav', 'rb') as f:
+    resp = client.speech(f, {'Content-Type': 'audio/wav'})
 print('Wit.ai response: ' + str(resp) + '\n')
 
 if resp['intents'][0]['name'] == 'DeclareVariable':
