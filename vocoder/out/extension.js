@@ -51,7 +51,7 @@ function activate(context) {
         console.log('Activating the extension...');
         yield detectConda;
         outputChannel.appendLine('Activating vocoder...');
-        outputChannel.show();
+        //outputChannel.show();
         //Environment check
         exec(`${pre}check${ext}`, { cwd: path.resolve(cwd, shell) }, (error, stdout, stderr) => {
             if (error) {
@@ -167,12 +167,7 @@ function elaborateCommand() {
             return;
         }
         console.log(`stdout: ${stdout}`);
-        const sections = stdout.split("dsd-section");
-        if (sections.length !== 2) {
-            console.log(`Bad format from backend processing: no dsd-section found or more than one found`);
-            vscode.window.showErrorMessage('Code processing failed');
-            return;
-        }
+        var sections = waitforOut(stdout);
         const vocoderSec = sections[1];
         if (vocoderSec.includes("vocoder-undo")) {
             vscode.commands.executeCommand("undo");
@@ -192,21 +187,40 @@ function elaborateCommand() {
     });
 }
 function writeOnEditor(s) {
-    const editor = vscode.window.activeTextEditor;
-    if (!editor) {
-        vscode.window.showWarningMessage('No editor available to write on');
+    return __awaiter(this, void 0, void 0, function* () {
+        s = s.substring(s.indexOf('\r\n') + 2, s.lastIndexOf('\r\n'));
+        const editor = vscode.window.activeTextEditor;
+        if (!editor) {
+            vscode.window.showWarningMessage('No editor available to write on');
+            return;
+        }
+        const currSel = editor.selection;
+        yield editor.edit((edit) => { edit.replace(currSel, s); });
+        // computation of new position of the cursor
+        // line from which the selection starts: does not depend on which direction the sel is made (start>end)
+        const currLine = currSel.start.line;
+        const writtenLines = s.split(/\r\n|\r|\n/).length;
+        // create a position where to put the cursor: at the end of what just written
+        const newEnd = new vscode.Position(currLine + writtenLines - 1, 0);
+        // set the selection to an empty one where defined
+        editor.selection = new vscode.Selection(newEnd, newEnd);
+    });
+}
+let retries = 0;
+function waitforOut(output) {
+    if (!output.includes('dsd-section') && retries < 15) {
+        ++retries;
+        setTimeout(waitforOut, 100, [output, retries]);
         return;
     }
-    const currSel = editor.selection;
-    editor.edit((edit) => { edit.replace(currSel, s); });
-    // computation of new position of the cursor
-    // line from which the selection starts: does not depend on which direction the sel is made (start>end)
-    const currLine = currSel.start.line;
-    const writtenLines = s.split(/\r\n|\r|\n/).length;
-    // create a position where to put the cursor: at the end of what just written
-    const newEnd = new vscode.Position(currLine + writtenLines - 1, 0);
-    // set the selection to an empty one where defined
-    editor.selection = new vscode.Selection(newEnd, newEnd);
+    else if (retries >= 15) {
+        retries = 0;
+        console.log(`Bad format from backend processing: no dsd-section found or more than one found`);
+        vscode.window.showErrorMessage('Code processing failed');
+        return;
+    }
+    return output.split("dsd-section");
+    //real action
 }
 // this method is called when your extension is deactivated
 function deactivate() { }
