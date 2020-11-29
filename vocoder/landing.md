@@ -1,24 +1,26 @@
 # Welcome to Vocoder!
 
-![Vocoder logo](style/logo.jpg)
+![Vocoder logo](style/logo.png)
 
 
 ## Why voice-based programming?
 Thousands of software developers suffer from repetitive strain injuries such as carpal tunnel syndrome and tendonitis. Support for programming by voice has the potential to increase the productivity of developers afflicted by these problems. In addition, it can enable individuals with upper-body motor impairments, e.g, due to spinal cord injuries or strokes, to write code.
 
+Vocoder is a Visual Studio Code extension that intends to help injured programmers by allowing them to code with their voice.
+
 ## Prerequisites
-For Vocoder to work properly you will need to have `npm` installed on your machine. If you don't, you can get it on [npm's official website](https://www.npmjs.com/get-npm)  for free.
+For Vocoder to work properly you will need to have `npm` installed on your machine. If you don't, you can get it on [npm's official website](https://www.npmjs.com/get-npm) for free.
 ### Performance
-We also suggest you to have `conda` installed on your machine. This will allow Vocoder to work on a virtual environment with noticeably better time performances, with respect to any virtual environment created by the default tools availble on your machine. You can get `anaconda`, or its lighter version `miniconda`, for free on [conda's official website](https://docs.conda.io/projects/conda/en/latest/user-guide/install/download.html).
+We also suggest you to have `conda` installed on your machine. This will allow Vocoder to work on a virtual environment with noticeably better time performances, with respect to any virtual environment created by the default tools availble on your machine (i.e Python3's `venv`). You can get `anaconda`, or its lighter version `miniconda`, for free on [conda's official website](https://docs.conda.io/projects/conda/en/latest/user-guide/install/download.html).
 
 ## Available languages
-Vocoder is currently able to support voice-based programming for Python code. Make sure to be working on a `.py` file in order to use the extension.
+Vocoder is currently able to support voice-based programming for Python code. Make sure to be working on a `.py` file in order to activate the extension.
 
 ## Usage
 Vocoder has a simple and intuitive interface. To input any voice command you just need to:
 
 * Place your **_cursor_** where you want the action to be taken
-* Press the **_michrophone button_** on the upper right of the editor
+* Press the **_michrophone icon_** in the upper right corner of the editor
 * Wait for the **_beep_** acoustic signal 
 * **_Say_** your command
 
