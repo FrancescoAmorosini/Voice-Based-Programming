@@ -22,12 +22,11 @@ def parse_declare_variable(response):
                     output_string += " " + operators[counter] + " "
                 output_string += str(variable)
                 counter += 1
-            print("dsd-section\nvocoder-code-block\n" + snake_to_camel(
-                resp['entities']['VariableName:VariableName'][0]['body']) + ' = ' + output_string)
+            print(snake_to_camel(resp['entities']['VariableName:VariableName'][0]['body']) + ' = ' + output_string)
         else:
             print("dsd-section\nvocoder-code-block\n" + snake_to_camel(
                 resp['entities']['VariableName:VariableName'][0]['body']) + ' = None\n')
-def parse_if_else_statement(response, message):
+def parse_if_else_statement(response):
     exp = ["", ""]
     for x in range(2):
         expresion = resp['entities']['Expression:Expression'][x]['body']
@@ -47,24 +46,24 @@ def parse_if_else_statement(response, message):
         expresion = expresion.replace("divided by", "/")
         exp[x] += expresion
     if resp['entities']['comparisons:comparisons'][0]['body'] == 'equal to' or resp['entities']['comparisons:comparisons'][0]['body'] == 'is equal to':
-        message += "if " + exp[0] + "==" + exp[1] + " :\n\t"
+        print("if " + exp[0] + "==" + exp[1] + " :\n\t")
 
     if resp['entities']['comparisons:comparisons'][0]['body'] == 'non equal to' or resp['entities']['comparisons:comparisons'][0]['body'] == 'is non equal to':
-        message += "if " + exp[0] + "!=" + exp[1] + " :\n\t"
+        print("if " + exp[0] + "!=" + exp[1] + " :\n\t")
 
     if resp['entities']['comparisons:comparisons'][0]['body'] == 'greater than' or resp['entities']['comparisons:comparisons'][0]['body'] == 'is greater than':
-        message += "if " + exp[0] + ">" + exp[1] + " :\n\t"
+        print("if " + exp[0] + ">" + exp[1] + " :\n\t")
 
     if resp['entities']['comparisons:comparisons'][0]['body'] == 'less than' or resp['entities']['comparisons:comparisons'][0]['body'] == 'is less than':
-        message += "if " + exp[0] + "<" + exp[1] + " :\n\t"
+        print("if " + exp[0] + "<" + exp[1] + " :\n\t")
 
     if resp['entities']['comparisons:comparisons'][0]['body'] == 'greater or equal to' or resp['entities']['comparisons:comparisons'][0]['body'] == 'is greater or equal to':
-        message += "if " + exp[0] + ">=" + exp[1] + " :\n\t"
+        print("if " + exp[0] + ">=" + exp[1] + " :\n\t")
 
     if resp['entities']['comparisons:comparisons'][0]['body'] == 'less or equal to' or resp['entities']['comparisons:comparisons'][0]['body'] == 'is less or equal to':
-        message += "if " + exp[0] + "<=" + exp[1] + " :\n\t"
+        print("if " + exp[0] + "<=" + exp[1] + " :\n\t")
 
-def parse_if_statement(response, message):
+def parse_if_statement(response):
     if 'command:command' in resp['entities']:
         exp = ["", ""]
         for x in range(2):
@@ -85,26 +84,26 @@ def parse_if_statement(response, message):
             expresion = expresion.replace("divided by", "/")
             exp[x] += expresion
         if resp['entities']['comparisons:comparisons'][0]['body'] == 'equal to' or resp['entities']['comparisons:comparisons'][0]['body'] == 'is equal to':
-            message += "if " + exp[0] + " == " + exp[1] + " :\n\t"
+            print("if " + exp[0] + " == " + exp[1] + " :\n\t")
 
         if resp['entities']['comparisons:comparisons'][0]['body'] == 'non equal to' or resp['entities']['comparisons:comparisons'][0]['body'] == 'is non equal to':
-            message += "if " + exp[0] + " != " + exp[1] + " :\n\t "
+            print("if " + exp[0] + " != " + exp[1] + " :\n\t ")
 
         if resp['entities']['comparisons:comparisons'][0]['body'] == 'greater than' or resp['entities']['comparisons:comparisons'][0]['body'] == 'is greater than':
-            message += "if " + exp[0] + " > " + exp[1] + " :\n\t "
+            print("if " + exp[0] + " > " + exp[1] + " :\n\t ")
 
         if resp['entities']['comparisons:comparisons'][0]['body'] == 'less than' or resp['entities']['comparisons:comparisons'][0]['body'] == 'is less than':
-            message += "if " + exp[0] + " < " + exp[1] + " :\n\t "
+            print("if " + exp[0] + " < " + exp[1] + " :\n\t ")
 
         if resp['entities']['comparisons:comparisons'][0]['body'] == 'greater or equal to' or resp['entities']['comparisons:comparisons'][0]['body'] == 'is greater or equal to':
-            message += "if " + exp[0] + " >= " + exp[1] + " :\n\t "
+            print("if " + exp[0] + " >= " + exp[1] + " :\n\t ")
 
         if resp['entities']['comparisons:comparisons'][0]['body'] == 'less or equal to' or resp['entities']['comparisons:comparisons'][0]['body'] == 'is less or equal to':
-            message += "if " + exp[0] + " <= " + exp[1] + " :\n\t "
+            print("if " + exp[0] + " <= " + exp[1] + " :\n\t ")
     else:
-        message += "if (#) :\n\t#"
+        print("if (#) :\n\t#")
 
-def parse_add_comment(response, message):
+def parse_add_comment(response):
         expresion = resp['entities']['Expression:Expression'][0]['body']
         expresion = expresion.replace("one", "1")
         expresion = expresion.replace("two", "2")
@@ -120,7 +119,7 @@ def parse_add_comment(response, message):
         expresion = expresion.replace("minus", "-")
         expresion = expresion.replace("times", "*")
         expresion = expresion.replace("divided by", "/")
-        message += '# ' + expresion
+        print("#"  + expresion)
 
 # takes a string and converts it to operations and variables
 def parse(string):
@@ -186,7 +185,7 @@ def parse(string):
 # print('Number of arguments:', len(sys.argv), 'arguments.')
 # print('Argument List:', str(sys.argv))
 client = Wit("3OXTFKTQZFCKO3PEYBN3VYS23BDRCVRC")
-with open('Recording.wav', 'rb') as f:
+with open('CreateAnIfStatement.wav', 'rb') as f:
     resp = client.speech(f, {'Content-Type': 'audio/wav'})
 print('Wit.ai response: ' + str(resp) + '\n')
 message = ""
@@ -194,42 +193,45 @@ if_else = 0
 
 if resp['intents'][0]['name'] == 'DeclareVariable':
     if resp['intents'][0]['confidence'] > 0.75:
+        print("dsd-section\nvocoder-code-block\n")
         parse_declare_variable(resp)
 
 if resp['intents'][0]['name'] == 'IfElseStatement':
     if resp['intents'][0]['confidence'] > 0.75:
-        parse_if_else_statement(resp, message)
-        resp = client.message(resp['entities']['command:command'][0]['body'])
-        if resp['intents'][0]['name'] == 'DeclareVariable':
-            if resp['intents'][0]['confidence'] > 0.75:
-                parse_declare_variable(resp)
-        if resp['intents'][0]['name'] == 'AddingComment':
-            if resp['intents'][0]['confidence'] > 0.75:
-                parse_add_comment(resp, message)
-        message += "\nelse: \n\t"
-        resp = client.message(resp['entities']['command:command'][1]['body'])
-        if resp['intents'][0]['name'] == 'DeclareVariable':
-            if resp['intents'][0]['confidence'] > 0.75:
-                parse_declare_variable(resp)
-        if resp['intents'][0]['name'] == 'AddingComment':
-            if resp['intents'][0]['confidence'] > 0.75:
-                parse_add_comment(resp, message)
+        print("dsd-section\nvocoder-code-block\n")
+        parse_if_else_statement(resp)
+        resp2 = client.message(resp['entities']['command:command'][0]['body'])
+        if resp2['intents'][0]['name'] == 'DeclareVariable':
+            if resp2['intents'][0]['confidence'] > 0.75:
+                parse_declare_variable(resp2)
+        if resp2['intents'][0]['name'] == 'AddingComment':
+            if resp2['intents'][0]['confidence'] > 0.75:
+                parse_add_comment(resp2)
+        print("\nelse: \n\t")
+        resp3 = client.message(resp['entities']['command:command'][1]['body'])
+        if resp3['intents'][0]['name'] == 'DeclareVariable':
+            if resp3['intents'][0]['confidence'] > 0.75:
+                parse_declare_variable(resp3)
+        if resp3['intents'][0]['name'] == 'AddingComment':
+            if resp3['intents'][0]['confidence'] > 0.75:
+                parse_add_comment(resp3)
         # missing nested ifs or nested if+ifElse
 
 if resp['intents'][0]['name'] == 'IfStatements':
     if resp['intents'][0]['confidence'] > 0.75:
-        parse_if_statement(resp, message)
-        resp = client.message(resp['entities']['command:command'][0]['body'])
-        if resp['intents'][0]['name'] == 'DeclareVariable':
-            if resp['intents'][0]['confidence'] > 0.75:
-                parse_declare_variable(resp)
-        if resp['intents'][0]['name'] == 'AddingComment':
-            if resp['intents'][0]['confidence'] > 0.75:
-                parse_add_comment(resp, message)
-        # missing nested ifs or nested if+ifElse
+        print("dsd-section\nvocoder-code-block\n")
+        parse_if_statement(resp)
+        if 'command:command' in resp['entities']:
+            resp2 = client.message(resp['entities']['command:command'][0]['body'])
+            if resp2['intents'][0]['name'] == 'DeclareVariable':
+                if resp2['intents'][0]['confidence'] > 0.75:
+                    parse_declare_variable(resp2)
+            if resp2['intents'][0]['name'] == 'AddingComment':
+                if resp2['intents'][0]['confidence'] > 0.75:
+                    parse_add_comment(resp2)
+            # missing nested ifs or nested if+ifElse
 
 if resp['intents'][0]['name'] == 'AddingComment':
     if resp['intents'][0]['confidence'] > 0.75:
-        parse_add_comment(resp, message)
-
-print(message)
+        print("dsd-section\nvocoder-code-block\n")
+        parse_add_comment(resp)
