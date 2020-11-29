@@ -70,9 +70,9 @@ def parse(string):
 # print('Number of arguments:', len(sys.argv), 'arguments.')
 # print('Argument List:', str(sys.argv))
 client = Wit("3OXTFKTQZFCKO3PEYBN3VYS23BDRCVRC")
-with open('declare expression.wav', 'rb') as f:
+with open('Recording.wav', 'rb') as f:
     resp = client.speech(f, {'Content-Type': 'audio/wav'})
-# print('Wit.ai response: ' + str(resp) + '\n')
+print('Wit.ai response: ' + str(resp) + '\n')
 message = ""
 if_else = 0
 while True:
@@ -88,10 +88,12 @@ while True:
                             output_string += " " + operators[counter] + " "
                         output_string += str(variable)
                         counter += 1
-                    print("dsd-section\nvocoder-code-block\n" +snake_to_camel(
-                        resp['entities']['VariableName:VariableName'][0]['body']) + ' = ' + output_string)
+                    message += snake_to_camel(resp['entities']['VariableName:VariableName'][0]['body']) + ' = ' + output_string
+                    #print("dsd-section\nvocoder-code-block\n" +snake_to_camel(
+                    #    resp['entities']['VariableName:VariableName'][0]['body']) + ' = ' + output_string)
                 else:
-                    print("dsd-section\nvocoder-code-block\n" +snake_to_camel(resp['entities']['VariableName:VariableName'][0]['body']) + ' = None\n')
+                    message += snake_to_camel(resp['entities']['VariableName:VariableName'][0]['body']) + ' = None\n'
+                    #print("dsd-section\nvocoder-code-block\n" +snake_to_camel(resp['entities']['VariableName:VariableName'][0]['body']) + ' = None\n')
 
     if resp['intents'][0]['name'] == 'IfElseStatement':
         if_else = 1
@@ -225,13 +227,14 @@ while True:
             expresion = expresion.replace("times", "*")
             expresion = expresion.replace("divided by", "/")
             message += '# ' + expresion
-    if 'command:command' not in resp['entities'] and (if_else == 2 or if_else == 0):
-        print(message)
+    if 'command:command' not in resp['entities'] and if_else == 0:
+        print("dsd-section\nvocoder-code-block\n" + message)
         break
 
     if if_else == 2:
         message += "\nelse: \n\t"
         resp = client.message(command_else)
+        if_else = 0
     if if_else == 1:
         resp = client.message(command_if)
         if_else = 2
