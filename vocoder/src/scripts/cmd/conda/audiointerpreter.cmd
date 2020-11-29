@@ -1,2 +1,2 @@
 conda activate dsd-env && ^
-python ../../audioInterpreter.py
+python ..\..\..\..\..\Code\main.py
