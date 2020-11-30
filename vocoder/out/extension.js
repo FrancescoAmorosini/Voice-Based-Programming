@@ -68,10 +68,10 @@ function activate(context) {
                 console.log('environment is ready!');
                 outputChannel.appendLine('--- dsd-env has been detected! ---');
                 vscode.window.showInformationMessage('Everything is ready! Let\'s code!');
-            }
-            else {
                 //Display landing page
                 vscode.commands.executeCommand('markdown.showPreview', landingURI);
+            }
+            else {
                 //Environment setup
                 vscode.window.withProgress({
                     location: vscode.ProgressLocation.Notification,
@@ -205,7 +205,6 @@ function waitforOut(output) {
         return;
     }
     return output.split("dsd-section");
-    //real action
 }
 // this method is called when your extension is deactivated
 function deactivate() { }

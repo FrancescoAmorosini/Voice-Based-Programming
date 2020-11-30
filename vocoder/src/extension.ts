@@ -66,10 +66,10 @@ export async function activate(context: vscode.ExtensionContext) {
             outputChannel.appendLine('--- dsd-env has been detected! ---');
             vscode.window.showInformationMessage('Everything is ready! Let\'s code!'); 
             
-        }
-        else { 
             //Display landing page
             vscode.commands.executeCommand('markdown.showPreview', landingURI);
+        }
+        else { 
             //Environment setup
             vscode.window.withProgress({
                 location: vscode.ProgressLocation.Notification,
