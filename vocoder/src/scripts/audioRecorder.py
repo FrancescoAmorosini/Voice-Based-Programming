@@ -1,11 +1,11 @@
 import pyaudio
 import wave
+from pynput.keyboard import Key, Controller, Listener
 
 
 def winBeep(frequency, duration):
     import winsound
     winsound.Beep(frequency, duration)
-
 
 CHUNK = 1024
 FORMAT = pyaudio.paInt16
@@ -22,25 +22,38 @@ stream = p.open(format=FORMAT,
                 input=True,
                 frames_per_buffer=CHUNK)
 
-winBeep(700, 800)
-#print("* start recording")
-
 frames = []
 
-for i in range(0, int(RATE / CHUNK * RECORD_SECONDS)):
+winBeep(700, 800)
+
+def on_press(key):
     data = stream.read(CHUNK)
     frames.append(data)
 
-winBeep(800, 800)
-#print("* done recording")
+def on_release(key):
+    if key == Key.ctrl_l:
+        winBeep(800, 800)
+        stream.stop_stream()
+        stream.close()
+        p.terminate()
 
-stream.stop_stream()
-stream.close()
-p.terminate()
+        wf = wave.open(WAVE_OUTPUT_FILENAME, 'wb')
+        wf.setnchannels(CHANNELS)
+        wf.setsampwidth(p.get_sample_size(FORMAT))
+        wf.setframerate(RATE)
+        wf.writeframes(b''.join(frames))
+        wf.close()
+        return False
 
-wf = wave.open(WAVE_OUTPUT_FILENAME, 'wb')
-wf.setnchannels(CHANNELS)
-wf.setsampwidth(p.get_sample_size(FORMAT))
-wf.setframerate(RATE)
-wf.writeframes(b''.join(frames))
-wf.close()
+# Collect events until released
+with Listener(
+        on_press=on_press,
+        on_release=on_release) as listener:
+    listener.join()
+
+keyboard = Controller ()# You should only need to define this once
+while(True):# This will repeat the indented code below forever   
+    break
+
+    keyboard.press(Key.enter)
+    keyboard.release(Key.enter)

@@ -15,6 +15,13 @@
 	],
 	"main": "./out/extension.js",
 	"contributes": {
+		"keybindings":[
+			{
+				"command": "vocoder.captureAudio",
+				"key": "ctrl+alt+z",
+				"when": "vocoder:isKeybindingPressed"
+			}
+		],
 		"commands": [
 			{
 				"command": "vocoder.captureAudio",

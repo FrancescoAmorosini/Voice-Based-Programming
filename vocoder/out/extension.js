@@ -106,6 +106,7 @@ function activate(context) {
         });
         //Disposable functions
         let disposable = vscode.commands.registerCommand('vocoder.captureAudio', () => {
+            vscode.commands.executeCommand('setContext', 'vocoder:isKeybindingPressed', false);
             vscode.window.withProgress({
                 location: vscode.ProgressLocation.Notification,
                 title: "Please, speak your command after the acoustic signal",
@@ -131,6 +132,7 @@ function activate(context) {
                         resolve(`stdout: ${stdout}`);
                         //writeOnEditor(stdout); //to be removed
                         elaborateCommand();
+                        vscode.commands.executeCommand('setContext', 'vocoder:isKeybindingPressed', true);
                     });
                 });
             });
@@ -151,6 +153,7 @@ function activate(context) {
         context.subscriptions.push(disposable);
         context.subscriptions.push(toSnake);
         context.subscriptions.push(toCamel);
+        vscode.commands.executeCommand('setContext', 'vocoder:isKeybindingPressed', true);
     });
 }
 exports.activate = activate;
@@ -188,7 +191,6 @@ function elaborateCommand() {
 }
 function writeOnEditor(s) {
     return __awaiter(this, void 0, void 0, function* () {
-        debugger;
         s = s.substring(s.indexOf('\r\n') + 2, s.lastIndexOf('\r\n'));
         const editor = vscode.window.activeTextEditor;
         if (!editor) {

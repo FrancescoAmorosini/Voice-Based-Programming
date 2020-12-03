@@ -106,6 +106,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
     //Disposable functions
 	let disposable = vscode.commands.registerCommand('vocoder.captureAudio', () => {
+        vscode.commands.executeCommand('setContext', 'vocoder:isKeybindingPressed', false);
         vscode.window.withProgress({
             location: vscode.ProgressLocation.Notification,
             title: "Please, speak your command after the acoustic signal",
@@ -131,6 +132,7 @@ export async function activate(context: vscode.ExtensionContext) {
                     resolve(`stdout: ${stdout}`);
                     //writeOnEditor(stdout); //to be removed
                     elaborateCommand();
+                    vscode.commands.executeCommand('setContext', 'vocoder:isKeybindingPressed', true);
                 });
             });
         });
@@ -155,6 +157,7 @@ export async function activate(context: vscode.ExtensionContext) {
 	context.subscriptions.push(disposable);
     context.subscriptions.push(toSnake);
     context.subscriptions.push(toCamel);
+    vscode.commands.executeCommand('setContext', 'vocoder:isKeybindingPressed', true);
 }
 
 function elaborateCommand(){
