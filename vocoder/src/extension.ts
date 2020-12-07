@@ -136,6 +136,37 @@ export async function activate(context: vscode.ExtensionContext) {
                 });
             });
         });
+    });
+    
+    let recordConst = vscode.commands.registerCommand('vocoder.recordConst', () => {
+        vscode.window.withProgress({
+            location: vscode.ProgressLocation.Notification,
+            title: "Please, speak your command after the acoustic signal",
+            cancellable: false
+        }, (progress, token) => {
+            return new Promise((resolve:any) => {
+                exec(`${pre}audiorecorderConst${ext}`, {cwd: path.resolve(cwd, shell)}, (error: any, stdout: any, stderr: any) => {
+                    if (error) {
+                        resolve(`error: ${error.message}`);
+                        console.log(`error: ${error.message}`);
+                        outputChannel.append(error.message);
+                        vscode.window.showErrorMessage('Recording failed');
+                        return;
+                    }
+                    if (stderr) {
+                        resolve(`stderr: ${stderr}`);
+                        console.log(`stderr: ${stderr}`);
+                        outputChannel.append(stderr.message);
+                        vscode.window.showErrorMessage('Recording failed');
+                        return;
+                    }
+                    console.log(`stdout: ${stdout}`);
+                    resolve(`stdout: ${stdout}`);
+                    //writeOnEditor(stdout); //to be removed
+                    elaborateCommand();
+                });
+            });
+        });
 	});
     
     // when first loading the extension give a default setting

@@ -24,7 +24,7 @@
 		],
 		"commands": [
 			{
-				"command": "vocoder.captureAudio",
+				"command": "vocoder.recordConst",
 				"title": "Vocoder: Voice-Based Input",
 				"icon": {
 					"dark": "./style/white_mic.ico",
@@ -51,7 +51,7 @@
 		"menus": {
 			"editor/title": [
 				{
-					"command": "vocoder.captureAudio",
+					"command": "vocoder.recordConst",
 					"group": "navigation",
 					"when": "resourceLangId == python"
 				},
