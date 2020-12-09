@@ -151,6 +151,64 @@ def parse_add_comment(response):
         print("# " + response['entities']['CommentText:CommentText'][0]['body'])
 
 
+def parse_for_loop(response):
+    return
+
+
+def parse_while_loop(response):
+    if 'comparisons:comparisons' in response['entities']:
+        variables, operators = parse(response['entities']['Expression:Expression'][0]['body'])
+        output_string = ""
+        counter = -1
+        for variable in variables:
+            if counter >= 0:
+                output_string += " " + operators[counter] + " "
+            output_string += str(variable)
+            counter += 1
+        variables2, operators2 = parse(response['entities']['Expression:Expression'][1]['body'])
+        output_string2 = ""
+        counter = -1
+        for variable2 in variables2:
+            if counter >= 0:
+                output_string2 += " " + operators2[counter] + " "
+            output_string2 += str(variable2)
+            counter += 1
+        if response['entities']['comparisons:comparisons'][0]['body'] == 'equal to' or \
+                response['entities']['comparisons:comparisons'][0]['body'] == 'is equal to':
+            print("while " + output_string + "==" + output_string2 + " :\n\t#command")
+
+        if response['entities']['comparisons:comparisons'][0]['body'] == 'non equal to' or \
+                response['entities']['comparisons:comparisons'][0]['body'] == 'is non equal to':
+            print("while " + output_string + "!=" + output_string2 + " :\n\t#command")
+
+        if response['entities']['comparisons:comparisons'][0]['body'] == 'greater than' or \
+                response['entities']['comparisons:comparisons'][0]['body'] == 'is greater than':
+            print("while " + output_string + ">" + output_string2 + " :\n\tcommand")
+
+        if response['entities']['comparisons:comparisons'][0]['body'] == 'less than' or \
+                response['entities']['comparisons:comparisons'][0]['body'] == 'is less than':
+            print("while " + output_string + "<" + output_string2 + " :\n\t#command")
+
+        if response['entities']['comparisons:comparisons'][0]['body'] == 'greater or equal to' or \
+                response['entities']['comparisons:comparisons'][0]['body'] == 'is greater or equal to':
+            print("while " + output_string + ">=" + output_string2 + " :\n\t#command")
+
+        if response['entities']['comparisons:comparisons'][0]['body'] == 'less or equal to' or \
+                response['entities']['comparisons:comparisons'][0]['body'] == 'is less or equal to':
+            print("while " + output_string + "<=" + output_string2 + " :\n\t#command ")
+    elif 'Expression:Expression' in  response['entities']:
+        variables, operators = parse(response['entities']['Expression:Expression'][0]['body'])
+        output_string = ""
+        counter = -1
+        for variable in variables:
+            if counter >= 0:
+                output_string += " " + operators[counter] + " "
+            output_string += str(variable)
+            counter += 1
+        print("while" + output_string + ":\n\t#command")
+    else:
+        print("while #exp com exp :\n\t#command")
+
 # takes a string and converts it to operations and variables
 def parse(string):
     expression_operators = ['plus', 'minus', 'times', 'asterisk', 'multiplication', 'division', 'modulo', 'mod',
@@ -218,7 +276,7 @@ def parse(string):
 # print('Number of arguments:', len(sys.argv), 'arguments.')
 # print('Argument List:', str(sys.argv))
 client = Wit("3OXTFKTQZFCKO3PEYBN3VYS23BDRCVRC")
-with open('declare expression.wav', 'rb') as f:
+with open('WhileLoop.wav', 'rb') as f:
     resp = client.speech(f, {'Content-Type': 'audio/wav'})
 print('Wit.ai response: ' + str(resp) + '\n')
 
@@ -268,3 +326,13 @@ if resp['intents'][0]['name'] == 'AddingComment':
     if resp['intents'][0]['confidence'] > 0.75:
         print("dsd-section\nvocoder-code-block\n")
         parse_add_comment(resp)
+
+if resp['intents'][0]['name'] == 'ForLoop' :
+    if resp['intents'][0]['confidence'] > 0.75:
+        print("dsd-section\nvocoder-code-block\n")
+        parse_for_loop(resp)
+
+if resp['intents'][0]['name'] == 'WhileLoop' :
+    if resp['intents'][0]['confidence'] > 0.75:
+        print("dsd-section\nvocoder-code-block")
+        parse_while_loop(resp)
