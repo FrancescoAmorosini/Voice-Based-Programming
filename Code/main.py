@@ -5,6 +5,7 @@ from wit import Wit
 from word2number import w2n
 
 nested_if = False
+nested_while = False
 
 
 def decapitalize(s):
@@ -424,8 +425,6 @@ def parse(string):
     return num_out, op_out
 
 
-print('Number of arguments:', len(sys.argv), 'arguments.')
-print('Argument List:', str(sys.argv))
 naming_style = "snake"
 if len(sys.argv) > 0 and sys.argv[0] == "-snake":
     naming_style = "snake"
@@ -433,11 +432,10 @@ elif len(sys.argv) > 0 and sys.argv[0] == "-camel":
     naming_style = "camel"
 
 client = Wit("3OXTFKTQZFCKO3PEYBN3VYS23BDRCVRC")
-with open('WhileLoop.wav', 'rb') as f:
+with open('whiletest.wav', 'rb') as f:
     resp = client.speech(f, {'Content-Type': 'audio/wav'})
 
-print('Wit.ai response: ' + str(resp) + '\n')
-front_end_block = "dsd-section\nvocoder-code-block\n"
+front_end_block = "dsd-section\nvocoder-code-block"
 confidence_threshold = 0.75
 
 if resp['intents'][0]['name'] == 'DeclareVariable':
@@ -467,7 +465,7 @@ if resp['intents'][0]['name'] == 'IfElseStatement':
                 parse_add_comment(resp3)
         # missing nested ifs or nested if+ifElse
 
-if resp['intents'][0]['name'] == 'IfStatements':
+elif resp['intents'][0]['name'] == 'IfStatements':
     if resp['intents'][0]['confidence'] > confidence_threshold:
         print(front_end_block)
         parse_if_statement(resp)
@@ -482,21 +480,23 @@ if resp['intents'][0]['name'] == 'IfStatements':
                     parse_add_comment(command_if)
             # missing nested ifs or nested if+ifElse
 
-if resp['intents'][0]['name'] == 'AddingComment':
+elif resp['intents'][0]['name'] == 'AddingComment':
     if resp['intents'][0]['confidence'] > confidence_threshold:
         print(front_end_block)
         parse_add_comment(resp)
 
-if resp['intents'][0]['name'] == 'ForLoop':
+elif resp['intents'][0]['name'] == 'ForLoop':
     if resp['intents'][0]['confidence'] > confidence_threshold:
         print(front_end_block)
         parse_for_loop(resp)
 
-if resp['intents'][0]['name'] == 'WhileLoop':
+elif resp['intents'][0]['name'] == 'WhileLoop':
     if resp['intents'][0]['confidence'] > confidence_threshold:
         print(front_end_block)
         parse_while_loop(resp)
 
-if resp['intents'][0]['name'] == 'UndoCommand':
+elif resp['intents'][0]['name'] == 'UndoCommand':
     if resp['intents'][0]['confidence'] > confidence_threshold:
         print("dsd-section\nundo\n")
+else:
+    print("dsd-section\nintent not found\n")
