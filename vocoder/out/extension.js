@@ -19,12 +19,9 @@ const cwd = path.resolve(__dirname, '../src');
 const landingURI = vscode.Uri.file(path.resolve(__dirname, '../landing.md'));
 const dsdVenv = path.resolve(cwd, '../../dsd-env');
 //Detect OS
-<<<<<<< HEAD
-let shell = os_1.platform() === 'win32' ? 'scripts/cmd' : 'scripts/bash';
-let ext = os_1.platform() === 'win32' ? '.cmd' : '.sh';
-let pre = os_1.platform() === 'win32' ? '' : './';
-const outputChannel = vscode.window.createOutputChannel("vocoder");
-=======
+let shell = '';
+let ext = '';
+let pre = '';
 if (os_1.platform() === 'win32') {
     shell = 'scripts/cmd';
     ext = '.cmd';
@@ -35,7 +32,7 @@ else {
     pre = './';
     prepareMacScript();
 }
->>>>>>> b1042f8248be66777d9fa98cd426dfa2f9ddbf63
+const outputChannel = vscode.window.createOutputChannel("vocoder");
 //Detect anaconda
 let detectConda = new Promise(function (resolve, reject) {
     exec("conda --version", (error, stdout, stderr) => {
@@ -127,71 +124,12 @@ function activate(context) {
         });
         //Disposable functions
         let disposable = vscode.commands.registerCommand('vocoder.captureAudio', () => {
-<<<<<<< HEAD
-            recordAudio('audiorecorder');
+            var scriptName = `${pre}'audiorecorder'${ext}`;
+            recordAudio(scriptName);
         });
         let recordConst = vscode.commands.registerCommand('vocoder.recordConst', () => {
-            recordAudio('audiorecorderConst');
-=======
-            vscode.commands.executeCommand('setContext', 'vocoder:isKeybindingPressed', false);
-            vscode.window.withProgress({
-                location: vscode.ProgressLocation.Notification,
-                title: "Please, speak your command after the acoustic signal",
-                cancellable: false
-            }, (progress, token) => {
-                return new Promise((resolve) => {
-                    exec(`${pre}audiorecorder${ext}`, { cwd: path.resolve(cwd, shell) }, (error, stdout, stderr) => {
-                        if (error) {
-                            resolve(`error: ${error.message}`);
-                            console.log(`error: ${error.message}`);
-                            outputChannel.append(error.message);
-                            vscode.window.showErrorMessage('Recording failed');
-                            return;
-                        }
-                        if (stderr) {
-                            resolve(`stderr: ${stderr}`);
-                            console.log(`stderr: ${stderr}`);
-                            outputChannel.append(stderr.message);
-                            vscode.window.showErrorMessage('Recording failed');
-                            return;
-                        }
-                        console.log(`stdout: ${stdout}`);
-                        resolve(`stdout: ${stdout}`);
-                        elaborateCommand();
-                        vscode.commands.executeCommand('setContext', 'vocoder:isKeybindingPressed', true);
-                    });
-                });
-            });
-        });
-        let recordConst = vscode.commands.registerCommand('vocoder.recordConst', () => {
-            vscode.window.withProgress({
-                location: vscode.ProgressLocation.Notification,
-                title: "Please, speak your command after the acoustic signal",
-                cancellable: false
-            }, (progress, token) => {
-                return new Promise((resolve) => {
-                    exec(`${pre}audiorecorderConst${ext}`, { cwd: path.resolve(cwd, shell) }, (error, stdout, stderr) => {
-                        if (error) {
-                            resolve(`error: ${error.message}`);
-                            console.log(`error: ${error.message}`);
-                            outputChannel.append(error.message);
-                            vscode.window.showErrorMessage('Recording failed');
-                            return;
-                        }
-                        if (stderr) {
-                            resolve(`stderr: ${stderr}`);
-                            console.log(`stderr: ${stderr}`);
-                            outputChannel.append(stderr.message);
-                            vscode.window.showErrorMessage('Recording failed');
-                            return;
-                        }
-                        console.log(`stdout: ${stdout}`);
-                        resolve(`stdout: ${stdout}`);
-                        elaborateCommand();
-                    });
-                });
-            });
->>>>>>> b1042f8248be66777d9fa98cd426dfa2f9ddbf63
+            var scriptName = `${pre}'audiorecorderConst'${ext}`;
+            recordAudio(scriptName);
         });
         // when first loading the extension give a default setting
         //( or reload setting from a file)
@@ -222,7 +160,7 @@ function recordAudio(scriptName) {
         cancellable: false
     }, (progress, token) => {
         return new Promise((resolve) => {
-            exec(`${pre}${scriptName}${ext}`, { cwd: path.resolve(cwd, shell) }, (error, stdout, stderr) => {
+            exec(`${scriptName}`, { cwd: path.resolve(cwd, shell) }, (error, stdout, stderr) => {
                 if (error) {
                     resolve(`error: ${error.message}`);
                     console.log(`error: ${error.message}`);
@@ -239,7 +177,6 @@ function recordAudio(scriptName) {
                 }
                 console.log(`stdout: ${stdout}`);
                 resolve(`stdout: ${stdout}`);
-                //writeOnEditor(stdout); //to be removed
                 elaborateCommand();
                 vscode.commands.executeCommand('setContext', 'vocoder:isKeybindingPressed', true);
             });
@@ -286,7 +223,7 @@ function writeOnEditor(s) {
             return;
         }
         const currSel = editor.selection;
-        s = s.substring(s.indexOf('\r\n') + 2, s.lastIndexOf('\r\n'));
+        s = s.substring(s.indexOf('\r\n') + 2, s.lastIndexOf('\r\n')); //check
         if (currSel.start.character === 0) {
             s = s.substring(s.indexOf('\n') + 1);
         }

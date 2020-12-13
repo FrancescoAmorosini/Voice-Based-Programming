@@ -1,17 +1,29 @@
 import pyaudio
 import wave
 
+def beep():
+    bipf = wave.open('../../bip.wav', 'rb')
+    bp = pyaudio.PyAudio()
+    bipstream = bp.open(format=bp.get_format_from_width(bipf.getsampwidth()),
+                    channels=bipf.getnchannels(),
+                    rate=bipf.getframerate(),
+                    output=True)
+    bipdata = bipf.readframes(1024)
+    while bipdata!= b'':
+        bipstream.write(bipdata)
+        bipdata = bipf.readframes(1024)
+    bipstream.stop_stream()
+    bipstream.close()
+    bp.terminate()
+    bipf.close()
 
-def winBeep(frequency, duration):
-    import winsound
-    winsound.Beep(frequency, duration)
 
-
+beep()
 CHUNK = 1024
 FORMAT = pyaudio.paInt16
 CHANNELS = 2
 RATE = 44100
-RECORD_SECONDS = 5
+RECORD_SECONDS = 10
 WAVE_OUTPUT_FILENAME = "output.wav"
 
 p = pyaudio.PyAudio()
@@ -22,17 +34,13 @@ stream = p.open(format=FORMAT,
                 input=True,
                 frames_per_buffer=CHUNK)
 
-winBeep(700, 800)
-#print("* start recording")
-
 frames = []
 
 for i in range(0, int(RATE / CHUNK * RECORD_SECONDS)):
     data = stream.read(CHUNK)
     frames.append(data)
 
-winBeep(800, 800)
-#print("* done recording")
+beep()
 
 stream.stop_stream()
 stream.close()

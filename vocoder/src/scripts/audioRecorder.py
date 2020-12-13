@@ -3,9 +3,24 @@ import wave
 from pynput.keyboard import Key, Controller, Listener
 
 
-def winBeep(frequency, duration):
-    import winsound
-    winsound.Beep(frequency, duration)
+def beep():
+    bipf = wave.open('../../bip.wav', 'rb')
+    bp = pyaudio.PyAudio()
+    bipstream = bp.open(format=bp.get_format_from_width(bipf.getsampwidth()),
+                    channels=bipf.getnchannels(),
+                    rate=bipf.getframerate(),
+                    output=True)
+    bipdata = bipf.readframes(1024)
+    while bipdata!= b'':
+        bipstream.write(bipdata)
+        bipdata = bipf.readframes(1024)
+    bipstream.stop_stream()
+    bipstream.close()
+    bp.terminate()
+    bipf.close()
+
+
+beep()
 
 CHUNK = 1024
 FORMAT = pyaudio.paInt16
@@ -24,15 +39,13 @@ stream = p.open(format=FORMAT,
 
 frames = []
 
-winBeep(700, 800)
-
 def on_press(key):
     data = stream.read(CHUNK)
     frames.append(data)
 
 def on_release(key):
     if key == Key.ctrl_l:
-        winBeep(800, 800)
+        beep()
         stream.stop_stream()
         stream.close()
         p.terminate()

@@ -9,9 +9,19 @@ const landingURI = vscode.Uri.file(path.resolve(__dirname, '../landing.md'));
 const dsdVenv = path.resolve(cwd, '../../dsd-env');
 
 //Detect OS
-let shell = platform() === 'win32' ? 'scripts/cmd' : 'scripts/bash';
-let ext = platform() === 'win32' ? '.cmd' : '.sh';
-let pre = platform() === 'win32' ? '' : './';
+let shell = '';
+let ext = '';
+let pre = '';
+if (platform() === 'win32'){		
+    shell = 'scripts/cmd'; 		
+    ext = '.cmd';		
+}		
+else{		
+    shell = 'scripts/bash'; 		
+    ext = '.sh'; 		
+    pre = './'; 		
+    prepareMacScript();		
+}
 
 const outputChannel = vscode.window.createOutputChannel("vocoder");
 
@@ -221,7 +231,7 @@ async function writeOnEditor(s: string){
         return;
     }
     const currSel = editor.selection;
-    s = s.substring(s.indexOf('\r\n') + 2, s.lastIndexOf('\r\n'));
+    s = s.substring(s.indexOf('\r\n') + 2, s.lastIndexOf('\r\n')); //check
     if(currSel.start.character === 0){
         s = s.substring(s.indexOf('\n') + 1);
     }

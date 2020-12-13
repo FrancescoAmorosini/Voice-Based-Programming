@@ -75,6 +75,25 @@ Place the cursor where you want your next code block to be inserted. You can als
 
   When creating a non-empty if-else statement it is possible to input the first instruction within the statement. Note that it cannot be another if based statement.
 
+* While loop
+  > **Create while loop**
+
+  > **Create while loop until** _expression_ _comparison_ _expression_
+
+  > **Create while loop until** _expression_
+
+  > **While** _expression_ _comparison_ _expression_ 
+
+  > **While** _expression_
+
+* For loop
+  > **Create fors loop**
+
+  > **Create for loop with** _variable_name_ **in** _variable_name_
+
+  > **Create for loop with** _variable_name_ **in range from** _expression_ **to** _expression_
+
+
 ### Editing Commands
 * Undo
   > **Undo**
