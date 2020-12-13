@@ -2,6 +2,12 @@
 
 ![Vocoder logo](style/logo.png)
 
+***
+## Terms and Contitions **⚠️** 
+ - Vocoder relies on speech recognition services provided by Wit.ai. Availability of Vocoder’s functionalities strictly depends on Wit.ai’s availability which is not under Vocoder’s control.
+- Vocoder will not share any sensible data with Wit.ai. Voice commands are recorded locally and sent to Wit.ai anonymously for the sole purposes of recognition and training of the underlying recognition model.
+- Vocoder is not responsible for any inappropriate usage of voice recordings by Wit.ai. Please refer to their [Terms of Service](https://wit.ai/terms) for further information.
+***
 
 ## Why voice-based programming?
 Thousands of software developers suffer from repetitive strain injuries such as carpal tunnel syndrome and tendonitis. Support for programming by voice has the potential to increase the productivity of developers afflicted by these problems. In addition, it can enable individuals with upper-body motor impairments, e.g, due to spinal cord injuries or strokes, to write code.

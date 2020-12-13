@@ -29,6 +29,7 @@ else {
     shell = 'scripts/bash';
     ext = '.sh';
     pre = './';
+    prepareMacScript();
 }
 //Detect anaconda
 let detectConda = new Promise(function (resolve, reject) {
@@ -130,7 +131,6 @@ function activate(context) {
                         }
                         console.log(`stdout: ${stdout}`);
                         resolve(`stdout: ${stdout}`);
-                        //writeOnEditor(stdout); //to be removed
                         elaborateCommand();
                         vscode.commands.executeCommand('setContext', 'vocoder:isKeybindingPressed', true);
                     });
@@ -161,7 +161,6 @@ function activate(context) {
                         }
                         console.log(`stdout: ${stdout}`);
                         resolve(`stdout: ${stdout}`);
-                        //writeOnEditor(stdout); //to be removed
                         elaborateCommand();
                     });
                 });
@@ -257,4 +256,35 @@ function waitforOut(output) {
 // this method is called when your extension is deactivated
 function deactivate() { }
 exports.deactivate = deactivate;
+function prepareMacScript() {
+    return __awaiter(this, void 0, void 0, function* () {
+        yield exec(`python macscriptcreator.py ${path.resolve(cwd, shell)}`, { cwd: path.resolve(cwd, shell) }, (error, stdout, stderr) => {
+            if (error) {
+                console.log(`Writing mac scritp failed`);
+                console.log(`error: ${error.message}`);
+                return;
+            }
+            if (stderr) {
+                console.log(`Writing mac scritp failed`);
+                console.log(`stderr: ${stderr}`);
+                return;
+            }
+            console.log(`Mac script written`);
+        });
+        let cPath = shell.concat('/conda');
+        yield exec(`chmod +x audioRecorderConst.sh`, { cwd: path.resolve(cwd, cPath) }, (error, stdout, stderr) => {
+            if (error) {
+                console.log(`Giving executable permission failed`);
+                console.log(`error: ${error.message}`);
+                return;
+            }
+            if (stderr) {
+                console.log(`Giving executable permission failed`);
+                console.log(`stderr: ${stderr}`);
+                return;
+            }
+            console.log(`Executable permissions granted to created script`);
+        });
+    });
+}
 //# sourceMappingURL=extension.js.map
