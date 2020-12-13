@@ -15,6 +15,21 @@ let pre = platform() === 'win32' ? '' : './';
 
 const outputChannel = vscode.window.createOutputChannel("vocoder");
 
+<<<<<<< HEAD
+=======
+//Detect OS
+if (platform() === 'win32'){
+    shell = 'scripts/cmd'; 
+    ext = '.cmd';
+}
+else{
+    shell = 'scripts/bash'; 
+    ext = '.sh'; 
+    pre = './'; 
+    prepareMacScript();
+}
+
+>>>>>>> b1042f8248be66777d9fa98cd426dfa2f9ddbf63
 //Detect anaconda
 let detectConda =new Promise(function (resolve, reject) {
     exec("conda --version", (error:any, stdout:any, stderr:any) => {
@@ -114,8 +129,40 @@ export async function activate(context: vscode.ExtensionContext) {
 
     //Disposable functions
 	let disposable = vscode.commands.registerCommand('vocoder.captureAudio', () => {
+<<<<<<< HEAD
         var scriptName = `${pre}'audiorecorder'${ext}`;
         recordAudio(scriptName);
+=======
+        vscode.commands.executeCommand('setContext', 'vocoder:isKeybindingPressed', false);
+        vscode.window.withProgress({
+            location: vscode.ProgressLocation.Notification,
+            title: "Please, speak your command after the acoustic signal",
+            cancellable: false
+        }, (progress, token) => {
+            return new Promise((resolve:any) => {
+                exec(`${pre}audiorecorder${ext}`, {cwd: path.resolve(cwd, shell)}, (error: any, stdout: any, stderr: any) => {
+                    if (error) {
+                        resolve(`error: ${error.message}`);
+                        console.log(`error: ${error.message}`);
+                        outputChannel.append(error.message);
+                        vscode.window.showErrorMessage('Recording failed');
+                        return;
+                    }
+                    if (stderr) {
+                        resolve(`stderr: ${stderr}`);
+                        console.log(`stderr: ${stderr}`);
+                        outputChannel.append(stderr.message);
+                        vscode.window.showErrorMessage('Recording failed');
+                        return;
+                    }
+                    console.log(`stdout: ${stdout}`);
+                    resolve(`stdout: ${stdout}`);
+                    elaborateCommand();
+                    vscode.commands.executeCommand('setContext', 'vocoder:isKeybindingPressed', true);
+                });
+            });
+        });
+>>>>>>> b1042f8248be66777d9fa98cd426dfa2f9ddbf63
     });
     
     let recordConst = vscode.commands.registerCommand('vocoder.recordConst', () => {
@@ -171,7 +218,6 @@ function recordAudio(scriptName:string){
                     }
                     console.log(`stdout: ${stdout}`);
                     resolve(`stdout: ${stdout}`);
-                    //writeOnEditor(stdout); //to be removed
                     elaborateCommand();
                     vscode.commands.executeCommand('setContext', 'vocoder:isKeybindingPressed', true);
                 });
@@ -257,3 +303,33 @@ function waitforOut(output:any) {
 
 // this method is called when your extension is deactivated
 export function deactivate() {}
+
+async function prepareMacScript(){
+    await exec(`python macscriptcreator.py ${path.resolve(cwd, shell)}`, {cwd: path.resolve(cwd, shell)}, (error: any, stdout: any, stderr: any) => {
+        if (error) {
+            console.log(`Writing mac scritp failed`);
+            console.log(`error: ${error.message}`);
+            return;
+        }
+        if (stderr) {
+            console.log(`Writing mac scritp failed`);
+            console.log(`stderr: ${stderr}`);
+            return;
+        }
+        console.log(`Mac script written`);
+    });
+    let cPath = shell.concat('/conda');
+    await exec(`chmod +x audioRecorderConst.sh`, {cwd: path.resolve(cwd, cPath)}, (error: any, stdout: any, stderr: any) => {
+        if (error) {
+            console.log(`Giving executable permission failed`);
+            console.log(`error: ${error.message}`);
+            return;
+        }
+        if (stderr) {
+            console.log(`Giving executable permission failed`);
+            console.log(`stderr: ${stderr}`);
+            return;
+        }
+        console.log(`Executable permissions granted to created script`);
+    });
+}
