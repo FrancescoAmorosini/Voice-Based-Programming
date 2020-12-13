@@ -18,6 +18,10 @@ const fs = require("fs");
 const cwd = path.resolve(__dirname, '../src');
 const landingURI = vscode.Uri.file(path.resolve(__dirname, '../landing.md'));
 const dsdVenv = path.resolve(cwd, '../../dsd-env');
+let format = '-camel';
+// when first loading the extension give a default setting
+//( or reload setting from a file)
+vscode.commands.executeCommand('setContext', 'vocoder:isSnake', false);
 //Detect OS
 let shell = '';
 let ext = '';
@@ -131,17 +135,14 @@ function activate(context) {
             var scriptName = `${pre}'audiorecorderConst'${ext}`;
             recordAudio(scriptName);
         });
-        // when first loading the extension give a default setting
-        //( or reload setting from a file)
-        vscode.commands.executeCommand('setContext', 'vocoder:isSnake', false);
         let toSnake = vscode.commands.registerCommand('vocoder.toSnake', () => {
             vscode.window.showInformationMessage('Switching to Snake Case');
-            //code to actually change some variable / setting
+            format = '-snake';
             vscode.commands.executeCommand('setContext', 'vocoder:isSnake', true);
         });
         let toCamel = vscode.commands.registerCommand('vocoder.toCamel', () => {
             vscode.window.showInformationMessage('Switching to Camel Case');
-            //code to actually change some variable / setting
+            format = '-camel';
             vscode.commands.executeCommand('setContext', 'vocoder:isSnake', false);
         });
         context.subscriptions.push(disposable);
@@ -184,7 +185,7 @@ function recordAudio(scriptName) {
     });
 }
 function elaborateCommand() {
-    exec(`${pre}audiointerpreter${ext}`, { cwd: path.resolve(cwd, shell) }, (error, stdout, stderr) => {
+    exec([`${pre}audiointerpreter${ext}`, format].join(' '), { cwd: path.resolve(cwd, shell) }, (error, stdout, stderr) => {
         if (error) {
             console.log(`error: ${error.message}`);
             vscode.window.showErrorMessage('Audio processing failed');

@@ -1,2 +1,2 @@
 conda activate dsd-env && ^
-python ..\..\..\..\..\Code\main.py
+python ..\..\..\..\..\Code\main.py %1

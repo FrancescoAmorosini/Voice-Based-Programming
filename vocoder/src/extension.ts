@@ -8,6 +8,11 @@ const cwd = path.resolve(__dirname, '../src');
 const landingURI = vscode.Uri.file(path.resolve(__dirname, '../landing.md'));
 const dsdVenv = path.resolve(cwd, '../../dsd-env');
 
+let format = '-camel';
+// when first loading the extension give a default setting
+//( or reload setting from a file)
+vscode.commands.executeCommand('setContext', 'vocoder:isSnake', false);
+
 //Detect OS
 let shell = '';
 let ext = '';
@@ -132,20 +137,16 @@ export async function activate(context: vscode.ExtensionContext) {
         var scriptName = `${pre}'audiorecorderConst'${ext}`;
         recordAudio(scriptName);
 	});
-    
-    // when first loading the extension give a default setting
-    //( or reload setting from a file)
-    vscode.commands.executeCommand('setContext', 'vocoder:isSnake', false);
 
     let toSnake = vscode.commands.registerCommand('vocoder.toSnake', () => {
         vscode.window.showInformationMessage('Switching to Snake Case');
-        //code to actually change some variable / setting
+        format = '-snake';
 		vscode.commands.executeCommand('setContext', 'vocoder:isSnake', true);
     });
 
     let toCamel = vscode.commands.registerCommand('vocoder.toCamel', () => {
         vscode.window.showInformationMessage('Switching to Camel Case');
-        //code to actually change some variable / setting
+        format = '-camel';
 		vscode.commands.executeCommand('setContext', 'vocoder:isSnake', false);
     });
     
@@ -189,7 +190,7 @@ function recordAudio(scriptName:string){
 }
 
 function elaborateCommand(){
-    exec(`${pre}audiointerpreter${ext}`, {cwd: path.resolve(cwd, shell)}, (error: any, stdout: any, stderr: any) => {
+    exec([`${pre}audiointerpreter${ext}`, format].join(' '), {cwd: path.resolve(cwd, shell)}, (error: any, stdout: any, stderr: any) => {
         if (error) {
             console.log(`error: ${error.message}`);
             vscode.window.showErrorMessage('Audio processing failed');
