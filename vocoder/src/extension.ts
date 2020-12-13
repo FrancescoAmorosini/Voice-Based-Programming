@@ -2,26 +2,18 @@ import * as vscode from 'vscode';
 import { platform } from 'os';
 const { exec } = require("child_process");
 const path = require('path');
+const fs = require("fs");
 
 const cwd = path.resolve(__dirname, '../src');
 const landingURI = vscode.Uri.file(path.resolve(__dirname, '../landing.md'));
-
-let shell = '';
-let ext = '';
-let pre = '';
-
-const outputChannel = vscode.window.createOutputChannel("vocoder");
+const dsdVenv = path.resolve(cwd, '../../dsd-env');
 
 //Detect OS
-if (platform() === 'win32'){
-    shell = 'scripts/cmd'; 
-    ext = '.cmd';
-}
-else{
-    shell = 'scripts/bash'; 
-    ext = '.sh'; 
-    pre = './'; 
-}
+let shell = platform() === 'win32' ? 'scripts/cmd' : 'scripts/bash';
+let ext = platform() === 'win32' ? '.cmd' : '.sh';
+let pre = platform() === 'win32' ? '' : './';
+
+const outputChannel = vscode.window.createOutputChannel("vocoder");
 
 //Detect anaconda
 let detectConda =new Promise(function (resolve, reject) {
@@ -35,9 +27,24 @@ let detectConda =new Promise(function (resolve, reject) {
             shell = path.join(shell, 'conda'); 
             outputChannel.appendLine('--- Anaconda has been detected! ---');
         }
-        resolve();
+        resolve(stdout);
     });
 }); 
+
+//Delete duplicate environment
+const deleteFolderRecursive = function(pathh:any) {
+    if (fs.existsSync(pathh)) {
+      fs.readdirSync(pathh).forEach((file:string, index:number) => {
+        const curPath = path.resolve(pathh, file);
+        if (fs.lstatSync(curPath).isDirectory()) { // recurse
+          deleteFolderRecursive(curPath);
+        } else { // delete file
+          fs.unlinkSync(curPath);
+        }
+      });
+      fs.rmdirSync(pathh);
+    }
+  };
 
 // ------ PROLOGUE END -------
 
@@ -47,7 +54,6 @@ export async function activate(context: vscode.ExtensionContext) {
     await detectConda;
 
     outputChannel.appendLine('Activating vocoder...');
-    //outputChannel.show();
 
     //Environment check
     exec(`${pre}check${ext}`, {cwd: path.resolve(cwd, shell)}, (error: any, stdout: any, stderr: any) => {
@@ -62,6 +68,8 @@ export async function activate(context: vscode.ExtensionContext) {
             return;
         }
         if (stdout.includes('dsd-env')) {
+            deleteFolderRecursive(dsdVenv);
+            
             console.log('environment is ready!');
             outputChannel.appendLine('--- dsd-env has been detected! ---');
             vscode.window.showInformationMessage('Everything is ready! Let\'s code!'); 
@@ -106,14 +114,47 @@ export async function activate(context: vscode.ExtensionContext) {
 
     //Disposable functions
 	let disposable = vscode.commands.registerCommand('vocoder.captureAudio', () => {
-        vscode.commands.executeCommand('setContext', 'vocoder:isKeybindingPressed', false);
+        var scriptName = `${pre}'audiorecorder'${ext}`;
+        recordAudio(scriptName);
+    });
+    
+    let recordConst = vscode.commands.registerCommand('vocoder.recordConst', () => {
+        var scriptName = `${pre}'audiorecorderConst'${ext}`;
+        recordAudio(scriptName);
+	});
+    
+    // when first loading the extension give a default setting
+    //( or reload setting from a file)
+    vscode.commands.executeCommand('setContext', 'vocoder:isSnake', false);
+
+    let toSnake = vscode.commands.registerCommand('vocoder.toSnake', () => {
+        vscode.window.showInformationMessage('Switching to Snake Case');
+        //code to actually change some variable / setting
+		vscode.commands.executeCommand('setContext', 'vocoder:isSnake', true);
+    });
+
+    let toCamel = vscode.commands.registerCommand('vocoder.toCamel', () => {
+        vscode.window.showInformationMessage('Switching to Camel Case');
+        //code to actually change some variable / setting
+		vscode.commands.executeCommand('setContext', 'vocoder:isSnake', false);
+    });
+    
+    context.subscriptions.push(disposable);
+    context.subscriptions.push(recordConst);
+    context.subscriptions.push(toSnake);
+    context.subscriptions.push(toCamel);
+    vscode.commands.executeCommand('setContext', 'vocoder:isKeybindingPressed', true);
+}
+
+function recordAudio(scriptName:string){
+    vscode.commands.executeCommand('setContext', 'vocoder:isKeybindingPressed', false);
         vscode.window.withProgress({
             location: vscode.ProgressLocation.Notification,
             title: "Please, speak your command after the acoustic signal",
             cancellable: false
         }, (progress, token) => {
             return new Promise((resolve:any) => {
-                exec(`${pre}audiorecorder${ext}`, {cwd: path.resolve(cwd, shell)}, (error: any, stdout: any, stderr: any) => {
+                exec(`${scriptName}`, {cwd: path.resolve(cwd, shell)}, (error: any, stdout: any, stderr: any) => {
                     if (error) {
                         resolve(`error: ${error.message}`);
                         console.log(`error: ${error.message}`);
@@ -136,59 +177,6 @@ export async function activate(context: vscode.ExtensionContext) {
                 });
             });
         });
-    });
-    
-    let recordConst = vscode.commands.registerCommand('vocoder.recordConst', () => {
-        vscode.window.withProgress({
-            location: vscode.ProgressLocation.Notification,
-            title: "Please, speak your command after the acoustic signal",
-            cancellable: false
-        }, (progress, token) => {
-            return new Promise((resolve:any) => {
-                exec(`${pre}audiorecorderConst${ext}`, {cwd: path.resolve(cwd, shell)}, (error: any, stdout: any, stderr: any) => {
-                    if (error) {
-                        resolve(`error: ${error.message}`);
-                        console.log(`error: ${error.message}`);
-                        outputChannel.append(error.message);
-                        vscode.window.showErrorMessage('Recording failed');
-                        return;
-                    }
-                    if (stderr) {
-                        resolve(`stderr: ${stderr}`);
-                        console.log(`stderr: ${stderr}`);
-                        outputChannel.append(stderr.message);
-                        vscode.window.showErrorMessage('Recording failed');
-                        return;
-                    }
-                    console.log(`stdout: ${stdout}`);
-                    resolve(`stdout: ${stdout}`);
-                    //writeOnEditor(stdout); //to be removed
-                    elaborateCommand();
-                });
-            });
-        });
-	});
-    
-    // when first loading the extension give a default setting
-    //( or reload setting from a file)
-    vscode.commands.executeCommand('setContext', 'vocoder:isSnake', false);
-
-    let toSnake = vscode.commands.registerCommand('vocoder.toSnake', () => {
-        vscode.window.showInformationMessage('Switching to Snake Case');
-        //code to actually change some variable / setting
-		vscode.commands.executeCommand('setContext', 'vocoder:isSnake', true);
-    });
-
-    let toCamel = vscode.commands.registerCommand('vocoder.toCamel', () => {
-        vscode.window.showInformationMessage('Switching to Camel Case');
-        //code to actually change some variable / setting
-		vscode.commands.executeCommand('setContext', 'vocoder:isSnake', false);
-    });
-    
-	context.subscriptions.push(disposable);
-    context.subscriptions.push(toSnake);
-    context.subscriptions.push(toCamel);
-    vscode.commands.executeCommand('setContext', 'vocoder:isKeybindingPressed', true);
 }
 
 function elaborateCommand(){
@@ -227,13 +215,17 @@ function elaborateCommand(){
 }
 
 async function writeOnEditor(s: string){
-    s = s.substring(s.indexOf('\r\n') + 2, s.lastIndexOf('\r\n'));
+    
     const editor = vscode.window.activeTextEditor;
     if(!editor){
         vscode.window.showWarningMessage('No editor available to write on');
         return;
     }
     const currSel = editor.selection;
+    s = s.substring(s.indexOf('\r\n') + 2, s.lastIndexOf('\r\n'));
+    if(currSel.start.character === 0){
+        s = s.substring(s.indexOf('\n') + 1);
+    }
     await editor.edit( (edit) => { edit.replace(currSel,s);} );
 
     // computation of new position of the cursor
