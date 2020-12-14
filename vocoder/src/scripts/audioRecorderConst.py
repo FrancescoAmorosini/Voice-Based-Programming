@@ -2,7 +2,7 @@ import pyaudio
 import wave
 
 def beep():
-    bipf = wave.open('../../bip.wav', 'rb')
+    bipf = wave.open('../../beep.wav', 'rb')
     bp = pyaudio.PyAudio()
     bipstream = bp.open(format=bp.get_format_from_width(bipf.getsampwidth()),
                     channels=bipf.getnchannels(),
@@ -23,7 +23,7 @@ CHUNK = 1024
 FORMAT = pyaudio.paInt16
 CHANNELS = 2
 RATE = 44100
-RECORD_SECONDS = 10
+RECORD_SECONDS = 5
 WAVE_OUTPUT_FILENAME = "output.wav"
 
 p = pyaudio.PyAudio()

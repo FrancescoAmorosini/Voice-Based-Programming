@@ -4,7 +4,7 @@ from pynput.keyboard import Key, Controller, Listener
 
 
 def beep():
-    bipf = wave.open('../../bip.wav', 'rb')
+    bipf = wave.open('../../beep.wav', 'rb')
     bp = pyaudio.PyAudio()
     bipstream = bp.open(format=bp.get_format_from_width(bipf.getsampwidth()),
                     channels=bipf.getnchannels(),

@@ -128,11 +128,11 @@ function activate(context) {
         });
         //Disposable functions
         let disposable = vscode.commands.registerCommand('vocoder.captureAudio', () => {
-            var scriptName = `${pre}'audiorecorder'${ext}`;
+            var scriptName = `${pre}audiorecorder${ext}`;
             recordAudio(scriptName);
         });
         let recordConst = vscode.commands.registerCommand('vocoder.recordConst', () => {
-            var scriptName = `${pre}'audiorecorderConst'${ext}`;
+            var scriptName = `${pre}audiorecorderConst${ext}`;
             recordAudio(scriptName);
         });
         let toSnake = vscode.commands.registerCommand('vocoder.toSnake', () => {
