@@ -83,7 +83,8 @@ export async function activate(context: vscode.ExtensionContext) {
             return;
         }
         if (stdout.includes('dsd-env')) {
-            deleteFolderRecursive(dsdVenv);
+            //Delete duplicate environment
+            //deleteFolderRecursive(dsdVenv);
             
             console.log('environment is ready!');
             outputChannel.appendLine('--- dsd-env has been detected! ---');
@@ -232,7 +233,6 @@ async function writeOnEditor(s: string){
         return;
     }
     const currSel = editor.selection;
-    s = s.substring(s.indexOf('\r\n') + 2, s.lastIndexOf('\r\n')); //check
     if(currSel.start.character === 0){
         s = s.substring(s.indexOf('\n') + 1);
     }

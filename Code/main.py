@@ -357,7 +357,7 @@ elif len(sys.argv) > 0 and sys.argv[0] == "-camel":
     naming_style = "camel"
 
 client = Wit("3OXTFKTQZFCKO3PEYBN3VYS23BDRCVRC")
-with open('for_first.wav', 'rb') as f:
+with open('..\\..\\..\\..\\..\\Code\\WhileLoop.wav', 'rb') as f:
     resp = client.speech(f, {'Content-Type': 'audio/wav'})
 print(resp)
 
