@@ -44,9 +44,9 @@ def string_to_snake(variable_name):
 
 def name_variable(variable_name):
     if naming_style == "snake":
-        string_to_snake(variable_name)
+        return string_to_snake(variable_name)
     else:
-        string_to_snake(variable_name)
+        return string_to_snake(variable_name)
 
 
 def parse_declare_variable(response):
@@ -178,132 +178,57 @@ def parse_add_comment(response):
 
 def parse_for_loop(response):
     if 'Expression:Expression' in response['entities']:
-        message = ""
-        variables, operators = parse(response['entities']['Expression:Expression'][0]['body'])
-        output_string = ""
+        try:
+            variables1, operators1 = parse(response['entities']['Expression:Expression'][0]['body'])
+            variables2, operators2 = parse(response['entities']['Expression:Expression'][1]['body'])
+        except KeyError:
+            print(front_end_error)
+            print("Missing an expression in for loop command")
+            return
+        except IndexError:
+            print(front_end_error)
+            print("Second Expression name was not understood in for loop")
+            return
+        try:
+            variable = response['entities']['VariableName:VariableName'][0]['body']
+        except KeyError:
+            print(front_end_error)
+            print("Variable Name not understood")
+            return
+        first_expression = ""
+        second_expression = ""
         counter = -1
-        for variable in variables:
+        for variable1 in variables1:
             if counter >= 0:
-                output_string += " " + operators[counter] + " "
-            output_string += str(variable)
+                first_expression += " " + operators1[counter] + " "
+            first_expression += str(variable1)
             counter += 1
-        variables2, operators2 = parse(response['entities']['Expression:Expression'][1]['body'])
-        output_string2 = ""
         counter = -1
         for variable2 in variables2:
             if counter >= 0:
-                output_string2 += " " + operators2[counter] + " "
-            output_string2 += str(variable2)
+                second_expression += " " + operators2[counter] + " "
+            second_expression += str(variable2)
             counter += 1
-        variables3, operators3 = parse(response['entities']['Expression:Expression'][2]['body'])
-        output_string3 = ""
-        counter = -1
-        for variable3 in variables3:
-            if counter >= 0:
-                output_string3 += " " + operators3[counter] + " "
-            output_string3 += str(variable3)
-            counter += 1
-        variables4, operators4 = parse(response['entities']['Expression:Expression'][3]['body'])
-        output_string4 = ""
-        counter = -1
-        for variable4 in variables4:
-            if counter >= 0:
-                output_string4 += " " + operators4[counter] + " "
-            output_string4 += str(variable4)
-            counter += 1
-        variables5, operators5 = parse(response['entities']['Expression:Expression'][4]['body'])
-        output_string5 = ""
-        counter = -1
-        for variable5 in variables5:
-            if counter >= 0:
-                output_string5 += " " + operators5[counter] + " "
-            output_string5 += str(variable5)
-            counter += 1
-        variables6, operators6 = parse(response['entities']['Expression:Expression'][5]['body'])
-        output_string6 = ""
-        counter = -1
-        for variable6 in variables6:
-            if counter >= 0:
-                output_string6 += " " + operators6[counter] + " "
-            output_string6 += str(variable6)
-            counter += 1
-        message += "for "
-        # First comparison
-        if response['entities']['comparisons:comparisons'][0]['body'] == 'equal to' or \
-                response['entities']['comparisons:comparisons'][0]['body'] == 'is equal to':
-            message += output_string + " = " + output_string2 + " ; "
-
-        if response['entities']['comparisons:comparisons'][0]['body'] == 'non equal to' or \
-                response['entities']['comparisons:comparisons'][0]['body'] == 'is non equal to':
-            message += output_string + " != " + output_string2 + " ; "
-
-        if response['entities']['comparisons:comparisons'][0]['body'] == 'greater than' or \
-                response['entities']['comparisons:comparisons'][0]['body'] == 'is greater than':
-            message += output_string + " > " + output_string2 + " ; "
-
-        if response['entities']['comparisons:comparisons'][0]['body'] == 'less than' or \
-                response['entities']['comparisons:comparisons'][0]['body'] == 'is less than':
-            message += output_string + " < " + output_string2 + " ; "
-
-        if response['entities']['comparisons:comparisons'][0]['body'] == 'greater or equal to' or \
-                response['entities']['comparisons:comparisons'][0]['body'] == 'is greater or equal to':
-            message += output_string + " >= " + output_string2 + " ; "
-
-        if response['entities']['comparisons:comparisons'][0]['body'] == 'less or equal to' or \
-                response['entities']['comparisons:comparisons'][0]['body'] == 'is less or equal to':
-            message += output_string + " <= " + output_string2 + " ; "
-        # Second comparison
-        if response['entities']['comparisons:comparisons'][1]['body'] == 'equal to' or \
-                response['entities']['comparisons:comparisons'][1]['body'] == 'is equal to':
-            message += output_string3 + " == " + output_string4 + " ; "
-
-        if response['entities']['comparisons:comparisons'][1]['body'] == 'non equal to' or \
-                response['entities']['comparisons:comparisons'][1]['body'] == 'is non equal to':
-            message += output_string3 + " != " + output_string4 + " ; "
-
-        if response['entities']['comparisons:comparisons'][1]['body'] == 'greater than' or \
-                response['entities']['comparisons:comparisons'][1]['body'] == 'is greater than':
-            message += output_string3 + " > " + output_string4 + " ; "
-
-        if response['entities']['comparisons:comparisons'][1]['body'] == 'less than' or \
-                response['entities']['comparisons:comparisons'][1]['body'] == 'is less than':
-            message += output_string3 + " < " + output_string4 + " ; "
-
-        if response['entities']['comparisons:comparisons'][1]['body'] == 'greater or equal to' or \
-                response['entities']['comparisons:comparisons'][1]['body'] == 'is greater or equal to':
-            message += output_string3 + " >= " + output_string4 + " ; "
-
-        if response['entities']['comparisons:comparisons'][1]['body'] == 'less or equal to' or \
-                response['entities']['comparisons:comparisons'][1]['body'] == 'is less or equal to':
-            message += output_string3 + " <= " + output_string4 + " ; "
-        # Third comparison
-        if response['entities']['comparisons:comparisons'][2]['body'] == 'equal to' or \
-                response['entities']['comparisons:comparisons'][2]['body'] == 'is equal to':
-            message += output_string5 + " = " + output_string6 + " : "
-
-        if response['entities']['comparisons:comparisons'][2]['body'] == 'non equal to' or \
-                response['entities']['comparisons:comparisons'][2]['body'] == 'is non equal to':
-            message += output_string5 + " != " + output_string6 + " : "
-
-        if response['entities']['comparisons:comparisons'][2]['body'] == 'greater than' or \
-                response['entities']['comparisons:comparisons'][2]['body'] == 'is greater than':
-            message += output_string5 + " > " + output_string6 + " : "
-
-        if response['entities']['comparisons:comparisons'][2]['body'] == 'less than' or \
-                response['entities']['comparisons:comparisons'][2]['body'] == 'is less than':
-            message += output_string5 + " < " + output_string6 + " : "
-
-        if response['entities']['comparisons:comparisons'][2]['body'] == 'greater or equal to' or \
-                response['entities']['comparisons:comparisons'][2]['body'] == 'is greater or equal to':
-            message += output_string5 + " >= " + output_string6 + " : "
-
-        if response['entities']['comparisons:comparisons'][2]['body'] == 'less or equal to' or \
-                response['entities']['comparisons:comparisons'][2]['body'] == 'is less or equal to':
-            message += output_string5 + " <= " + output_string6 + " : "
-
+        message = "for " + variable + " in ranage ( " + first_expression + " , " + second_expression + "):\n\t"
+        message += "#command"
+        print(message)
+    elif 'VariableName:VariableName' in response['entities']:
+        try:
+            variable1 = response['entities']['VariableName:VariableName'][0]['body']
+            variable2 = response['entities']['VariableName:VariableName'][1]['body']
+        except KeyError:
+            print(front_end_error)
+            print("Variable Name not found in for loop")
+            return
+        except IndexError:
+            print(front_end_error)
+            print("Second Variable name was not understood in for loop")
+            return
+        message = "for " + variable1 + " in " + variable2 + ":\n\t"
+        message += "#command"
         print(message)
     else:
-        print("for # ; # ; # :")
+        print("for #variable in range( #expression,#expression ):\n\t")
 
 
 def parse_while_loop(response):
@@ -432,9 +357,11 @@ elif len(sys.argv) > 0 and sys.argv[0] == "-camel":
     naming_style = "camel"
 
 client = Wit("3OXTFKTQZFCKO3PEYBN3VYS23BDRCVRC")
-with open('whiletest.wav', 'rb') as f:
+with open('for_first.wav', 'rb') as f:
     resp = client.speech(f, {'Content-Type': 'audio/wav'})
+print(resp)
 
+front_end_error = "dsd-section\nvocoder-error-message"
 front_end_block = "dsd-section\nvocoder-code-block"
 confidence_threshold = 0.75
 
@@ -499,4 +426,4 @@ elif resp['intents'][0]['name'] == 'UndoCommand':
     if resp['intents'][0]['confidence'] > confidence_threshold:
         print("dsd-section\nundo\n")
 else:
-    print("dsd-section\nintent not found\n")
+    print("dsd-section\nintent not found")
