@@ -5,6 +5,7 @@ from wit import Wit
 from word2number import w2n
 
 nested_if = False
+nested_while = False
 
 
 def decapitalize(s):
@@ -13,16 +14,39 @@ def decapitalize(s):
     return s[0].lower() + s[1:]
 
 
-def snake_to_camel(variablename):
+def string_to_camel(variable_name):
     count = 0
     combinedString = ""
-    for word in variablename.split(' '):
+    for word in variable_name.split(' '):
         if count == 0:
             combinedString += decapitalize(word)
         else:
             combinedString += word.capitalize()
         count += 1
     return combinedString
+
+
+def snake_to_camel(snake_variable):
+    return ''.join(x.capitalize() or '_' for x in snake_variable.split('_'))
+
+
+def string_to_snake(variable_name):
+    count = 0
+    combinedString = ""
+    end_index = len(variable_name.split(' '))
+    for word in variable_name.split(' '):
+        count += 1
+        combinedString += decapitalize(word)
+        if end_index != count:
+            combinedString += "_"
+    return combinedString
+
+
+def name_variable(variable_name):
+    if naming_style == "snake":
+        return string_to_snake(variable_name)
+    else:
+        return string_to_snake(variable_name)
 
 
 def parse_declare_variable(response):
@@ -36,17 +60,18 @@ def parse_declare_variable(response):
                     output_string += " " + operators[counter] + " "
                 output_string += str(variable)
                 counter += 1
-            if nested_if == True:
-                print("\t" + snake_to_camel(
+            if nested_if:
+                print("\t" + string_to_camel(
                     response['entities']['VariableName:VariableName'][0]['body']) + ' = ' + output_string)
             else:
-                print(snake_to_camel(
+                print(string_to_camel(
                     response['entities']['VariableName:VariableName'][0]['body']) + ' = ' + output_string)
         else:
-            if nested_if == True:
-                print("\t" + snake_to_camel(response['entities']['VariableName:VariableName'][0]['body']) + ' = None\n')
+            if nested_if:
+                print(
+                    "\t" + string_to_camel(response['entities']['VariableName:VariableName'][0]['body']) + ' = None\n')
             else:
-                print(snake_to_camel(response['entities']['VariableName:VariableName'][0]['body']) + ' = None\n')
+                print(string_to_camel(response['entities']['VariableName:VariableName'][0]['body']) + ' = None\n')
 
 
 def parse_if_else_statement(response):
@@ -151,6 +176,116 @@ def parse_add_comment(response):
         print("# " + response['entities']['CommentText:CommentText'][0]['body'])
 
 
+def parse_for_loop(response):
+    if 'Expression:Expression' in response['entities']:
+        try:
+            variables1, operators1 = parse(response['entities']['Expression:Expression'][0]['body'])
+            variables2, operators2 = parse(response['entities']['Expression:Expression'][1]['body'])
+        except KeyError:
+            print(front_end_error)
+            print("Missing an expression in for loop command")
+            return
+        except IndexError:
+            print(front_end_error)
+            print("Second Expression name was not understood in for loop")
+            return
+        try:
+            variable = response['entities']['VariableName:VariableName'][0]['body']
+        except KeyError:
+            print(front_end_error)
+            print("Variable Name not understood")
+            return
+        first_expression = ""
+        second_expression = ""
+        counter = -1
+        for variable1 in variables1:
+            if counter >= 0:
+                first_expression += " " + operators1[counter] + " "
+            first_expression += str(variable1)
+            counter += 1
+        counter = -1
+        for variable2 in variables2:
+            if counter >= 0:
+                second_expression += " " + operators2[counter] + " "
+            second_expression += str(variable2)
+            counter += 1
+        message = "for " + variable + " in ranage ( " + first_expression + " , " + second_expression + "):\n\t"
+        message += "#command"
+        print(message)
+    elif 'VariableName:VariableName' in response['entities']:
+        try:
+            variable1 = response['entities']['VariableName:VariableName'][0]['body']
+            variable2 = response['entities']['VariableName:VariableName'][1]['body']
+        except KeyError:
+            print(front_end_error)
+            print("Variable Name not found in for loop")
+            return
+        except IndexError:
+            print(front_end_error)
+            print("Second Variable name was not understood in for loop")
+            return
+        message = "for " + variable1 + " in " + variable2 + ":\n\t"
+        message += "#command"
+        print(message)
+    else:
+        print("for #variable in range( #expression,#expression ):\n\t")
+
+
+def parse_while_loop(response):
+    if 'comparisons:comparisons' in response['entities']:
+        variables, operators = parse(response['entities']['Expression:Expression'][0]['body'])
+        output_string = ""
+        counter = -1
+        for variable in variables:
+            if counter >= 0:
+                output_string += " " + operators[counter] + " "
+            output_string += str(variable)
+            counter += 1
+        variables2, operators2 = parse(response['entities']['Expression:Expression'][1]['body'])
+        output_string2 = ""
+        counter = -1
+        for variable2 in variables2:
+            if counter >= 0:
+                output_string2 += " " + operators2[counter] + " "
+            output_string2 += str(variable2)
+            counter += 1
+        if response['entities']['comparisons:comparisons'][0]['body'] == 'equal to' or \
+                response['entities']['comparisons:comparisons'][0]['body'] == 'is equal to':
+            print("while " + output_string + " ==  " + output_string2 + " :\n\t#command")
+
+        if response['entities']['comparisons:comparisons'][0]['body'] == 'non equal to' or \
+                response['entities']['comparisons:comparisons'][0]['body'] == 'is non equal to':
+            print("while " + output_string + "!=" + output_string2 + " :\n\t#command")
+
+        if response['entities']['comparisons:comparisons'][0]['body'] == 'greater than' or \
+                response['entities']['comparisons:comparisons'][0]['body'] == 'is greater than':
+            print("while " + output_string + ">" + output_string2 + " :\n\tcommand")
+
+        if response['entities']['comparisons:comparisons'][0]['body'] == 'less than' or \
+                response['entities']['comparisons:comparisons'][0]['body'] == 'is less than':
+            print("while " + output_string + "<" + output_string2 + " :\n\t#command")
+
+        if response['entities']['comparisons:comparisons'][0]['body'] == 'greater or equal to' or \
+                response['entities']['comparisons:comparisons'][0]['body'] == 'is greater or equal to':
+            print("while " + output_string + ">=" + output_string2 + " :\n\t#command")
+
+        if response['entities']['comparisons:comparisons'][0]['body'] == 'less or equal to' or \
+                response['entities']['comparisons:comparisons'][0]['body'] == 'is less or equal to':
+            print("while " + output_string + "<=" + output_string2 + " :\n\t#command ")
+    elif 'Expression:Expression' in response['entities']:
+        variables, operators = parse(response['entities']['Expression:Expression'][0]['body'])
+        output_string = ""
+        counter = -1
+        for variable in variables:
+            if counter >= 0:
+                output_string += " " + operators[counter] + " "
+            output_string += str(variable)
+            counter += 1
+        print("while" + output_string + ":\n\t#command")
+    else:
+        print("while #exp com exp :\n\t#command")
+
+
 # takes a string and converts it to operations and variables
 def parse(string):
     expression_operators = ['plus', 'minus', 'times', 'asterisk', 'multiplication', 'division', 'modulo', 'mod',
@@ -215,56 +350,80 @@ def parse(string):
     return num_out, op_out
 
 
-# print('Number of arguments:', len(sys.argv), 'arguments.')
-# print('Argument List:', str(sys.argv))
+naming_style = "snake"
+if len(sys.argv) > 0 and sys.argv[0] == "-snake":
+    naming_style = "snake"
+elif len(sys.argv) > 0 and sys.argv[0] == "-camel":
+    naming_style = "camel"
+
 client = Wit("3OXTFKTQZFCKO3PEYBN3VYS23BDRCVRC")
-with open('Recording.wav', 'rb') as f:
+with open('for_first.wav', 'rb') as f:
     resp = client.speech(f, {'Content-Type': 'audio/wav'})
-print('Wit.ai response: ' + str(resp) + '\n')
+print(resp)
+
+front_end_error = "dsd-section\nvocoder-error-message"
+front_end_block = "dsd-section\nvocoder-code-block"
+confidence_threshold = 0.75
 
 if resp['intents'][0]['name'] == 'DeclareVariable':
-    if resp['intents'][0]['confidence'] > 0.75:
-        print("dsd-section\nvocoder-code-block\n")
+    if resp['intents'][0]['confidence'] > confidence_threshold:
+        print(front_end_block)
         parse_declare_variable(resp)
 
 if resp['intents'][0]['name'] == 'IfElseStatement':
-    if resp['intents'][0]['confidence'] > 0.75:
-        print("dsd-section\nvocoder-code-block\n")
+    if resp['intents'][0]['confidence'] > confidence_threshold:
+        print(front_end_block)
         parse_if_else_statement(resp)
         command_if = client.message(resp['entities']['command:command'][0]['body'])
         nested_if = True
         if command_if['intents'][0]['name'] == 'DeclareVariable':
-            if command_if['intents'][0]['confidence'] > 0.75:
+            if command_if['intents'][0]['confidence'] > confidence_threshold:
                 parse_declare_variable(command_if)
         if command_if['intents'][0]['name'] == 'AddingComment':
-            if command_if['intents'][0]['confidence'] > 0.75:
+            if command_if['intents'][0]['confidence'] > confidence_threshold:
                 parse_add_comment(command_if)
         print("else:")
         resp3 = client.message(resp['entities']['command:command'][1]['body'])
         if resp3['intents'][0]['name'] == 'DeclareVariable':
-            if resp3['intents'][0]['confidence'] > 0.75:
+            if resp3['intents'][0]['confidence'] > confidence_threshold:
                 parse_declare_variable(resp3)
         if resp3['intents'][0]['name'] == 'AddingComment':
-            if resp3['intents'][0]['confidence'] > 0.75:
+            if resp3['intents'][0]['confidence'] > confidence_threshold:
                 parse_add_comment(resp3)
         # missing nested ifs or nested if+ifElse
 
-if resp['intents'][0]['name'] == 'IfStatements':
-    if resp['intents'][0]['confidence'] > 0.75:
-        print("dsd-section\nvocoder-code-block\n")
+elif resp['intents'][0]['name'] == 'IfStatements':
+    if resp['intents'][0]['confidence'] > confidence_threshold:
+        print(front_end_block)
         parse_if_statement(resp)
         if 'command:command' in resp['entities']:
             command_if = client.message(resp['entities']['command:command'][0]['body'])
             nested_if = True
             if command_if['intents'][0]['name'] == 'DeclareVariable':
-                if command_if['intents'][0]['confidence'] > 0.75:
+                if command_if['intents'][0]['confidence'] > confidence_threshold:
                     parse_declare_variable(command_if)
             if command_if['intents'][0]['name'] == 'AddingComment':
-                if command_if['intents'][0]['confidence'] > 0.75:
+                if command_if['intents'][0]['confidence'] > confidence_threshold:
                     parse_add_comment(command_if)
             # missing nested ifs or nested if+ifElse
 
-if resp['intents'][0]['name'] == 'AddingComment':
-    if resp['intents'][0]['confidence'] > 0.75:
-        print("dsd-section\nvocoder-code-block\n")
+elif resp['intents'][0]['name'] == 'AddingComment':
+    if resp['intents'][0]['confidence'] > confidence_threshold:
+        print(front_end_block)
         parse_add_comment(resp)
+
+elif resp['intents'][0]['name'] == 'ForLoop':
+    if resp['intents'][0]['confidence'] > confidence_threshold:
+        print(front_end_block)
+        parse_for_loop(resp)
+
+elif resp['intents'][0]['name'] == 'WhileLoop':
+    if resp['intents'][0]['confidence'] > confidence_threshold:
+        print(front_end_block)
+        parse_while_loop(resp)
+
+elif resp['intents'][0]['name'] == 'UndoCommand':
+    if resp['intents'][0]['confidence'] > confidence_threshold:
+        print("dsd-section\nundo\n")
+else:
+    print("dsd-section\nintent not found")
