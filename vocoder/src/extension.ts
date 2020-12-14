@@ -141,13 +141,13 @@ export async function activate(context: vscode.ExtensionContext) {
 
     let toSnake = vscode.commands.registerCommand('vocoder.toSnake', () => {
         vscode.window.showInformationMessage('Switching to Snake Case');
-        format = '-snake';
+        format = 'snake';
 		vscode.commands.executeCommand('setContext', 'vocoder:isSnake', true);
     });
 
     let toCamel = vscode.commands.registerCommand('vocoder.toCamel', () => {
         vscode.window.showInformationMessage('Switching to Camel Case');
-        format = '-camel';
+        format = 'camel';
 		vscode.commands.executeCommand('setContext', 'vocoder:isSnake', false);
     });
     
@@ -203,7 +203,6 @@ function elaborateCommand(){
             return;
         }
         console.log(`stdout: ${stdout}`);
-        
         var sections = waitforOut(stdout);
         const vocoderSec = sections[1];
         
