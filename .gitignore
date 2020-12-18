@@ -5,6 +5,6 @@
 /vocoder/out
 .vscode
 **/*.wav
+!beep.wav
 /dsd-env
-vocoder/src/bash/output.wav
-
+vocoder/src/scripts/bash/conda/audiorecorderConst.sh

@@ -2,6 +2,12 @@
 
 ![Vocoder logo](style/logo.png)
 
+***
+## Terms and Contitions **⚠️** 
+ - Vocoder relies on speech recognition services provided by Wit.ai. Availability of Vocoder’s functionalities strictly depends on Wit.ai’s availability which is not under Vocoder’s control.
+- Vocoder will not share any sensible data with Wit.ai. Voice commands are recorded locally and sent to Wit.ai anonymously for the sole purposes of recognition and training of the underlying recognition model.
+- Vocoder is not responsible for any inappropriate usage of voice recordings by Wit.ai. Please refer to their [Terms of Service](https://wit.ai/terms) for further information.
+***
 
 ## Why voice-based programming?
 Thousands of software developers suffer from repetitive strain injuries such as carpal tunnel syndrome and tendonitis. Support for programming by voice has the potential to increase the productivity of developers afflicted by these problems. In addition, it can enable individuals with upper-body motor impairments, e.g, due to spinal cord injuries or strokes, to write code.
@@ -68,6 +74,25 @@ Place the cursor where you want your next code block to be inserted. You can als
   > **If** _expression_ **then** _command_ **else** _command_
 
   When creating a non-empty if-else statement it is possible to input the first instruction within the statement. Note that it cannot be another if based statement.
+
+* While loop
+  > **Create while loop**
+
+  > **Create while loop until** _expression_ _comparison_ _expression_
+
+  > **Create while loop until** _expression_
+
+  > **While** _expression_ _comparison_ _expression_ 
+
+  > **While** _expression_
+
+* For loop
+  > **Create fors loop**
+
+  > **Create for loop with** _variable_name_ **in** _variable_name_
+
+  > **Create for loop with** _variable_name_ **in range from** _expression_ **to** _expression_
+
 
 ### Editing Commands
 * Undo

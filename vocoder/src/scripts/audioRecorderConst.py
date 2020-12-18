@@ -1,7 +1,5 @@
 import pyaudio
 import wave
-from pynput.keyboard import Key, Controller, Listener
-
 
 def beep(bp):
     bipf = wave.open('../../beep.wav', 'rb')
@@ -17,9 +15,9 @@ def beep(bp):
     bipstream.close()
     bipf.close()
 
+
 p = pyaudio.PyAudio()
 beep(p)
-
 CHUNK = 1024
 FORMAT = pyaudio.paInt16
 CHANNELS = 2
@@ -35,34 +33,19 @@ stream = p.open(format=FORMAT,
 
 frames = []
 
-def on_press(key):
+for i in range(0, int(RATE / CHUNK * RECORD_SECONDS)):
     data = stream.read(CHUNK)
     frames.append(data)
 
-def on_release(key):
-    if key == Key.ctrl_l:
-        beep(p)
-        stream.stop_stream()
-        stream.close()
-        p.terminate()
+beep(p)
 
-        wf = wave.open(WAVE_OUTPUT_FILENAME, 'wb')
-        wf.setnchannels(CHANNELS)
-        wf.setsampwidth(p.get_sample_size(FORMAT))
-        wf.setframerate(RATE)
-        wf.writeframes(b''.join(frames))
-        wf.close()
-        return False
+stream.stop_stream()
+stream.close()
+p.terminate()
 
-# Collect events until released
-with Listener(
-        on_press=on_press,
-        on_release=on_release) as listener:
-    listener.join()
-
-keyboard = Controller ()# You should only need to define this once
-while(True):# This will repeat the indented code below forever   
-    break
-
-    keyboard.press(Key.enter)
-    keyboard.release(Key.enter)
+wf = wave.open(WAVE_OUTPUT_FILENAME, 'wb')
+wf.setnchannels(CHANNELS)
+wf.setsampwidth(p.get_sample_size(FORMAT))
+wf.setframerate(RATE)
+wf.writeframes(b''.join(frames))
+wf.close()
