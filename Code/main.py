@@ -46,7 +46,7 @@ def name_variable(variable_name):
     if naming_style == "snake":
         return string_to_snake(variable_name)
     else:
-        return string_to_snake(variable_name)
+        return string_to_camel(variable_name)
 
 
 def parse_declare_variable(response):
@@ -61,17 +61,17 @@ def parse_declare_variable(response):
                 output_string += str(variable)
                 counter += 1
             if nested_if:
-                print("\t" + string_to_camel(
+                print("\t" + name_variable(
                     response['entities']['VariableName:VariableName'][0]['body']) + ' = ' + output_string)
             else:
-                print(string_to_camel(
+                print(name_variable(
                     response['entities']['VariableName:VariableName'][0]['body']) + ' = ' + output_string)
         else:
             if nested_if:
                 print(
-                    "\t" + string_to_camel(response['entities']['VariableName:VariableName'][0]['body']) + ' = None\n')
+                    "\t" + name_variable(response['entities']['VariableName:VariableName'][0]['body']) + ' = None\n')
             else:
-                print(string_to_camel(response['entities']['VariableName:VariableName'][0]['body']) + ' = None\n')
+                print(name_variable(response['entities']['VariableName:VariableName'][0]['body']) + ' = None\n')
 
 
 def parse_if_else_statement(response):
@@ -351,11 +351,10 @@ def parse(string):
 
 
 naming_style = "snake"
-if len(sys.argv) > 0 and sys.argv[0] == "-snake":
+if len(sys.argv) > 0 and sys.argv[1] == "-snake":
     naming_style = "snake"
-elif len(sys.argv) > 0 and sys.argv[0] == "-camel":
+elif len(sys.argv) > 0 and sys.argv[1] == "-camel":
     naming_style = "camel"
-
 client = Wit("3OXTFKTQZFCKO3PEYBN3VYS23BDRCVRC")
 with open('output.wav', 'rb') as f:
     resp = client.speech(f, {'Content-Type': 'audio/wav'})
@@ -370,7 +369,7 @@ if resp['intents'][0]['name'] == 'DeclareVariable':
         print(front_end_block)
         parse_declare_variable(resp)
 
-if resp['intents'][0]['name'] == 'IfElseStatement':
+elif resp['intents'][0]['name'] == 'IfElseStatement':
     if resp['intents'][0]['confidence'] > confidence_threshold:
         print(front_end_block)
         parse_if_else_statement(resp)
@@ -424,6 +423,6 @@ elif resp['intents'][0]['name'] == 'WhileLoop':
 
 elif resp['intents'][0]['name'] == 'UndoCommand':
     if resp['intents'][0]['confidence'] > confidence_threshold:
-        print("dsd-section\nundo\n")
+        print("dsd-section\nvocoder-undo\n")
 else:
     print("dsd-section\nintent not found")

@@ -15,7 +15,7 @@
 	],
 	"main": "./out/extension.js",
 	"contributes": {
-		"keybindings":[
+		"keybindings": [
 			{
 				"command": "vocoder.captureAudio",
 				"key": "ctrl+alt+z",
@@ -32,21 +32,21 @@
 				}
 			},
 			{
-                "command": "vocoder.toSnake",
-                "title": "Vocoder: To Snake Case",
-                "icon": {
-                    "dark": "./style/white_camel.ico",
-                    "light": "./style/black_camel.ico"
-                }
-            },
-            {
-                "command": "vocoder.toCamel",
-                "title": "Vocoder: To Camel Case",
-                "icon": {
-                    "dark": "./style/white_snake.ico",
-                    "light": "./style/black_snake.ico"
-                }
-            }
+				"command": "vocoder.toSnake",
+				"title": "Vocoder: To Snake Case",
+				"icon": {
+					"dark": "./style/white_camel.ico",
+					"light": "./style/black_camel.ico"
+				}
+			},
+			{
+				"command": "vocoder.toCamel",
+				"title": "Vocoder: To Camel Case",
+				"icon": {
+					"dark": "./style/white_snake.ico",
+					"light": "./style/black_snake.ico"
+				}
+			}
 		],
 		"menus": {
 			"editor/title": [
@@ -55,16 +55,16 @@
 					"group": "navigation",
 					"when": "resourceLangId == python"
 				},
-                {
-                    "command": "vocoder.toSnake",
-                    "group": "navigation",
-                    "when": "vocoder:isSnake == false && resourceLangId == python"
-                },
-                {
-                    "command": "vocoder.toCamel",
-                    "group": "navigation",
-                    "when": "vocoder:isSnake == true && resourceLangId == python"
-                }
+				{
+					"command": "vocoder.toSnake",
+					"group": "navigation",
+					"when": "vocoder:isSnake == false && resourceLangId == python"
+				},
+				{
+					"command": "vocoder.toCamel",
+					"group": "navigation",
+					"when": "vocoder:isSnake == true && resourceLangId == python"
+				}
 			]
 		}
 	},
@@ -77,13 +77,13 @@
 		"test": "node ./out/test/runTest.js"
 	},
 	"devDependencies": {
-		"@types/vscode": "^1.50.0",
 		"@types/glob": "^7.1.3",
 		"@types/mocha": "^8.0.0",
 		"@types/node": "^12.11.7",
-		"eslint": "^7.9.0",
+		"@types/vscode": "^1.50.0",
 		"@typescript-eslint/eslint-plugin": "^4.1.1",
 		"@typescript-eslint/parser": "^4.1.1",
+		"eslint": "^7.9.0",
 		"glob": "^7.1.6",
 		"mocha": "^8.1.3",
 		"typescript": "^4.0.2",

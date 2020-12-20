@@ -138,12 +138,12 @@ function activate(context) {
         });
         let toSnake = vscode.commands.registerCommand('vocoder.toSnake', () => {
             vscode.window.showInformationMessage('Switching to Snake Case');
-            format = '-snake';
+            format = 'snake';
             vscode.commands.executeCommand('setContext', 'vocoder:isSnake', true);
         });
         let toCamel = vscode.commands.registerCommand('vocoder.toCamel', () => {
             vscode.window.showInformationMessage('Switching to Camel Case');
-            format = '-camel';
+            format = 'camel';
             vscode.commands.executeCommand('setContext', 'vocoder:isSnake', false);
         });
         context.subscriptions.push(disposable);
@@ -202,6 +202,7 @@ function elaborateCommand() {
         const vocoderSec = sections[1];
         if (vocoderSec.includes("vocoder-undo")) {
             vscode.commands.executeCommand("undo");
+            debugger;
             return;
         }
         if (vocoderSec.includes("vocoder-delete")) {
