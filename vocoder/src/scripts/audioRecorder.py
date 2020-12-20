@@ -1,21 +1,27 @@
 import pyaudio
 import wave
 from pynput.keyboard import Key, Controller, Listener
+import os
 
+onMac = True if os.name == 'posix' else False
 
 def beep(bp):
-    bipf = wave.open('../../beep.wav', 'rb')
-    bipstream = bp.open(format=bp.get_format_from_width(bipf.getsampwidth()),
-                    channels=bipf.getnchannels(),
-                    rate=bipf.getframerate(),
-                    output=True)
-    bipdata = bipf.readframes(1024)
-    while bipdata!= b'':
-        bipstream.write(bipdata)
+    if not onMac:
+        import winsound
+        winsound.Beep(1000, 750)
+    else:
+        bipf = wave.open('../../beep.wav', 'rb')
+        bipstream = bp.open(format=bp.get_format_from_width(bipf.getsampwidth()),
+                        channels=bipf.getnchannels(),
+                        rate=bipf.getframerate(),
+                        output=True)
         bipdata = bipf.readframes(1024)
-    bipstream.stop_stream()
-    bipstream.close()
-    bipf.close()
+        while bipdata!= b'':
+            bipstream.write(bipdata)
+            bipdata = bipf.readframes(1024)
+        bipstream.stop_stream()
+        bipstream.close()
+        bipf.close()
 
 p = pyaudio.PyAudio()
 beep(p)
