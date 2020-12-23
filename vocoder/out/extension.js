@@ -202,7 +202,6 @@ function elaborateCommand() {
         const vocoderSec = sections[1];
         if (vocoderSec.includes("vocoder-undo")) {
             vscode.commands.executeCommand("undo");
-            debugger;
             return;
         }
         if (vocoderSec.includes("vocoder-delete")) {
@@ -229,14 +228,30 @@ function writeOnEditor(s) {
         if (currSel.start.character === 0) {
             s = s.substring(s.indexOf('\n') + 1);
         }
-        yield editor.edit((edit) => { edit.replace(currSel, s); });
-        // computation of new position of the cursor
         // line from which the selection starts: does not depend on which direction the sel is made (start>end)
         const currLine = currSel.start.line;
-        const writtenLines = s.split(/\r\n|\r|\n/).length;
+        //selection of what stays before the selection --> to be used to align
+        const currLineBegin = new vscode.Position(currLine, 0);
+        let alignmentSel = new vscode.Selection(currLineBegin, currSel.start);
+        let alignmentString = editor.document.getText(alignmentSel);
+        alignmentString = alignmentString.replace(/[^\t.]/g, ' '); //if the alignment contains characters we don't want them
+        //split lines and align
+        let lines = s.split(/\r\n|\r|\n/);
+        const writtenLines = lines.length;
+        if (alignmentString != '')
+            for (let i = 1; i < writtenLines; i++)
+                lines[i] = alignmentString + lines[i];
+        // reconstruct string
+        let alignedS = lines[0];
+        for (let i = 1; i < writtenLines; i++)
+            alignedS = alignedS + '\n' + lines[i];
+        //write it
+        yield editor.edit((edit) => { edit.replace(currSel, alignedS); });
+        // computation of new position of the cursor
         // create a position where to put the cursor: at the end of what just written
-        const newEnd = new vscode.Position(currLine + writtenLines - 1, 0);
-        // set the selection to an empty one where defined
+        // = last line + last char
+        const newEnd = new vscode.Position(currLine + writtenLines - 1, lines[writtenLines - 1].length);
+        // set the selection to an empty one at the position we defined
         editor.selection = new vscode.Selection(newEnd, newEnd);
     });
 }
