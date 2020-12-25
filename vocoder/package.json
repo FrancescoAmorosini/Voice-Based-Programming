@@ -20,6 +20,11 @@
 				"command": "vocoder.captureAudio",
 				"key": "ctrl+alt+z",
 				"when": "vocoder:isKeybindingPressed && !vocoder:isRecording"
+			},
+			{
+				"command": "vocoder.discardAudio",
+				"key": "ctrl+alt+x",
+				"when": "!vocoder:isKeybindingPressed && vocoder:isRecording"
 			}
 		],
 		"commands": [
@@ -51,6 +56,11 @@
 				"command": "vocoder.fakeButton",
 				"title": "Vocoder: isRecording",
 				"icon": "./style/blue_mic.ico"
+			},
+			{
+				"command": "vocoder.discardAudio",
+				"title": "Vocoder: discard",
+				"icon": "./style/trash_red.ico"
 			}
 		],
 		"menus": {
@@ -63,6 +73,11 @@
 				{
 					"command": "vocoder.fakeButton",
 					"group": "navigation@21",
+					"when": "vocoder:isRecording && resourceLangId == python"
+				},
+				{
+					"command": "vocoder.discardAudio",
+					"group": "navigation@20",
 					"when": "vocoder:isRecording && resourceLangId == python"
 				},
 				{

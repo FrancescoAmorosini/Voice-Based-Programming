@@ -9,6 +9,7 @@ const landingURI = vscode.Uri.file(path.resolve(__dirname, '../landing.md'));
 const dsdVenv = path.resolve(cwd, '../../dsd-env');
 
 let format = '-camel';
+let discardNext = false;
 // when first loading the extension give a default setting
 //( or reload setting from a file)
 vscode.commands.executeCommand('setContext', 'vocoder:isSnake', false);
@@ -152,14 +153,15 @@ export async function activate(context: vscode.ExtensionContext) {
         format = 'camel';
 		vscode.commands.executeCommand('setContext', 'vocoder:isSnake', false);
     });
+    let discardAudio = vscode.commands.registerCommand('vocoder.discardAudio', () => {
+        discardNext = true;
+    });
 
     let fakeButton = vscode.commands.registerCommand('vocoder.fakeButton', () => {}); 
     
-    context.subscriptions.push(disposable);
     context.subscriptions.push(recordConst);
     context.subscriptions.push(toSnake);
     context.subscriptions.push(toCamel);
-    context.subscriptions.push(fakeButton);
     vscode.commands.executeCommand('setContext', 'vocoder:isKeybindingPressed', true);
     vscode.commands.executeCommand('setContext', 'vocoder:isRecording', false);
 }
@@ -190,7 +192,9 @@ function recordAudio(scriptName:string){
                     }
                     console.log(`stdout: ${stdout}`);
                     resolve(`stdout: ${stdout}`);
-                    elaborateCommand();
+                    
+                    discardNext ? vscode.window.showWarningMessage('Command has been discarded') : elaborateCommand();
+                    discardNext = false;
                     vscode.commands.executeCommand('setContext', 'vocoder:isKeybindingPressed', true);
                     vscode.commands.executeCommand('setContext', 'vocoder:isRecording', false);
                 });
@@ -211,7 +215,7 @@ function elaborateCommand(){
             return;
         }
         console.log(`stdout: ${stdout}`);
-        var sections = waitforOut(stdout);
+        var sections = stdout.split("dsd-section");
         const vocoderSec = sections[1];
         
         if(vocoderSec.includes("vocoder-undo")){
@@ -270,22 +274,6 @@ async function writeOnEditor(s: string){
     const newEnd = new vscode.Position(currLine + writtenLines - 1, lines[writtenLines-1].length);
     // set the selection to an empty one at the position we defined
     editor.selection = new vscode.Selection(newEnd,newEnd);
-}
-
-let retries = 0;
-function waitforOut(output:any) {
-    if(!output.includes('dsd-section') && retries < 15) {
-        ++retries;
-        setTimeout(waitforOut, 100, [output, retries]);
-        return;
-    }
-    else if(retries >= 15){
-        retries = 0;
-        console.log(`Bad format from backend processing: no dsd-section found or more than one found`);
-        vscode.window.showErrorMessage('Code processing failed');
-        return;
-    }
-    return output.split("dsd-section");
 }
 
 // this method is called when your extension is deactivated
