@@ -7,7 +7,7 @@ onMac = True if os.name == 'posix' else False
 def beep(bp):
     if not onMac:
         import winsound
-        winsound.Beep(1000, 750)
+        winsound.Beep(1000, 850)
     else:
         bipf = wave.open('../../beep.wav', 'rb')
         bipstream = bp.open(format=bp.get_format_from_width(bipf.getsampwidth()),

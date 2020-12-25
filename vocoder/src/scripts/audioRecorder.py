@@ -58,6 +58,7 @@ def on_release(key):
         wf.setframerate(RATE)
         wf.writeframes(b''.join(frames))
         wf.close()
+        return False
 
 # Collect events until released
 with Listener(
@@ -68,6 +69,3 @@ with Listener(
 keyboard = Controller ()# You should only need to define this once
 while(True):# This will repeat the indented code below forever   
     break
-
-    keyboard.press(Key.enter)
-    keyboard.release(Key.enter)

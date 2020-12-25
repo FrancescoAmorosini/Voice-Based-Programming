@@ -127,7 +127,7 @@ function activate(context) {
             }
             console.log(`stdout: ${stdout}`);
         });
-        //Disposable functions
+        // ------ DISPOSABLE FUNCTIONS -------
         let disposable = vscode.commands.registerCommand('vocoder.captureAudio', () => {
             vscode.commands.executeCommand('setContext', 'vocoder:isRecording', true);
             var scriptName = `${pre}audiorecorder${ext}`;
@@ -159,6 +159,7 @@ function activate(context) {
     });
 }
 exports.activate = activate;
+// ------ UTILITY FUNCTIONS -------
 function recordAudio(scriptName) {
     vscode.commands.executeCommand('setContext', 'vocoder:isKeybindingPressed', false);
     vscode.window.withProgress({
@@ -231,9 +232,7 @@ function writeOnEditor(s) {
             return;
         }
         const currSel = editor.selection;
-        if (currSel.start.character === 0) {
-            s = s.substring(s.indexOf('\n') + 1);
-        }
+        s = s.substring(s.indexOf('\n') + 1);
         // line from which the selection starts: does not depend on which direction the sel is made (start>end)
         const currLine = currSel.start.line;
         //selection of what stays before the selection --> to be used to align

@@ -128,7 +128,7 @@ export async function activate(context: vscode.ExtensionContext) {
         console.log(`stdout: ${stdout}`);
     });
 
-    //Disposable functions
+    // ------ DISPOSABLE FUNCTIONS -------
 	let disposable = vscode.commands.registerCommand('vocoder.captureAudio', () => {
         vscode.commands.executeCommand('setContext', 'vocoder:isRecording', true);
         var scriptName = `${pre}audiorecorder${ext}`;
@@ -164,6 +164,7 @@ export async function activate(context: vscode.ExtensionContext) {
     vscode.commands.executeCommand('setContext', 'vocoder:isRecording', false);
 }
 
+// ------ UTILITY FUNCTIONS -------
 function recordAudio(scriptName:string){
     vscode.commands.executeCommand('setContext', 'vocoder:isKeybindingPressed', false);
         vscode.window.withProgress({
@@ -238,9 +239,7 @@ async function writeOnEditor(s: string){
         return;
     }
     const currSel = editor.selection;
-    if(currSel.start.character === 0){
-        s = s.substring(s.indexOf('\n') + 1);
-    }
+    s = s.substring(s.indexOf('\n') + 1);
 
     // line from which the selection starts: does not depend on which direction the sel is made (start>end)
     const currLine = currSel.start.line;
