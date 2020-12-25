@@ -24,7 +24,6 @@ def beep(bp):
 
 
 p = pyaudio.PyAudio()
-beep(p)
 CHUNK = 1024
 FORMAT = pyaudio.paInt16
 CHANNELS = 2
@@ -39,6 +38,7 @@ stream = p.open(format=FORMAT,
                 frames_per_buffer=CHUNK)
 
 frames = []
+beep(p)
 
 for i in range(0, int(RATE / CHUNK * RECORD_SECONDS)):
     data = stream.read(CHUNK)

@@ -8,7 +8,7 @@ onMac = True if os.name == 'posix' else False
 def beep(bp):
     if not onMac:
         import winsound
-        winsound.Beep(1000, 750)
+        winsound.Beep(1000, 850)
     else:
         bipf = wave.open('../../beep.wav', 'rb')
         bipstream = bp.open(format=bp.get_format_from_width(bipf.getsampwidth()),
@@ -24,7 +24,6 @@ def beep(bp):
         bipf.close()
 
 p = pyaudio.PyAudio()
-beep(p)
 
 CHUNK = 2048
 FORMAT = pyaudio.paInt16
@@ -60,12 +59,11 @@ def on_release(key):
         wf.close()
         return False
 
+beep(p)
 # Collect events until released
 with Listener(
         on_press=on_press,
         on_release=on_release) as listener:
     listener.join()
 
-keyboard = Controller ()# You should only need to define this once
-while(True):# This will repeat the indented code below forever   
-    break
+keyboard = Controller ()
