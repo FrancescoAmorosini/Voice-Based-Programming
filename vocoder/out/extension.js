@@ -129,10 +129,12 @@ function activate(context) {
         });
         //Disposable functions
         let disposable = vscode.commands.registerCommand('vocoder.captureAudio', () => {
+            vscode.commands.executeCommand('setContext', 'vocoder:isRecording', true);
             var scriptName = `${pre}audiorecorder${ext}`;
             recordAudio(scriptName);
         });
         let recordConst = vscode.commands.registerCommand('vocoder.recordConst', () => {
+            vscode.commands.executeCommand('setContext', 'vocoder:isRecording', true);
             var scriptName = `${pre}audiorecorderConst${ext}`;
             recordAudio(scriptName);
         });
@@ -146,11 +148,14 @@ function activate(context) {
             format = 'camel';
             vscode.commands.executeCommand('setContext', 'vocoder:isSnake', false);
         });
+        let fakeButton = vscode.commands.registerCommand('vocoder.fakeButton', () => { });
         context.subscriptions.push(disposable);
         context.subscriptions.push(recordConst);
         context.subscriptions.push(toSnake);
         context.subscriptions.push(toCamel);
+        context.subscriptions.push(fakeButton);
         vscode.commands.executeCommand('setContext', 'vocoder:isKeybindingPressed', true);
+        vscode.commands.executeCommand('setContext', 'vocoder:isRecording', false);
     });
 }
 exports.activate = activate;
@@ -181,6 +186,7 @@ function recordAudio(scriptName) {
                 resolve(`stdout: ${stdout}`);
                 elaborateCommand();
                 vscode.commands.executeCommand('setContext', 'vocoder:isKeybindingPressed', true);
+                vscode.commands.executeCommand('setContext', 'vocoder:isRecording', false);
             });
         });
     });
@@ -238,13 +244,16 @@ function writeOnEditor(s) {
         //split lines and align
         let lines = s.split(/\r\n|\r|\n/);
         const writtenLines = lines.length;
-        if (alignmentString != '')
-            for (let i = 1; i < writtenLines; i++)
+        if (alignmentString !== '') {
+            for (let i = 1; i < writtenLines; i++) {
                 lines[i] = alignmentString + lines[i];
+            }
+        }
         // reconstruct string
         let alignedS = lines[0];
-        for (let i = 1; i < writtenLines; i++)
+        for (let i = 1; i < writtenLines; i++) {
             alignedS = alignedS + '\n' + lines[i];
+        }
         //write it
         yield editor.edit((edit) => { edit.replace(currSel, alignedS); });
         // computation of new position of the cursor

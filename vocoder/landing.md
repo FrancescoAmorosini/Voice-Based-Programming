@@ -87,7 +87,7 @@ Place the cursor where you want your next code block to be inserted. You can als
   > **While** _expression_
 
 * For loop
-  > **Create fors loop**
+  > **Create for loop**
 
   > **Create for loop with** _variable_name_ **in** _variable_name_
 

@@ -19,7 +19,7 @@
 			{
 				"command": "vocoder.captureAudio",
 				"key": "ctrl+alt+z",
-				"when": "vocoder:isKeybindingPressed"
+				"when": "vocoder:isKeybindingPressed && !vocoder:isRecording"
 			}
 		],
 		"commands": [
@@ -46,24 +46,34 @@
 					"dark": "./style/white_snake.ico",
 					"light": "./style/black_snake.ico"
 				}
+			},
+			{
+				"command": "vocoder.fakeButton",
+				"title": "Vocoder: isRecording",
+				"icon": "./style/blue_mic.ico"
 			}
 		],
 		"menus": {
 			"editor/title": [
 				{
 					"command": "vocoder.recordConst",
-					"group": "navigation",
-					"when": "resourceLangId == python"
+					"group": "navigation@21",
+					"when": "!vocoder:isRecording && resourceLangId == python"
+				},
+				{
+					"command": "vocoder.fakeButton",
+					"group": "navigation@21",
+					"when": "vocoder:isRecording && resourceLangId == python"
 				},
 				{
 					"command": "vocoder.toSnake",
-					"group": "navigation",
-					"when": "vocoder:isSnake == false && resourceLangId == python"
+					"group": "navigation@22",
+					"when": "!vocoder:isSnake && resourceLangId == python"
 				},
 				{
 					"command": "vocoder.toCamel",
-					"group": "navigation",
-					"when": "vocoder:isSnake == true && resourceLangId == python"
+					"group": "navigation@22",
+					"when": "vocoder:isSnake && resourceLangId == python"
 				}
 			]
 		}

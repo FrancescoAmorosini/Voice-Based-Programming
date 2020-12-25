@@ -26,7 +26,7 @@ def beep(bp):
 p = pyaudio.PyAudio()
 beep(p)
 
-CHUNK = 1024
+CHUNK = 2048
 FORMAT = pyaudio.paInt16
 CHANNELS = 2
 RATE = 44100
@@ -58,7 +58,6 @@ def on_release(key):
         wf.setframerate(RATE)
         wf.writeframes(b''.join(frames))
         wf.close()
-        return False
 
 # Collect events until released
 with Listener(
