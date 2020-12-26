@@ -292,14 +292,14 @@ async function prepareMacScript(){
             return;
         }
         console.log(`Mac script written`);
+        grantMacExecutablePermission('/conda');
+        grantMacExecutablePermission('/venv');
     });
-    grantMacExecutablePermission('/conda');
-    grantMacExecutablePermission('/venv');
 }
 
-async function grantMacExecutablePermission(folder: string){
+function grantMacExecutablePermission(folder: string){
     let cPath = shell.concat(folder);
-    await exec(`chmod +x audioRecorderConst.sh`, {cwd: path.resolve(cwd, cPath)}, (error: any, stdout: any, stderr: any) => {
+    exec(`chmod +x audioRecorderConst.sh`, {cwd: path.resolve(cwd, cPath)}, (error: any, stdout: any, stderr: any) => {
         if (error) {
             console.log(`Giving executable permission failed`);
             console.log(`error: ${error.message}`);

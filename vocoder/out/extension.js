@@ -283,27 +283,25 @@ function prepareMacScript() {
                 return;
             }
             console.log(`Mac script written`);
+            grantMacExecutablePermission('/conda');
+            grantMacExecutablePermission('/venv');
         });
-        grantMacExecutablePermission('/conda');
-        grantMacExecutablePermission('/venv');
     });
 }
 function grantMacExecutablePermission(folder) {
-    return __awaiter(this, void 0, void 0, function* () {
-        let cPath = shell.concat(folder);
-        yield exec(`chmod +x audioRecorderConst.sh`, { cwd: path.resolve(cwd, cPath) }, (error, stdout, stderr) => {
-            if (error) {
-                console.log(`Giving executable permission failed`);
-                console.log(`error: ${error.message}`);
-                return;
-            }
-            if (stderr) {
-                console.log(`Giving executable permission failed`);
-                console.log(`stderr: ${stderr}`);
-                return;
-            }
-            console.log(`Executable permissions granted to ${folder} created script`);
-        });
+    let cPath = shell.concat(folder);
+    exec(`chmod +x audioRecorderConst.sh`, { cwd: path.resolve(cwd, cPath) }, (error, stdout, stderr) => {
+        if (error) {
+            console.log(`Giving executable permission failed`);
+            console.log(`error: ${error.message}`);
+            return;
+        }
+        if (stderr) {
+            console.log(`Giving executable permission failed`);
+            console.log(`stderr: ${stderr}`);
+            return;
+        }
+        console.log(`Executable permissions granted to ${folder} created script`);
     });
 }
 //# sourceMappingURL=extension.js.map
