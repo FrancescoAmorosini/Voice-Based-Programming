@@ -151,6 +151,7 @@ export async function activate(context: vscode.ExtensionContext) {
     });
     let discardAudio = vscode.commands.registerCommand('vocoder.discardAudio', () => {
         discardNext = true;
+        vscode.window.showWarningMessage('Current recording will be discarded')
     });
 
     let fakeButton = vscode.commands.registerCommand('vocoder.fakeButton', () => {}); 
@@ -292,7 +293,12 @@ async function prepareMacScript(){
         }
         console.log(`Mac script written`);
     });
-    let cPath = shell.concat('/conda');
+    grantMacExecutablePermission('/conda');
+    grantMacExecutablePermission('/venv');
+}
+
+async function grantMacExecutablePermission(folder: string){
+    let cPath = shell.concat(folder);
     await exec(`chmod +x audioRecorderConst.sh`, {cwd: path.resolve(cwd, cPath)}, (error: any, stdout: any, stderr: any) => {
         if (error) {
             console.log(`Giving executable permission failed`);
@@ -304,6 +310,6 @@ async function prepareMacScript(){
             console.log(`stderr: ${stderr}`);
             return;
         }
-        console.log(`Executable permissions granted to created script`);
+        console.log(`Executable permissions granted to ${folder} created script`);
     });
 }
