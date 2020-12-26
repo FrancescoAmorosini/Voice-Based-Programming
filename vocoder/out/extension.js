@@ -151,6 +151,7 @@ function activate(context) {
         });
         let discardAudio = vscode.commands.registerCommand('vocoder.discardAudio', () => {
             discardNext = true;
+            vscode.window.showWarningMessage('Current recording will be discarded');
         });
         let fakeButton = vscode.commands.registerCommand('vocoder.fakeButton', () => { });
         context.subscriptions.push(recordConst);
@@ -290,7 +291,13 @@ function prepareMacScript() {
             }
             console.log(`Mac script written`);
         });
-        let cPath = shell.concat('/conda');
+        grantMacExecutablePermission('/conda');
+        grantMacExecutablePermission('/venv');
+    });
+}
+function grantMacExecutablePermission(folder) {
+    return __awaiter(this, void 0, void 0, function* () {
+        let cPath = shell.concat(folder);
         yield exec(`chmod +x audioRecorderConst.sh`, { cwd: path.resolve(cwd, cPath) }, (error, stdout, stderr) => {
             if (error) {
                 console.log(`Giving executable permission failed`);
@@ -302,7 +309,7 @@ function prepareMacScript() {
                 console.log(`stderr: ${stderr}`);
                 return;
             }
-            console.log(`Executable permissions granted to created script`);
+            console.log(`Executable permissions granted to ${folder} created script`);
         });
     });
 }

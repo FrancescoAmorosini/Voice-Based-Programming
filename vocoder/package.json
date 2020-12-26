@@ -55,12 +55,18 @@
 			{
 				"command": "vocoder.fakeButton",
 				"title": "Vocoder: isRecording",
-				"icon": "./style/blue_mic.ico"
+				"icon": {
+					"dark": "./style/dark_grey_mic.ico",
+					"light": "./style/grey_mic.ico"
+				}
 			},
 			{
 				"command": "vocoder.discardAudio",
 				"title": "Vocoder: discard",
-				"icon": "./style/trash_red.ico"
+				"icon": {
+					"dark": "./style/light_trash.ico",
+					"light": "./style/dark_trash.ico"
+				}
 			}
 		],
 		"menus": {
