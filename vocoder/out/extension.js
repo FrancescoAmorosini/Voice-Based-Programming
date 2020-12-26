@@ -55,7 +55,8 @@ let detectConda = new Promise(function (resolve, reject) {
 });
 //Delete duplicate environment
 const deleteFolderRecursive = function (pathh) {
-    if (fs.existsSync(pathh)) {
+    if (fs.existsSync(pathh) && shell.includes("conda")) {
+        outputChannel.appendLine('Duplicate environment detected: removing venv...');
         fs.readdirSync(pathh).forEach((file, index) => {
             const curPath = path.resolve(pathh, file);
             if (fs.lstatSync(curPath).isDirectory()) { // recurse
@@ -72,6 +73,7 @@ const deleteFolderRecursive = function (pathh) {
 function activate(context) {
     return __awaiter(this, void 0, void 0, function* () {
         console.log('Activating the extension...');
+        outputChannel.show(true);
         yield detectConda;
         outputChannel.appendLine('Activating vocoder...');
         //Environment check
@@ -87,10 +89,9 @@ function activate(context) {
                 return;
             }
             if (stdout.includes('dsd-env')) {
-                //Delete duplicate environment
-                //deleteFolderRecursive(dsdVenv);
-                console.log('environment is ready!');
                 outputChannel.appendLine('--- dsd-env has been detected! ---');
+                deleteFolderRecursive(dsdVenv); //Delete duplicate environment
+                outputChannel.appendLine('Environment is ready!');
                 vscode.window.showInformationMessage('Everything is ready! Let\'s code!');
                 //Display landing page
                 vscode.commands.executeCommand('markdown.showPreview', landingURI);
@@ -120,7 +121,6 @@ function activate(context) {
                             }
                             resolve(`stdout: ${stdout}`);
                             outputChannel.appendLine('Modules successfully installed');
-                            console.log('Environment is ready!');
                             vscode.window.showInformationMessage('Everything is ready! Let\'s code!');
                         });
                     });
@@ -163,6 +163,8 @@ function activate(context) {
 exports.activate = activate;
 // ------ UTILITY FUNCTIONS -------
 function recordAudio(scriptName) {
+    outputChannel.appendLine('--- New command ---');
+    outputChannel.appendLine('Recording...');
     vscode.commands.executeCommand('setContext', 'vocoder:isKeybindingPressed', false);
     vscode.window.withProgress({
         location: vscode.ProgressLocation.Notification,
@@ -187,7 +189,8 @@ function recordAudio(scriptName) {
                 }
                 console.log(`stdout: ${stdout}`);
                 resolve(`stdout: ${stdout}`);
-                discardNext ? vscode.window.showWarningMessage('Command has been discarded') : elaborateCommand();
+                discardNext ? outputChannel.appendLine('Discarded!') :
+                    discardNext ? vscode.window.showWarningMessage('Command has been discarded') : elaborateCommand();
                 discardNext = false;
                 vscode.commands.executeCommand('setContext', 'vocoder:isKeybindingPressed', true);
                 vscode.commands.executeCommand('setContext', 'vocoder:isRecording', false);
@@ -196,6 +199,7 @@ function recordAudio(scriptName) {
     });
 }
 function elaborateCommand() {
+    outputChannel.appendLine('Interpreting audio input...');
     exec([`${pre}audiointerpreter${ext}`, format].join(' '), { cwd: path.resolve(cwd, shell) }, (error, stdout, stderr) => {
         if (error) {
             console.log(`error: ${error.message}`);
@@ -209,6 +213,8 @@ function elaborateCommand() {
         }
         console.log(`stdout: ${stdout}`);
         var sections = stdout.split("dsd-section");
+        var intent = sections[0].match(/intents.*\}/).toString().match(/name': '[A-Z, a-z, 0-9]*'/).toString().match(/'[A-Z, a-z, 0-9]*'/).toString();
+        outputChannel.appendLine('Intent detected: '.concat(intent));
         const vocoderSec = sections[1];
         if (vocoderSec.includes("vocoder-undo")) {
             vscode.commands.executeCommand("undo");

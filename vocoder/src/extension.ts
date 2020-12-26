@@ -49,7 +49,8 @@ let detectConda =new Promise(function (resolve, reject) {
 
 //Delete duplicate environment
 const deleteFolderRecursive = function(pathh:any) {
-    if (fs.existsSync(pathh)) {
+    if (fs.existsSync(pathh) && shell.includes("conda")) {
+        outputChannel.appendLine('Duplicate environment detected: removing venv...');
       fs.readdirSync(pathh).forEach((file:string, index:number) => {
         const curPath = path.resolve(pathh, file);
         if (fs.lstatSync(curPath).isDirectory()) { // recurse
@@ -66,7 +67,8 @@ const deleteFolderRecursive = function(pathh:any) {
 
 export async function activate(context: vscode.ExtensionContext) {
     console.log('Activating the extension...');
-    
+    outputChannel.show(true);
+
     await detectConda;
 
     outputChannel.appendLine('Activating vocoder...');
@@ -84,11 +86,9 @@ export async function activate(context: vscode.ExtensionContext) {
             return;
         }
         if (stdout.includes('dsd-env')) {
-            //Delete duplicate environment
-            //deleteFolderRecursive(dsdVenv);
-            
-            console.log('environment is ready!');
             outputChannel.appendLine('--- dsd-env has been detected! ---');
+            deleteFolderRecursive(dsdVenv); //Delete duplicate environment
+            outputChannel.appendLine('Environment is ready!');
             vscode.window.showInformationMessage('Everything is ready! Let\'s code!'); 
             
             //Display landing page
@@ -119,7 +119,6 @@ export async function activate(context: vscode.ExtensionContext) {
                         }
                         resolve(`stdout: ${stdout}`);
                         outputChannel.appendLine('Modules successfully installed');
-                        console.log('Environment is ready!');
                         vscode.window.showInformationMessage('Everything is ready! Let\'s code!');
                     });
                 });
@@ -168,6 +167,8 @@ export async function activate(context: vscode.ExtensionContext) {
 
 // ------ UTILITY FUNCTIONS -------
 function recordAudio(scriptName:string){
+    outputChannel.appendLine('--- New command ---');
+    outputChannel.appendLine('Recording...');
     vscode.commands.executeCommand('setContext', 'vocoder:isKeybindingPressed', false);
         vscode.window.withProgress({
             location: vscode.ProgressLocation.Notification,
@@ -193,6 +194,7 @@ function recordAudio(scriptName:string){
                     console.log(`stdout: ${stdout}`);
                     resolve(`stdout: ${stdout}`);
                     
+                    discardNext ? outputChannel.appendLine('Discarded!') :
                     discardNext ? vscode.window.showWarningMessage('Command has been discarded') : elaborateCommand();
                     discardNext = false;
                     vscode.commands.executeCommand('setContext', 'vocoder:isKeybindingPressed', true);
@@ -203,6 +205,7 @@ function recordAudio(scriptName:string){
 }
 
 function elaborateCommand(){
+    outputChannel.appendLine('Interpreting audio input...');
     exec([`${pre}audiointerpreter${ext}`, format].join(' '), {cwd: path.resolve(cwd, shell)}, (error: any, stdout: any, stderr: any) => {
         if (error) {
             console.log(`error: ${error.message}`);
@@ -216,6 +219,8 @@ function elaborateCommand(){
         }
         console.log(`stdout: ${stdout}`);
         var sections = stdout.split("dsd-section");
+        var intent = sections[0].match(/intents.*\}/).toString().match(/name': '[A-Z, a-z, 0-9]*'/).toString().match(/'[A-Z, a-z, 0-9]*'/).toString();
+        outputChannel.appendLine('Intent detected: '.concat(intent));
         const vocoderSec = sections[1];
         
         if(vocoderSec.includes("vocoder-undo")){
