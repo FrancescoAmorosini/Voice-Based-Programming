@@ -126,7 +126,7 @@ export async function activate(context: vscode.ExtensionContext) {
     });
 
     // ------ DISPOSABLE FUNCTIONS -------
-	let disposable = vscode.commands.registerCommand('vocoder.captureAudio', () => {
+	let record = vscode.commands.registerCommand('vocoder.captureAudio', () => {
         vscode.commands.executeCommand('setContext', 'vocoder:isRecording', true);
         var scriptName = `${pre}audiorecorder${ext}`;
         recordAudio(scriptName);
@@ -190,7 +190,7 @@ function recordAudio(scriptName:string){
                     console.log(`stdout: ${stdout}`);
                     resolve(`stdout: ${stdout}`);
                     
-                    discardNext ? (vscode.window.showWarningMessage('Command has been discarded'), outputChannel.appendLine('Command discarded!')): elaborateCommand();
+                    discardNext ? outputChannel.appendLine('Command has been discarded!'): elaborateCommand();
                     discardNext = false;
                     vscode.commands.executeCommand('setContext', 'vocoder:isKeybindingPressed', true);
                     vscode.commands.executeCommand('setContext', 'vocoder:isRecording', false);
