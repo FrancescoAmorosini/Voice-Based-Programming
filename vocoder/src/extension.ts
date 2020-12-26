@@ -7,29 +7,22 @@ const fs = require("fs");
 const cwd = path.resolve(__dirname, '../src');
 const landingURI = vscode.Uri.file(path.resolve(__dirname, '../landing.md'));
 const dsdVenv = path.resolve(cwd, '../../dsd-env');
+const outputChannel = vscode.window.createOutputChannel("vocoder");
 
 let format = '-camel';
 let discardNext = false;
-// when first loading the extension give a default setting
-//( or reload setting from a file)
 vscode.commands.executeCommand('setContext', 'vocoder:isSnake', false);
+vscode.commands.executeCommand('setContext', 'vocoder:isKeybindingPressed', true);
+vscode.commands.executeCommand('setContext', 'vocoder:isRecording', false);
 
 //Detect OS
 let shell = '';
 let ext = '';
 let pre = '';
-if (platform() === 'win32'){		
-    shell = 'scripts/cmd'; 		
-    ext = '.cmd';		
-}		
-else{		
-    shell = 'scripts/bash'; 		
-    ext = '.sh'; 		
-    pre = './'; 		
-    prepareMacScript();		
-}
 
-const outputChannel = vscode.window.createOutputChannel("vocoder");
+platform() === 'win32' ? 
+    (shell = 'scripts/cmd', ext = '.cmd') :
+    (shell = 'scripts/bash', ext = '.sh', prepareMacScript());
 
 //Detect anaconda
 let detectConda =new Promise(function (resolve, reject) {
@@ -49,8 +42,7 @@ let detectConda =new Promise(function (resolve, reject) {
 
 //Delete duplicate environment
 const deleteFolderRecursive = function(pathh:any) {
-    if (fs.existsSync(pathh) && shell.includes("conda")) {
-        outputChannel.appendLine('Duplicate environment detected: removing venv...');
+    if (fs.existsSync(pathh)) {
       fs.readdirSync(pathh).forEach((file:string, index:number) => {
         const curPath = path.resolve(pathh, file);
         if (fs.lstatSync(curPath).isDirectory()) { // recurse
@@ -87,7 +79,12 @@ export async function activate(context: vscode.ExtensionContext) {
         }
         if (stdout.includes('dsd-env')) {
             outputChannel.appendLine('--- dsd-env has been detected! ---');
-            deleteFolderRecursive(dsdVenv); //Delete duplicate environment
+            //Detect and Delete duplicate environment
+            if(shell.includes("conda") && fs.existsSync(dsdVenv)){
+                outputChannel.appendLine('Duplicate environment detected: removing venv...');
+                deleteFolderRecursive(dsdVenv);
+            }
+
             outputChannel.appendLine('Environment is ready!');
             vscode.window.showInformationMessage('Everything is ready! Let\'s code!'); 
             
@@ -161,8 +158,6 @@ export async function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(recordConst);
     context.subscriptions.push(toSnake);
     context.subscriptions.push(toCamel);
-    vscode.commands.executeCommand('setContext', 'vocoder:isKeybindingPressed', true);
-    vscode.commands.executeCommand('setContext', 'vocoder:isRecording', false);
 }
 
 // ------ UTILITY FUNCTIONS -------
@@ -194,8 +189,7 @@ function recordAudio(scriptName:string){
                     console.log(`stdout: ${stdout}`);
                     resolve(`stdout: ${stdout}`);
                     
-                    discardNext ? outputChannel.appendLine('Discarded!') :
-                    discardNext ? vscode.window.showWarningMessage('Command has been discarded') : elaborateCommand();
+                    discardNext ? (vscode.window.showWarningMessage('Command has been discarded'), outputChannel.appendLine('Command discarded!')): elaborateCommand();
                     discardNext = false;
                     vscode.commands.executeCommand('setContext', 'vocoder:isKeybindingPressed', true);
                     vscode.commands.executeCommand('setContext', 'vocoder:isRecording', false);
