@@ -134,7 +134,7 @@ def parse_add_comment(response):
             final_output += out
             return final_output
         else:
-            return ("# " + response['entities']['CommentText:CommentText'][0]['body'])
+            return "# " + response['entities']['CommentText:CommentText'][0]['body']
     except KeyError:
         if len(response['entities']['Expression:Expression'][0]['body']) > 120:
             final_output = ""
@@ -149,7 +149,7 @@ def parse_add_comment(response):
             final_output += out
             return final_output
         else:
-            return ("# " + response['entities']['Expression:Expression'][0]['body'])
+            return "# " + response['entities']['Expression:Expression'][0]['body']
 
 
 def parse_for_loop(response):
@@ -190,7 +190,7 @@ def parse_for_loop(response):
         message += placeholder_string
         return (message)
     else:
-        return ("for "+placeholder_string+" in range( "+placeholder_string+","+placeholder_string+" ):\n\t")
+        return "for " + placeholder_string + " in range( " + placeholder_string + "," + placeholder_string + " ):\n\t"
 
 
 def parse_while_loop(response):
@@ -298,9 +298,9 @@ def parse(string):
 
 
 def parse_response(file_name):
-    with open('CommentHelloWorld.wav', 'rb') as f:
+    with open(file_name, 'rb') as f:
         response = client.speech(f, {'Content-Type': 'audio/wav'})
-    if file_name['intents'][0]['name'] == 'DeclareVariable':
+    if response['intents'][0]['name'] == 'DeclareVariable':
         if response['intents'][0]['confidence'] > confidence_threshold:
             print(front_end_block)
             return parse_declare_variable(response)
@@ -372,15 +372,8 @@ elif len(sys.argv) > 1 and sys.argv[1] == "-camel":
     naming_style = "camel"
 client = Wit("3OXTFKTQZFCKO3PEYBN3VYS23BDRCVRC")
 front_end_error = "dsd-section\nvocoder-error-message\n"
+front_end_error = "dsd-section\nvocoder-warning-message\n"
 front_end_block = "dsd-section\nvocoder-code-block\n"
 placeholder_string = "#placeholder"
 confidence_threshold = 0.75
-print(parse_response('CommentHelloWorld.wav'))
-
-# def test_answer():
-#     with open('IfCount5.wav', 'rb') as f:
-#         resp = client.speech(f, {'Content-Type': 'audio/wav'})
-#     resp['intents'][0]['name'] = "AddingComment"
-#     resp['intents'][0]['confidence'] = 0.8
-#     resp['entities']['CommentText:CommentText'][0]['body'] = "hello world"
-#     assert parse_response(resp) == front_end_block + "\n#hello world"
+print(parse_response('CreateAnIfStatement.wav'))
