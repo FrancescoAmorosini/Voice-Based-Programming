@@ -22,7 +22,7 @@ let pre = '';
 
 platform() === 'win32' ? 
     (shell = 'scripts/cmd', ext = '.cmd') :
-    (shell = 'scripts/bash', ext = '.sh', prepareMacScript());
+    (shell = 'scripts/bash', ext = '.sh', pre = './', prepareMacScript());
 
 //Detect anaconda
 let detectConda =new Promise(function (resolve, reject) {
@@ -292,24 +292,26 @@ async function prepareMacScript(){
             return;
         }
         console.log(`Mac script written`);
-        grantMacExecutablePermission('/conda');
-        grantMacExecutablePermission('/venv');
+        grantMacExecutablePermission('/conda','audioRecorderConst.sh');
+        grantMacExecutablePermission('/venv','audioRecorderConst.sh');
+        grantMacExecutablePermission('/conda','audioRecorder.sh');
+        grantMacExecutablePermission('/venv','audioRecorder.sh');
     });
 }
 
-function grantMacExecutablePermission(folder: string){
+function grantMacExecutablePermission(folder: string, file: string){
     let cPath = shell.concat(folder);
-    exec(`chmod +x audioRecorderConst.sh`, {cwd: path.resolve(cwd, cPath)}, (error: any, stdout: any, stderr: any) => {
+    exec(`chmod +x ${file}`, {cwd: path.resolve(cwd, cPath)}, (error: any, stdout: any, stderr: any) => {
         if (error) {
-            console.log(`Giving executable permission failed`);
+            console.log(`Giving executable permission to ${folder}/${file} failed`);
             console.log(`error: ${error.message}`);
             return;
         }
         if (stderr) {
-            console.log(`Giving executable permission failed`);
+            console.log(`Giving executable permission to ${folder}/${file} failed`);
             console.log(`stderr: ${stderr}`);
             return;
         }
-        console.log(`Executable permissions granted to ${folder} created script`);
+        console.log(`Executable permissions granted to ${folder}/${file}`);
     });
 }

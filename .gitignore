@@ -9,4 +9,6 @@
 /dsd-env
 vocoder/src/scripts/bash/conda/audiorecorderConst.sh
 vocoder/src/scripts/bash/venv/audiorecorderConst.sh
+vocoder/src/scripts/bash/conda/audiorecorder.sh
+vocoder/src/scripts/bash/venv/audiorecorder.sh
 vocoder/src/scripts/bash/done.data

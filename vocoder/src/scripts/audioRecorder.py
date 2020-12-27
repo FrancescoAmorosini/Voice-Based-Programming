@@ -17,7 +17,8 @@ p = pyaudio.PyAudio()
 CHUNK = 2048
 FORMAT = pyaudio.paInt16
 CHANNELS = 2
-RATE = 44100
+RATE = 20000
+#since chunk size is doubles wrt audiorecConst, rate is half
 WAVE_OUTPUT_FILENAME = "output.wav"
 
 stream = p.open(format=FORMAT,
@@ -29,7 +30,9 @@ stream = p.open(format=FORMAT,
 frames = []
 
 def on_press(key):
-    data = stream.read(CHUNK)
+    data = stream.read(CHUNK, exception_on_overflow = False)
+    # exception_on_overflow = False wil prevent launching an exception
+    # audio recording/processing will fail but no exception that will ruin us
     frames.append(data)
 
 def on_release(key):
@@ -54,4 +57,9 @@ with Listener(
         on_release=on_release) as listener:
     listener.join()
 
-keyboard = Controller ()
+#keyboard = Controller ()
+
+if onMac:
+    done = open("../done.data","w+")
+    done.write("true")
+    done.close()
