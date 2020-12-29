@@ -48,7 +48,7 @@ def name_variable(variable_name):
         return string_to_camel(variable_name)
 
 
-def parse_declare_variable(response):
+def parse_assign_variable(response):
     if 'VariableName:VariableName' in response['entities']:
         if 'Expression:Expression' in response['entities']:
             expression = parse(response['entities']['Expression:Expression'][0]['body'])
@@ -62,8 +62,10 @@ def parse_declare_variable(response):
             if nested_if:
                 return "\t" + name_variable(response['entities']['VariableName:VariableName'][0]['body']) + ' = None\n'
             else:
-                return name_variable(response['entities']['VariableName:VariableName'][0]['body']) + ' = None\n'
-
+                return name_variable(response['entities']['VariableName:VariableName'][0]['body']) + ' = None'
+    else :
+        print(front_end_error)
+        print("Variable Name not found")
 
 def parse_if_else_statement(response):
     first_expression = parse(response['entities']['Expression:Expression'][0]['body'])
@@ -173,7 +175,7 @@ def parse_for_loop(response):
             return
         message = "for " + variable + " in range ( " + first_expression + " , " + second_expression + "):\n\t"
         message += placeholder_string
-        print(message)
+        return (message)
     elif 'VariableName:VariableName' in response['entities']:
         try:
             variable1 = response['entities']['VariableName:VariableName'][0]['body']
@@ -225,6 +227,39 @@ def parse_while_loop(response):
         return "while" + expression + ":\n\t" + placeholder_string
     else:
         return "while " + placeholder_string + " com exp :\n\t" + placeholder_string
+
+def parse_create_function(response):
+    if 'Parameter:Parameter' in response['entities'] :
+        try:
+            functionName = response['entities']['FunctionName:FunctionName'][0]['body']
+        except KeyError:
+            print(front_end_error)
+            print("FunctionName not found")
+            return
+        message = "def" + functionName + " ("
+        for parameter in response['entities'] :
+            message += parameter['body'] + ", "
+        message[:-2]
+        message += ") :"
+        return (message)
+    else :
+        try:
+            functionName = response['entities']['FunctionName:FunctionName'][0]['body']
+        except KeyError:
+            print(front_end_error)
+            print("FunctionName not found")
+            return
+        message = "def" + functionName + "() :"
+        return (message)
+
+def parse_return(response):
+    try:
+        expression = parse(response['entities']['Expression:Expression'][0]['body'])
+        return "return " + expression
+    except KeyError:
+        print(front_end_error)
+        print("Expression not found")
+        return
 
 
 # takes a string and converts it to operations and variables
@@ -300,10 +335,10 @@ def parse(string):
 def parse_response(file_name):
     with open(file_name, 'rb') as f:
         response = client.speech(f, {'Content-Type': 'audio/wav'})
-    if response['intents'][0]['name'] == 'DeclareVariable':
+    print(response)
+    if response['intents'][0]['name'] == 'AssignVariable':
         if response['intents'][0]['confidence'] > confidence_threshold:
-            print(front_end_block)
-            return parse_declare_variable(response)
+            return front_end_block + parse_assign_variable(response)
 
     elif response['intents'][0]['name'] == 'IfElseStatement':
         if response['intents'][0]['confidence'] > confidence_threshold:
@@ -313,7 +348,7 @@ def parse_response(file_name):
             nested_if = True
             if command_if['intents'][0]['name'] == 'DeclareVariable':
                 if command_if['intents'][0]['confidence'] > confidence_threshold:
-                    parse_declare_variable(command_if)
+                    parse_assign_variable(command_if)
             if command_if['intents'][0]['name'] == 'AddingComment':
                 if command_if['intents'][0]['confidence'] > confidence_threshold:
                     parse_add_comment(command_if)
@@ -321,7 +356,7 @@ def parse_response(file_name):
             resp3 = client.message(response['entities']['command:command'][1]['body'])
             if resp3['intents'][0]['name'] == 'DeclareVariable':
                 if resp3['intents'][0]['confidence'] > confidence_threshold:
-                    parse_declare_variable(resp3)
+                    parse_assign_variable(resp3)
             if resp3['intents'][0]['name'] == 'AddingComment':
                 if resp3['intents'][0]['confidence'] > confidence_threshold:
                     parse_add_comment(resp3)
@@ -336,7 +371,7 @@ def parse_response(file_name):
                 try:
                     if command_if['intents'][0]['name'] == 'DeclareVariable':
                         if command_if['intents'][0]['confidence'] > confidence_threshold:
-                            final_output += parse_declare_variable(command_if)
+                            final_output += parse_assign_variable(command_if)
                     if command_if['intents'][0]['name'] == 'AddingComment':
                         if command_if['intents'][0]['confidence'] > confidence_threshold:
                             final_output += parse_add_comment(command_if)
@@ -361,6 +396,13 @@ def parse_response(file_name):
     elif response['intents'][0]['name'] == 'UndoCommand':
         if response['intents'][0]['confidence'] > confidence_threshold:
             return "dsd-section\nvocoder-undo\n"
+
+    elif response['intents'][0]['name'] == 'CreateFunction':
+        if response['intents'][0]['confidence'] > confidence_threshold:
+            return front_end_block + parse_create_function(response)
+    elif response['intents'][0]['name'] == 'Return':
+        if response['intents'][0]['confidence'] > confidence_threshold:
+            return front_end_block + parse_return(response)
     else:
         return "dsd-section\nintent not found"
 
@@ -372,8 +414,8 @@ elif len(sys.argv) > 1 and sys.argv[1] == "-camel":
     naming_style = "camel"
 client = Wit("3OXTFKTQZFCKO3PEYBN3VYS23BDRCVRC")
 front_end_error = "dsd-section\nvocoder-error-message\n"
-front_end_error = "dsd-section\nvocoder-warning-message\n"
+front_end_warning = "dsd-section\nvocoder-warning-message\n"
 front_end_block = "dsd-section\nvocoder-code-block\n"
 placeholder_string = "#placeholder"
 confidence_threshold = 0.75
-print(parse_response('CreateAnIfStatement.wav'))
+print(parse_response('Declare_variable.wav'))
