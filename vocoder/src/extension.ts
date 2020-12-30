@@ -7,10 +7,11 @@ const fs = require("fs");
 const cwd = path.resolve(__dirname, '../src');
 const landingURI = vscode.Uri.file(path.resolve(__dirname, '../landing.md'));
 const dsdVenv = path.resolve(cwd, '../../dsd-env');
-const outputChannel = vscode.window.createOutputChannel("vocoder");
+const outputChannel = vscode.window.createOutputChannel("Vocoder");
 
 let format = '-camel';
 let discardNext = false;
+let placeholders = new Map<number,[number, number]>([]);
 vscode.commands.executeCommand('setContext', 'vocoder:isSnake', false);
 vscode.commands.executeCommand('setContext', 'vocoder:isKeybindingPressed', true);
 vscode.commands.executeCommand('setContext', 'vocoder:isRecording', false);
@@ -151,7 +152,7 @@ export async function activate(context: vscode.ExtensionContext) {
     });
     let discardAudio = vscode.commands.registerCommand('vocoder.discardAudio', () => {
         discardNext = true;
-        vscode.window.showWarningMessage('Current recording will be discarded')
+        vscode.window.showWarningMessage('Current recording will be discarded');
     });
 
     let fakeButton = vscode.commands.registerCommand('vocoder.fakeButton', () => {}); 
@@ -261,19 +262,30 @@ async function writeOnEditor(s: string){
         }
     }
     // reconstruct string
-    let alignedS = lines[0];
-    for(let i = 1; i < writtenLines; i++){
-        alignedS = alignedS + '\n' + lines[i]; 
+    let alignedS= '';
+    
+    for(let i = 0; i < writtenLines; i++){
+        i === 0 ?
+            alignedS = lines[i]:
+            alignedS = alignedS + '\n' + lines[i]; 
     }
     //write it
-    await editor.edit( (edit) => { edit.replace(currSel,alignedS); } );
+    await editor.edit( (edit) => { edit.replace(currSel,alignedS); } )
+        .then(success => {
+            placeholdersUpdate(editor);
 
-    // computation of new position of the cursor
-    // create a position where to put the cursor: at the end of what just written
-    // = last line + last char
-    const newEnd = new vscode.Position(currLine + writtenLines - 1, lines[writtenLines-1].length);
-    // set the selection to an empty one at the position we defined
-    editor.selection = new vscode.Selection(newEnd,newEnd);
+            if (placeholders.size !==0){
+                let nextPlaceholder = [...placeholders][placeholders.size - 1];
+                const newStart = new vscode.Position(nextPlaceholder[0]-1, nextPlaceholder[1][0]);
+                const newEnd = new vscode.Position(nextPlaceholder[0]-1, nextPlaceholder[1][1]);
+                editor.selection = new vscode.Selection(newStart, newEnd);
+            }
+            else {
+                const newEnd = new vscode.Position(currLine + writtenLines - 1, lines[writtenLines-1].length);
+                // set the selection to an empty one at the position we defined
+                editor.selection = new vscode.Selection(newEnd,newEnd);
+            }
+        });
 }
 
 // this method is called when your extension is deactivated
@@ -296,6 +308,19 @@ async function prepareMacScript(){
         grantMacExecutablePermission('/venv','audioRecorderConst.sh');
         grantMacExecutablePermission('/conda','audioRecorder.sh');
         grantMacExecutablePermission('/venv','audioRecorder.sh');
+    });
+}
+
+function placeholdersUpdate(editor:vscode.TextEditor){
+    let textLines = editor.document.getText().split('\n');
+    let i = 1;
+    placeholders = new Map<number,[number, number]>([]);
+    textLines.forEach(line => {
+        if(line.includes('#')){
+            let endChar = line.includes(':', line.indexOf('#')) ? line.indexOf(':', line.indexOf('#')+1) : line.length;
+            placeholders.set(i, [line.indexOf('#'), endChar]);
+        }
+        i++;
     });
 }
 

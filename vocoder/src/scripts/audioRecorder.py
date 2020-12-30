@@ -17,7 +17,7 @@ p = pyaudio.PyAudio()
 CHUNK = 2048
 FORMAT = pyaudio.paInt16
 CHANNELS = 2
-RATE = 20000
+RATE = 44100
 #since chunk size is doubles wrt audiorecConst, rate is half
 WAVE_OUTPUT_FILENAME = "output.wav"
 
