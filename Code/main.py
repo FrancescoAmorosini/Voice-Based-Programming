@@ -1,6 +1,6 @@
+import re
 import sys
 from wit import Wit
-
 from word2number import w2n
 
 nested_if = False
@@ -63,9 +63,10 @@ def parse_assign_variable(response):
                 return "\t" + name_variable(response['entities']['VariableName:VariableName'][0]['body']) + ' = None\n'
             else:
                 return name_variable(response['entities']['VariableName:VariableName'][0]['body']) + ' = None'
-    else :
+    else:
         print(front_end_error)
         print("Variable Name not found")
+
 
 def parse_if_else_statement(response):
     first_expression = parse(response['entities']['Expression:Expression'][0]['body'])
@@ -85,9 +86,9 @@ def parse_if_else_statement(response):
     if response['entities']['comparisons:comparisons'][0]['body'] == 'greater or equal to' or \
             response['entities']['comparisons:comparisons'][0]['body'] == 'is greater or equal to':
         print("if " + first_expression + ">=" + second_expression + " :")
-    if response['entities']['comparisons:comparisons'][0]['body'] == 'less or equal to' or \
+    if response['entities']['Expression:Expression'][0]['body'] == 'less or equal to' or \
             response['entities']['comparisons:comparisons'][0]['body'] == 'is less or equal to':
-        print("if " + first_expression + "<=" + second_expression + " :")
+        print("if " + + " :")
 
 
 def parse_if_statement(response):
@@ -118,7 +119,7 @@ def parse_if_statement(response):
                 response['entities']['comparisons:comparisons'][0]['body'] == 'is less or equal to':
             return "if " + first_expression + "<=" + second_expression + " :\n\t "
     else:
-        return "if "+placeholder_string+" :\n\t"+placeholder_string
+        return "if " + placeholder_string + " :\n\t" + placeholder_string
 
 
 def parse_add_comment(response):
@@ -190,46 +191,20 @@ def parse_for_loop(response):
             return
         message = "for " + variable1 + " in " + variable2 + ":\n\t"
         message += placeholder_string
-        return (message)
+        return message
     else:
         return "for " + placeholder_string + " in range( " + placeholder_string + "," + placeholder_string + " ):\n\t"
 
 
 def parse_while_loop(response):
-    if 'comparisons:comparisons' in response['entities']:
-        expression1 = parse(response['entities']['Expression:Expression'][0]['body'])
-        expression2 = parse(response['entities']['Expression:Expression'][1]['body'])
-        if response['entities']['comparisons:comparisons'][0]['body'] == 'equal to' or \
-                response['entities']['comparisons:comparisons'][0]['body'] == 'is equal to':
-            return "while " + expression1 + " ==  " + expression2 + " :\n\t#"+placeholder_string
-
-        if response['entities']['comparisons:comparisons'][0]['body'] == 'non equal to' or \
-                response['entities']['comparisons:comparisons'][0]['body'] == 'is non equal to':
-            return "while " + expression1 + "!=" + expression2 + " :\n\t"+placeholder_string
-
-        if response['entities']['comparisons:comparisons'][0]['body'] == 'greater than' or \
-                response['entities']['comparisons:comparisons'][0]['body'] == 'is greater than':
-            return "while " + expression1 + ">" + expression2 + " :\n\t"+placeholder_string
-
-        if response['entities']['comparisons:comparisons'][0]['body'] == 'less than' or \
-                response['entities']['comparisons:comparisons'][0]['body'] == 'is less than':
-            return "while " + expression1 + "<" + expression2 + " :\n\t"+placeholder_string
-
-        if response['entities']['comparisons:comparisons'][0]['body'] == 'greater or equal to' or \
-                response['entities']['comparisons:comparisons'][0]['body'] == 'is greater or equal to':
-            return "while " + expression1 + ">=" + expression2 + " :\n\t"+placeholder_string
-
-        if response['entities']['comparisons:comparisons'][0]['body'] == 'less or equal to' or \
-                response['entities']['comparisons:comparisons'][0]['body'] == 'is less or equal to':
-            return "while " + expression1 + "<=" + expression2 + " :\n\t"+placeholder_string
-    elif 'Expression:Expression' in response['entities']:
-        expression = parse(response['entities']['Expression:Expression'][0]['body'])
-        return "while" + expression + ":\n\t" + placeholder_string
+    if 'Expression:Expression' in response['entities']:
+        return "while " + parse(response['entities']['Expression:Expression'][0]['body']) + ":\n\t" + placeholder_string
     else:
-        return "while " + placeholder_string + " com exp :\n\t" + placeholder_string
+        return "while " + placeholder_string + ":\n\t" + placeholder_string
+
 
 def parse_create_function(response):
-    if 'Parameter:Parameter' in response['entities'] :
+    if 'Parameter:Parameter' in response['entities']:
         try:
             functionName = response['entities']['FunctionName:FunctionName'][0]['body']
         except KeyError:
@@ -237,12 +212,12 @@ def parse_create_function(response):
             print("FunctionName not found")
             return
         message = "def" + functionName + " ("
-        for parameter in response['entities'] :
+        for parameter in response['entities']:
             message += parameter['body'] + ", "
         message[:-2]
         message += ") :"
         return (message)
-    else :
+    else:
         try:
             functionName = response['entities']['FunctionName:FunctionName'][0]['body']
         except KeyError:
@@ -251,6 +226,7 @@ def parse_create_function(response):
             return
         message = "def" + functionName + "() :"
         return (message)
+
 
 def parse_return(response):
     try:
@@ -262,8 +238,7 @@ def parse_return(response):
         return
 
 
-# takes a string and converts it to operations and variables
-def parse(string):
+def parse_expression(string):
     expression_operators = ['plus',
                             'multiply', 'multiplied', 'multiplication', 'times', 'asterisk',
                             'modulo', 'mod',
@@ -330,6 +305,53 @@ def parse(string):
         expression += str(variable)
         counter += 1
     return expression
+
+
+def parse(string):
+    final_output = ""
+    string = string.replace("greater or equal to", "GreaterOrEqual")
+    string = string.replace("less or equal to", "LessOrEqual")
+    logical_expressions = re.findall('and|or', string)
+    if len(logical_expressions) == 0:
+        logical_expressions.append(None)
+    for comparison_operator in logical_expressions:
+        comparison_operators = []
+        if comparison_operator is not None:
+            comparison_operators = string.split(comparison_operator)
+        else:
+            comparison_operators.append(string)
+        counter_comparison = 0
+        for logical_expression in comparison_operators:
+            counter_comparison += 1
+            logical_operators = re.findall(
+                'GreaterOrEqual|LessOrEqual|equal to|equals|is greater than|is less than|greater than|less than',
+                logical_expression)
+            if len(logical_operators) == 0:
+                logical_operators.append(string)
+            for logical_operator in logical_operators:
+                arithmetic_value = logical_expression.split(logical_operator)
+                counter_arithemtic_value = 0
+                for arithmetic_operation in arithmetic_value:  # examine 1 expression at a time
+                    counter_arithemtic_value += 1
+                    if arithmetic_operation[-1] == ' ':
+                        arithmetic_operation = arithmetic_operation[:len(arithmetic_operation) - 1]
+                    if arithmetic_operation[0] == ' ':
+                        arithmetic_operation = arithmetic_operation[1:]
+                    final_output += parse_expression(arithmetic_operation)
+                    if counter_arithemtic_value != len(arithmetic_value):
+                        if logical_operator == "greater than" or logical_operator == "is greater than":
+                            final_output += " > "
+                        elif logical_operator == "less than" or logical_operator == "is less than":
+                            final_output += " < "
+                        elif logical_operator == "equals" or logical_operator == "equal to":
+                            final_output += " == "
+                        elif logical_operator == "GreaterOrEqual":
+                            final_output += " >= "
+                        elif logical_operator == "LessOrEqual":
+                            final_output += " <= "
+            if counter_comparison != len(comparison_operators):
+                final_output += " " + comparison_operator + " "
+        return final_output
 
 
 def parse_response(file_name):
@@ -418,4 +440,4 @@ front_end_warning = "dsd-section\nvocoder-warning-message\n"
 front_end_block = "dsd-section\nvocoder-code-block\n"
 placeholder_string = "#placeholder"
 confidence_threshold = 0.75
-print(parse_response('Declare_variable.wav'))
+print(parse_response('DefineCount=1+1.wav'))
