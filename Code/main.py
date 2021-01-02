@@ -125,6 +125,7 @@ def parse_if_statement(response):
 def parse_add_comment(response):
     try:
         if len(response['entities']['CommentText:CommentText'][0]['body']) > 120:
+
             final_output = ""
             words = response['entities']['CommentText:CommentText'][0]['body'].split(" ")
             out = "#"
@@ -137,9 +138,13 @@ def parse_add_comment(response):
             final_output += out
             return final_output
         else:
+            if response['entities']['CommentText:CommentText'][0]['body'][0] == "command":
+                response['entities']['CommentText:CommentText'][0]['body'].replace("command ", "")
             return "# " + response['entities']['CommentText:CommentText'][0]['body']
     except KeyError:
         if len(response['entities']['Expression:Expression'][0]['body']) > 120:
+            if response['entities']['Expression:Expression'][0]['body'][0] == "command":
+                response['entities']['Expression:Expression'][0]['body'].replace("command ", "")
             final_output = ""
             words = response['entities']['Expression:Expression'][0]['body'].split(" ")
             out = "#"
@@ -152,6 +157,8 @@ def parse_add_comment(response):
             final_output += out
             return final_output
         else:
+            if response['entities']['Expression:Expression'][0]['body'][:7] == "command":
+                return "# " + response['entities']['Expression:Expression'][0]['body'].replace("command ", "")
             return "# " + response['entities']['Expression:Expression'][0]['body']
 
 
@@ -174,9 +181,9 @@ def parse_for_loop(response):
             print(front_end_error)
             print("Variable Name not understood")
             return
-        message = "for " + variable + " in range ( " + first_expression + " , " + second_expression + "):\n\t"
+        message = "for " + variable + " in range ( " + first_expression + " , " + second_expression + " ):\n\t"
         message += placeholder_string
-        return (message)
+        return message
     elif 'VariableName:VariableName' in response['entities']:
         try:
             variable1 = response['entities']['VariableName:VariableName'][0]['body']
@@ -193,7 +200,8 @@ def parse_for_loop(response):
         message += placeholder_string
         return message
     else:
-        return "for " + placeholder_string + " in range( " + placeholder_string + "," + placeholder_string + " ):\n\t"
+        return "for " + placeholder_string + " in range( " + placeholder_string + \
+               "," + placeholder_string + " ):\n\t" + placeholder_string
 
 
 def parse_while_loop(response):
@@ -214,9 +222,9 @@ def parse_create_function(response):
         message = "def" + functionName + " ("
         for parameter in response['entities']:
             message += parameter['body'] + ", "
-        message[:-2]
+        var = message[:-2]
         message += ") :"
-        return (message)
+        return message
     else:
         try:
             functionName = response['entities']['FunctionName:FunctionName'][0]['body']
@@ -225,7 +233,7 @@ def parse_create_function(response):
             print("FunctionName not found")
             return
         message = "def" + functionName + "() :"
-        return (message)
+        return message
 
 
 def parse_return(response):
@@ -238,6 +246,25 @@ def parse_return(response):
         return
 
 
+def parse_delete(response):
+    try:
+        number1 = parse(response['entities']['Number:Number'][0]['body'])
+        number2 = parse(response['entities']['Number:Number'][0]['body'])
+        return "vocoder-line-delete\n" + number1 + "\n" + number2
+    except KeyError:
+        print(front_end_error)
+        print("numbers were not understood")
+        return
+
+
+def parse_undo(response):
+    try:
+        number = parse(response['entities']['Number:Number'][0]['body'])
+        return "dsd-section\n" + "vocoder-undo\n" + number
+    except KeyError:
+        return "dsd-section\n" + "vocoder-undo"
+
+
 def parse_expression(string):
     expression_operators = ['plus',
                             'multiply', 'multiplied', 'multiplication', 'times', 'asterisk',
@@ -245,8 +272,6 @@ def parse_expression(string):
                             'minus', 'unary'
                                      'division', 'divide by', 'divided by',
                             'to the power of',
-                            'and',
-                            'or',
                             ]
     op_out = []  # This holds the operators that are found in the string (left to right)
     num_out = []  # this holds the non-operators that are found in the string (left to right)
@@ -257,9 +282,13 @@ def parse_expression(string):
         try:
             if word in expression_operators:
                 VariableName = ""
+                counter = 0
                 for index in buffer:
                     variableDetectionFlag = True
-                    VariableName = VariableName + index
+                    VariableName += index
+                    if naming_style == "snake" and counter == len(buffer):
+                        VariableName += "_"
+                    counter += 1
                 if variableDetectionFlag:
                     num_out.append(VariableName)
                     variableDetectionFlag = False
@@ -275,26 +304,26 @@ def parse_expression(string):
                     op_out.append("%")
                 if word == "multiply" or word == "asterisk" or word == "multiplication" or word == "times":
                     op_out.append("*")
-                if word == "and":
-                    op_out.append("and")
-                if word == "or":
-                    op_out.append("or")
             elif str(w2n.word_to_num(word)).isnumeric():
                 # if it is a valid number.  Just accumulate this number in num_out.
                 digit = w2n.word_to_num(word)
                 num_out.append(digit)
         except ValueError:
             # else this is a variable name so convert it
-            if variableDetectionFlag:
+            if variableDetectionFlag and naming_style == "camel":
                 buffer.append(word.capitalize())
             else:
                 buffer.append(decapitalize_word(word))
                 variableDetectionFlag = True
     if buffer:
         VariableName = ""
+        counter = 1
         for index in buffer:
             variableDetectionFlag = True
             VariableName = VariableName + index
+            if naming_style == "snake" and counter != len(buffer):
+                VariableName += "_"
+            counter += 1
         if variableDetectionFlag:
             num_out.append(VariableName)
     counter = -1
@@ -327,7 +356,8 @@ def parse(string):
                 'GreaterOrEqual|LessOrEqual|equal to|equals|is greater than|is less than|greater than|less than',
                 logical_expression)
             if len(logical_operators) == 0:
-                logical_operators.append(string)
+                final_output += parse_expression(logical_expression)
+                continue
             for logical_operator in logical_operators:
                 arithmetic_value = logical_expression.split(logical_operator)
                 counter_arithemtic_value = 0
@@ -417,16 +447,26 @@ def parse_response(file_name):
 
     elif response['intents'][0]['name'] == 'UndoCommand':
         if response['intents'][0]['confidence'] > confidence_threshold:
-            return "dsd-section\nvocoder-undo\n"
+            return "dsd-section\nvocoder-undo\n" + parse_undo(response)
 
     elif response['intents'][0]['name'] == 'CreateFunction':
         if response['intents'][0]['confidence'] > confidence_threshold:
             return front_end_block + parse_create_function(response)
+
     elif response['intents'][0]['name'] == 'Return':
         if response['intents'][0]['confidence'] > confidence_threshold:
             return front_end_block + parse_return(response)
+
+    elif response['intents'][0]['name'] == 'Delete':
+        if response['intents'][0]['confidence'] > confidence_threshold:
+            return front_end_block + parse_delete(response)
+
+    elif response['intents'][0]['name'] == 'InsertExpression':
+        if response['intents'][0]['confidence'] > confidence_threshold:
+            message_string = response['entities'][0]['Expression:Expression']['body']
+            return front_end_block + parse_expression(message_string)
     else:
-        return "dsd-section\nintent not found"
+        return front_end_error + "intent not found"
 
 
 naming_style = "snake"
@@ -438,6 +478,6 @@ client = Wit("3OXTFKTQZFCKO3PEYBN3VYS23BDRCVRC")
 front_end_error = "dsd-section\nvocoder-error-message\n"
 front_end_warning = "dsd-section\nvocoder-warning-message\n"
 front_end_block = "dsd-section\nvocoder-code-block\n"
-placeholder_string = "#placeholder"
+placeholder_string = "$$"
 confidence_threshold = 0.75
-print(parse_response('DefineCount=1+1.wav'))
+print(parse_response('CommentHelloWorld.wav'))
