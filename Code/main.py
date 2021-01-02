@@ -69,55 +69,14 @@ def parse_assign_variable(response):
 
 
 def parse_if_else_statement(response):
-    first_expression = parse(response['entities']['Expression:Expression'][0]['body'])
-    second_expression = parse(response['entities']['Expression:Expression'][1]['body'])
-    if response['entities']['comparisons:comparisons'][0]['body'] == 'equal to' or \
-            response['entities']['comparisons:comparisons'][0]['body'] == 'is equal to':
-        print("if " + first_expression + "==" + second_expression + " :")
-    if response['entities']['comparisons:comparisons'][0]['body'] == 'non equal to' or \
-            response['entities']['comparisons:comparisons'][0]['body'] == 'is non equal to':
-        print("if " + first_expression + "!=" + second_expression + " :")
-    if response['entities']['comparisons:comparisons'][0]['body'] == 'greater than' or \
-            response['entities']['comparisons:comparisons'][0]['body'] == 'is greater than':
-        print("if " + first_expression + ">" + second_expression + " :")
-    if response['entities']['comparisons:comparisons'][0]['body'] == 'less than' or \
-            response['entities']['comparisons:comparisons'][0]['body'] == 'is less than':
-        print("if " + first_expression + "<" + second_expression + " :")
-    if response['entities']['comparisons:comparisons'][0]['body'] == 'greater or equal to' or \
-            response['entities']['comparisons:comparisons'][0]['body'] == 'is greater or equal to':
-        print("if " + first_expression + ">=" + second_expression + " :")
-    if response['entities']['Expression:Expression'][0]['body'] == 'less or equal to' or \
-            response['entities']['comparisons:comparisons'][0]['body'] == 'is less or equal to':
-        print("if " + + " :")
+    expression = parse(response['entities']['Expression:Expression'][0]['body'])
+    return "if " + expression + " :\n\t"
 
 
 def parse_if_statement(response):
     if 'command:command' in response['entities']:
-        first_expression = parse(response['entities']['Expression:Expression'][0]['body'])
-        second_expression = parse(response['entities']['Expression:Expression'][1]['body'])
-        if response['entities']['comparisons:comparisons'][0]['body'] == 'equal to' or \
-                response['entities']['comparisons:comparisons'][0]['body'] == 'is equal to':
-            return "if " + first_expression + "==" + second_expression + " :"
-
-        if response['entities']['comparisons:comparisons'][0]['body'] == 'non equal to' or \
-                response['entities']['comparisons:comparisons'][0]['body'] == 'is non equal to':
-            return "if " + first_expression + "!=" + second_expression + " :"
-
-        if response['entities']['comparisons:comparisons'][0]['body'] == 'greater than' or \
-                response['entities']['comparisons:comparisons'][0]['body'] == 'is greater than':
-            return "if " + first_expression + ">" + second_expression + " :"
-
-        if response['entities']['comparisons:comparisons'][0]['body'] == 'less than' or \
-                response['entities']['comparisons:comparisons'][0]['body'] == 'is less than':
-            return "if " + first_expression + "<" + second_expression + " :"
-
-        if response['entities']['comparisons:comparisons'][0]['body'] == 'greater or equal to' or \
-                response['entities']['comparisons:comparisons'][0]['body'] == 'is greater or equal to':
-            return "if " + first_expression + ">=" + second_expression + " :"
-
-        if response['entities']['comparisons:comparisons'][0]['body'] == 'less or equal to' or \
-                response['entities']['comparisons:comparisons'][0]['body'] == 'is less or equal to':
-            return "if " + first_expression + "<=" + second_expression + " :\n\t "
+        expression = parse(response['entities']['Expression:Expression'][0]['body'])
+        return "if " + expression + " :\n\t"
     else:
         return "if " + placeholder_string + " :\n\t" + placeholder_string
 
@@ -222,7 +181,7 @@ def parse_create_function(response):
         message = "def" + functionName + " ("
         for parameter in response['entities']:
             message += parameter['body'] + ", "
-        var = message[:-2]
+        message = message[:-2]
         message += ") :"
         return message
     else:
@@ -353,7 +312,7 @@ def parse(string):
         for logical_expression in comparison_operators:
             counter_comparison += 1
             logical_operators = re.findall(
-                'GreaterOrEqual|LessOrEqual|equal to|equals|is greater than|is less than|greater than|less than',
+                'GreaterOrEqual|LessOrEqual|is equal to|equal to|equals|is greater than|is less than|greater than|less than',
                 logical_expression)
             if len(logical_operators) == 0:
                 final_output += parse_expression(logical_expression)
@@ -373,7 +332,7 @@ def parse(string):
                             final_output += " > "
                         elif logical_operator == "less than" or logical_operator == "is less than":
                             final_output += " < "
-                        elif logical_operator == "equals" or logical_operator == "equal to":
+                        elif logical_operator == "equals" or logical_operator == "equal to" or logical_operator == "is equal to":
                             final_output += " == "
                         elif logical_operator == "GreaterOrEqual":
                             final_output += " >= "
@@ -394,24 +353,24 @@ def parse_response(file_name):
 
     elif response['intents'][0]['name'] == 'IfElseStatement':
         if response['intents'][0]['confidence'] > confidence_threshold:
-            print(front_end_block)
-            parse_if_else_statement(response)
+            final_output = parse_if_else_statement(response)
             command_if = client.message(response['entities']['command:command'][0]['body'])
             nested_if = True
             if command_if['intents'][0]['name'] == 'DeclareVariable':
                 if command_if['intents'][0]['confidence'] > confidence_threshold:
-                    parse_assign_variable(command_if)
+                    final_output += parse_assign_variable(command_if)
             if command_if['intents'][0]['name'] == 'AddingComment':
                 if command_if['intents'][0]['confidence'] > confidence_threshold:
-                    parse_add_comment(command_if)
-            print("else:")
-            resp3 = client.message(response['entities']['command:command'][1]['body'])
-            if resp3['intents'][0]['name'] == 'DeclareVariable':
-                if resp3['intents'][0]['confidence'] > confidence_threshold:
-                    parse_assign_variable(resp3)
-            if resp3['intents'][0]['name'] == 'AddingComment':
-                if resp3['intents'][0]['confidence'] > confidence_threshold:
-                    parse_add_comment(resp3)
+                    final_output += parse_add_comment(command_if)
+            final_output += "else:\n\t"
+            command_else = client.message(response['entities']['command:command'][1]['body'])
+            if command_else['intents'][0]['name'] == 'DeclareVariable':
+                if command_else['intents'][0]['confidence'] > confidence_threshold:
+                    final_output += parse_assign_variable(command_else)
+            if command_else['intents'][0]['name'] == 'AddingComment':
+                if command_else['intents'][0]['confidence'] > confidence_threshold:
+                    final_output += parse_add_comment(command_else)
+            return front_end_block + final_output
             # missing nested ifs or nested if+ifElse
 
     elif response['intents'][0]['name'] == 'IfStatements':
@@ -428,7 +387,7 @@ def parse_response(file_name):
                         if command_if['intents'][0]['confidence'] > confidence_threshold:
                             final_output += parse_add_comment(command_if)
                 except IndexError:
-                    final_output += "\n\t" + placeholder_string
+                    final_output += placeholder_string
                     print("no inner command found")
             return front_end_block + final_output
             # missing nested ifs or nested if+ifElse
@@ -480,4 +439,4 @@ front_end_warning = "dsd-section\nvocoder-warning-message\n"
 front_end_block = "dsd-section\nvocoder-code-block\n"
 placeholder_string = "$$"
 confidence_threshold = 0.75
-print(parse_response('CommentHelloWorld.wav'))
+print(parse_response('WhileLoopExp.wav'))
