@@ -45,9 +45,10 @@ class MyTestCase(unittest.TestCase):
     def test_assignVariable(self):
         self.assertEqual(parse_response('declare expression.wav'),
                          front_end_block + 'number_of_cars = 5 + 3 - number_of_entrances')
-        self.assertEqual(parse_response('DefineVariableCount.wav'), front_end_block + 'count = None')
+        self.assertEqual(parse_response('DefineVariableCount.wav'), front_end_block + 'count = '+placeholder_string)
         self.assertEqual(parse_response('DefineCount=1+1.wav'), front_end_block + 'count = 1 + 1')
-        self.assertEqual(parse_response('Declare_variable.wav'), front_end_block + 'number_of_cars = None')
+        self.assertEqual(parse_response('Declare_variable.wav'),
+                         front_end_block + 'number_of_cars = '+ placeholder_string)
 
     def test_create_function(self):
         self.assertEqual(parse_response('CreateFunction.wav'), front_end_error + "FunctionName not found")
@@ -74,4 +75,6 @@ class MyTestCase(unittest.TestCase):
                                                                                                         "and "
                                                                                                         "number_of_cars "
                                                                                                         "< 4")
+        self.assertEqual(parse("three plus four is less than number of cars and x is greater than five"),
+                         "3 + 4 < number_of_cars and x > 5")
     # Missing RedoCommand and InsertExpression
