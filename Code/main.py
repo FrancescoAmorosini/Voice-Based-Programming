@@ -62,9 +62,10 @@ def parse_assign_variable(response):
             if nested_if:
                 return "\t" + name_variable(response['entities']['VariableName:VariableName'][0]['body']) + ' = None\n'
             else:
-                return front_end_block + name_variable(response['entities']['VariableName:VariableName'][0]['body']) + ' = None'
+                return front_end_block + name_variable(
+                    response['entities']['VariableName:VariableName'][0]['body']) + ' = ' + placeholder_string
     else:
-       return front_end_error + "Variable Name not found"
+        return front_end_error + "Variable Name not found"
 
 
 def parse_if_else_statement(response):
@@ -116,7 +117,8 @@ def parse_add_comment(response):
             return front_end_block + final_output
         else:
             if response['entities']['Expression:Expression'][0]['body'][:7] == "command":
-                return front_end_block + "# " + response['entities']['Expression:Expression'][0]['body'].replace("command ", "")
+                return front_end_block + "# " + response['entities']['Expression:Expression'][0]['body'].replace(
+                    "command ", "")
             return front_end_block + "# " + response['entities']['Expression:Expression'][0]['body']
 
 
@@ -126,7 +128,7 @@ def parse_for_loop(response):
             first_expression = parse(response['entities']['Expression:Expression'][0]['body'])
             second_expression = parse(response['entities']['Expression:Expression'][1]['body'])
         except KeyError:
-            return  front_end_error + "Missing an expression in for loop command"
+            return front_end_error + "Missing an expression in for loop command"
         except IndexError:
             return front_end_error + "Second Expression name was not understood in for loop"
         try:
@@ -153,10 +155,10 @@ def parse_for_loop(response):
 
 
 def parse_while_loop(response):
-    
     try:
         if 'Expression:Expression' in response['entities']:
-            return front_end_block + "while " + parse(response['entities']['Expression:Expression'][0]['body']) + ":\n\t" + placeholder_string
+            return front_end_block + "while " + parse(
+                response['entities']['Expression:Expression'][0]['body']) + ":\n\t" + placeholder_string
         else:
             return front_end_block + "while " + placeholder_string + ":\n\t" + placeholder_string
     except IndexError:
@@ -170,11 +172,11 @@ def parse_create_function(response):
         except KeyError:
             return front_end_error + "FunctionName not found"
         message = "def " + functionName + " ("
-        i=0
+        i = 0
         for x in response['entities']['Parameter:Parameter']:
             name_parameter = name_variable(response['entities']['Parameter:Parameter'][i]['body'])
             message += name_parameter + ", "
-            i+=1
+            i += 1
         message = message[:-2]
         message += "):"
         return front_end_block + message
@@ -194,11 +196,11 @@ def parse_call_function(response):
         except KeyError:
             return front_end_error + "FunctionName not found"
         message = functionName + " ("
-        i=0
+        i = 0
         for x in response['entities']['Parameter:Parameter']:
             name_parameter = name_variable(response['entities']['Parameter:Parameter'][i]['body'])
             message += name_parameter + ", "
-            i+=1
+            i += 1
         message = message[:-2]
         message += ")"
         return front_end_block + message
@@ -229,7 +231,7 @@ def parse_delete(response):
         return "vocoder-line-delete\n" + number1 + "\n" + number2
     except IndexError:
         return front_end_error + "numbers where not understood"
-    
+
 
 def parse_undo(response):
     try:
@@ -386,11 +388,11 @@ def parse_response(file_name):
                 if command_if['intents'][0]['confidence'] > confidence_threshold:
                     final_output += parse_add_comment(command_if)
             if command_if['intents'][0]['name'] == 'Return':
-                        if command_if['intents'][0]['confidence'] > confidence_threshold:
-                            final_output += parse_return(command_if)
+                if command_if['intents'][0]['confidence'] > confidence_threshold:
+                    final_output += parse_return(command_if)
             if command_if['intents'][0]['name'] == 'CallFunction':
-                        if command_if['intents'][0]['confidence'] > confidence_threshold:
-                            final_output += parse_call_function(command_if)
+                if command_if['intents'][0]['confidence'] > confidence_threshold:
+                    final_output += parse_call_function(command_if)
             final_output += "else:\n\t"
             command_else = client.message(response['entities']['command:command'][1]['body'])
             if command_else['intents'][0]['name'] == 'AssignVariable':
@@ -400,11 +402,11 @@ def parse_response(file_name):
                 if command_else['intents'][0]['confidence'] > confidence_threshold:
                     final_output += parse_add_comment(command_else)
             if command_else['intents'][0]['name'] == 'Return':
-                        if command_if['intents'][0]['confidence'] > confidence_threshold:
-                            final_output += parse_return(command_else)
+                if command_if['intents'][0]['confidence'] > confidence_threshold:
+                    final_output += parse_return(command_else)
             if command_else['intents'][0]['name'] == 'CallFunction':
-                        if command_else['intents'][0]['confidence'] > confidence_threshold:
-                            final_output += parse_call_function(command_else)
+                if command_else['intents'][0]['confidence'] > confidence_threshold:
+                    final_output += parse_call_function(command_else)
             return front_end_block + final_output
             # missing nested ifs or nested if+ifElse
 
@@ -423,10 +425,10 @@ def parse_response(file_name):
                             final_output += parse_add_comment(command_if)
                     if command_if['intents'][0]['name'] == 'Return':
                         if command_if['intents'][0]['confidence'] > confidence_threshold:
-                            final_output += parse_return(command_if) 
+                            final_output += parse_return(command_if)
                     if command_if['intents'][0]['name'] == 'CallFunction':
                         if command_if['intents'][0]['confidence'] > confidence_threshold:
-                            final_output += parse_call_function(command_if) 
+                            final_output += parse_call_function(command_if)
                 except IndexError:
                     final_output += placeholder_string
                     print("no inner command found")
@@ -492,4 +494,3 @@ front_end_redo = "dsd-section\nvocoder-redo\n"
 placeholder_string = "$$"
 confidence_threshold = 0.75
 print(parse_response('ForElemInCount.wav'))
-
