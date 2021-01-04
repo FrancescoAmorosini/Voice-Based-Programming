@@ -207,19 +207,49 @@ function elaborateCommand() {
             return;
         }
         console.log(`stdout: ${stdout}`);
-        var sections = stdout.split("dsd-section");
+        var sections = stdout.split("dsd-section\n");
         var intent = sections[0].match(/intents.*\}/).toString().match(/name': '[A-Z, a-z, 0-9]*'/).toString().match(/'[A-Z, a-z, 0-9]*'/).toString();
         outputChannel.appendLine('Intent detected: '.concat(intent));
-        const vocoderSec = sections[1];
-        if (vocoderSec.includes("vocoder-undo")) {
-            vscode.commands.executeCommand("undo");
+        const vocoderSec = sections[1].split("vocoder-parsed-command\n");
+        const vocoderMessages = vocoderSec[0];
+        if (vocoderMessages.includes("vocoder-error")) {
+            const message = vocoderMessages.split("vocoder-error")[1];
+            vscode.window.showErrorMessage(message);
             return;
         }
-        if (vocoderSec.includes("vocoder-delete")) {
-            writeOnEditor('');
+        if (vocoderMessages.includes("vocoder-warning")) {
+            const message = vocoderMessages.split("vocoder-warning")[1];
+            outputChannel.appendLine("Warning:" + message);
+        }
+        const vocoderCommand = vocoderSec[1];
+        if (vocoderCommand.includes("vocoder-undo")) {
+            const num = parseInt(vocoderCommand.split("vocoder-undo\n")[1]);
+            for (var i = 0; i < num; i++)
+                vscode.commands.executeCommand("undo");
             return;
         }
-        const codeSec = vocoderSec.split("vocoder-code-block");
+        if (vocoderCommand.includes("vocoder-redo")) {
+            const num = parseInt(vocoderCommand.split("vocoder-redo\n")[1]);
+            for (var i = 0; i < num; i++)
+                vscode.commands.executeCommand("redo");
+            return;
+        }
+        if (vocoderCommand.includes("vocoder-delete")) {
+            deleteFromEditor(false, 0, 0);
+            return;
+        }
+        if (vocoderCommand.includes("vocoder-line-delete")) {
+            let lines = vocoderCommand.split("vocoder-line-delete\n");
+            if (lines.length !== 2) {
+                console.log(`Bad format from backend processing: incorrect specification of lines`);
+                vscode.window.showErrorMessage('Code processing failed');
+                return;
+            }
+            lines = lines.split(/\r\n|\r|\n/);
+            deleteFromEditor(true, parseInt(lines[0]), parseInt(lines[1]));
+            return;
+        }
+        const codeSec = vocoderCommand.split("vocoder-code-block\n");
         if (codeSec.length !== 2) {
             console.log(`Bad format from backend processing: no command or code-block section found`);
             vscode.window.showErrorMessage('Code processing failed');
@@ -236,7 +266,6 @@ function writeOnEditor(s) {
             return;
         }
         const currSel = editor.selection;
-        s = s.substring(s.indexOf('\n') + 1);
         // line from which the selection starts: does not depend on which direction the sel is made (start>end)
         const currLine = currSel.start.line;
         //selection of what stays before the selection --> to be used to align
@@ -280,11 +309,33 @@ function writeOnEditor(s) {
         });
     });
 }
+function deleteFromEditor(lines, start, end) {
+    const editor = vscode.window.activeTextEditor;
+    if (!editor) {
+        vscode.window.showWarningMessage('No editor where to delete');
+        return;
+    }
+    let toDelete;
+    if (lines) {
+        if (start <= 0)
+            start = 1;
+        const maxLines = editor.document.lineCount;
+        if (end > maxLines)
+            end = maxLines;
+        const startPos = new vscode.Position(start, 0);
+        const endPos = new vscode.Position(end, 0);
+        toDelete = new vscode.Selection(startPos, endPos);
+    }
+    else {
+        toDelete = editor.selection;
+    }
+    editor.edit((edit) => { edit.replace(toDelete, ''); });
+}
 // this method is called when your extension is deactivated
 function deactivate() { }
 exports.deactivate = deactivate;
 function getPlaceholderPos(s) {
-    var regex = /$$/g, result, index = 0;
+    var regex = /\$\$/g, result, index = 0;
     while ((result = regex.exec(s))) {
         index = result.index;
     }
