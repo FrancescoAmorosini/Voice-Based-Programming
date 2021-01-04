@@ -240,7 +240,7 @@ def parse_delete(response):
     try:
         number1 = parse(response['entities']['Number:Number'][0]['body'])
     except KeyError:
-        return front_end_error + "numbers where not understood"
+        return "vocoder-line-delete\n"
     try:
         number2 = parse(response['entities']['Number:Number'][1]['body'])
         return "vocoder-line-delete\n" + number1 + "\n" + number2
