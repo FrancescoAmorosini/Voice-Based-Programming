@@ -262,8 +262,8 @@ function writeOnEditor(s) {
                 alignedS = alignedS + '\n' + lines[i];
             if (lines[i].includes('$$')) {
                 const index = getPlaceholderPos(lines[i]);
-                newStart = new vscode.Position(currLine + i, index + currSel.start.character);
-                newEnd = new vscode.Position(currLine + i, index + currSel.start.character + 2);
+                newStart = new vscode.Position(currLine + i, index);
+                newEnd = new vscode.Position(currLine + i, index + 2);
             }
         }
         //write it
@@ -284,7 +284,7 @@ function writeOnEditor(s) {
 function deactivate() { }
 exports.deactivate = deactivate;
 function getPlaceholderPos(s) {
-    var regex = /$$/g, result, index = 0;
+    var regex = /\$\$/g, result, index = 0;
     while ((result = regex.exec(s))) {
         index = result.index;
     }
