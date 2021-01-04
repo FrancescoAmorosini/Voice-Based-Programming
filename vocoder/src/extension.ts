@@ -252,7 +252,7 @@ async function writeOnEditor(s: string){
     const currLineBegin = new vscode.Position(currLine,0);
     let alignmentSel = new vscode.Selection(currLineBegin,currSel.start);
     let alignmentString = editor.document.getText(alignmentSel);
-    alignmentString = alignmentString.replace(/[^\t.]/g,' '); //if the alignment contains characters we don't want them
+    alignmentString = alignmentString.replace(/[^\t.]/g,''); //if the alignment contains characters we don't want them
     //split lines and align
     let lines = s.split(/\r\n|\r|\n/);
     const writtenLines = lines.length;
@@ -263,21 +263,22 @@ async function writeOnEditor(s: string){
     }
     // reconstruct string
     let alignedS= '';
-    
+    let newStart:vscode.Position;
+    let newEnd:vscode.Position;
     for(let i = 0; i < writtenLines; i++){
         i === 0 ?
             alignedS = lines[i]:
-            alignedS = alignedS + '\n' + lines[i]; 
+            alignedS = alignedS + '\n' + lines[i];
+        if (lines[i].includes('$$')){
+            const index = getPlaceholderPos(lines[i]);
+            newStart = new vscode.Position(currLine + i, index + currSel.start.character);
+            newEnd = new vscode.Position(currLine + i, index + currSel.start.character + 2);
+        } 
     }
     //write it
     await editor.edit( (edit) => { edit.replace(currSel,alignedS); } )
         .then(success => {
-            placeholdersUpdate(editor);
-
-            if (placeholders.size !==0){
-                let nextPlaceholder = [...placeholders][placeholders.size - 1];
-                const newStart = new vscode.Position(nextPlaceholder[0]-1, nextPlaceholder[1][0]);
-                const newEnd = new vscode.Position(nextPlaceholder[0]-1, nextPlaceholder[1][1]);
+            if (newStart !== undefined){
                 editor.selection = new vscode.Selection(newStart, newEnd);
             }
             else {
@@ -290,6 +291,14 @@ async function writeOnEditor(s: string){
 
 // this method is called when your extension is deactivated
 export function deactivate() {}
+
+function getPlaceholderPos(s:string){
+    var regex = /$$/g, result, index = 0;
+    while ( (result = regex.exec(s)) ) {
+        index = result.index;
+    }
+    return index;
+}
 
 async function prepareMacScript(){
     await exec(`python macscriptcreator.py ${path.resolve(cwd, shell)}`, {cwd: path.resolve(cwd, shell)}, (error: any, stdout: any, stderr: any) => {
@@ -308,19 +317,6 @@ async function prepareMacScript(){
         grantMacExecutablePermission('/venv','audioRecorderConst.sh');
         grantMacExecutablePermission('/conda','audioRecorder.sh');
         grantMacExecutablePermission('/venv','audioRecorder.sh');
-    });
-}
-
-function placeholdersUpdate(editor:vscode.TextEditor){
-    let textLines = editor.document.getText().split('\n');
-    let i = 1;
-    placeholders = new Map<number,[number, number]>([]);
-    textLines.forEach(line => {
-        if(line.includes('#')){
-            let endChar = line.includes(':', line.indexOf('#')) ? line.indexOf(':', line.indexOf('#')+1) : line.length;
-            placeholders.set(i, [line.indexOf('#'), endChar]);
-        }
-        i++;
     });
 }
 
