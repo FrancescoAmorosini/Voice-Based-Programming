@@ -192,17 +192,17 @@ def parse_create_function(response):
 def parse_call_function(response):
     if 'Parameter:Parameter' in response['entities']:
         try:
-            functionName = w2n.word_to_num(name_variable(response['entities']['FunctionName:FunctionName'][0]['body']))
-        except ValueError:
-            try:
-                functionName = name_variable(response['entities']['FunctionName:FunctionName'][0]['body'])
-            except KeyError:
-                return front_end_error + "FunctionName not found"
+            functionName = name_variable(response['entities']['FunctionName:FunctionName'][0]['body'])
+        except KeyError:
+            return front_end_error + "FunctionName not found"
 
         message = functionName + " ("
         i = 0
         for x in response['entities']['Parameter:Parameter']:
-            name_parameter = name_variable(response['entities']['Parameter:Parameter'][i]['body'])
+            try:
+                name_parameter = w2n.word_to_num(name_variable(response['entities']['Parameter:Parameter'][i]['body']))
+            except ValueError:
+                name_parameter = name_variable(response['entities']['Parameter:Parameter'][i]['body'])
             message += name_parameter + ", "
             i += 1
         message = message[:-2]
