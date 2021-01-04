@@ -1,14 +1,13 @@
+import re
 import sys
-
 from wit import Wit
-
 from word2number import w2n
 
 nested_if = False
 nested_while = False
 
 
-def decapitalize(s):
+def decapitalize_word(s):
     if not s:  # check that s is not empty string
         return s
     return s[0].lower() + s[1:]
@@ -19,7 +18,7 @@ def string_to_camel(variable_name):
     combinedString = ""
     for word in variable_name.split(' '):
         if count == 0:
-            combinedString += decapitalize(word)
+            combinedString += decapitalize_word(word)
         else:
             combinedString += word.capitalize()
         count += 1
@@ -36,7 +35,7 @@ def string_to_snake(variable_name):
     end_index = len(variable_name.split(' '))
     for word in variable_name.split(' '):
         count += 1
-        combinedString += decapitalize(word)
+        combinedString += decapitalize_word(word)
         if end_index != count:
             combinedString += "_"
     return combinedString
@@ -49,248 +48,211 @@ def name_variable(variable_name):
         return string_to_camel(variable_name)
 
 
-def parse_declare_variable(response):
+def parse_assign_variable(response):
     if 'VariableName:VariableName' in response['entities']:
         if 'Expression:Expression' in response['entities']:
-            variables, operators = parse(response['entities']['Expression:Expression'][0]['body'])
-            output_string = ""
-            counter = -1
-            for variable in variables:
-                if counter >= 0:
-                    output_string += " " + operators[counter] + " "
-                output_string += str(variable)
-                counter += 1
+            expression = parse(response['entities']['Expression:Expression'][0]['body'])
             if nested_if:
-                print("\t" + name_variable(
-                    response['entities']['VariableName:VariableName'][0]['body']) + ' = ' + output_string)
+                return ("\t" + name_variable(
+                    response['entities']['VariableName:VariableName'][0]['body']) + ' = ' + expression)
             else:
-                print(name_variable(
-                    response['entities']['VariableName:VariableName'][0]['body']) + ' = ' + output_string)
+                return (front_end_block + name_variable(
+                    response['entities']['VariableName:VariableName'][0]['body']) + ' = ' + expression)
         else:
             if nested_if:
-                print(
-                    "\t" + name_variable(response['entities']['VariableName:VariableName'][0]['body']) + ' = None\n')
+                return "\t" + name_variable(response['entities']['VariableName:VariableName'][0]['body']) + ' = None\n'
             else:
-                print(name_variable(response['entities']['VariableName:VariableName'][0]['body']) + ' = None\n')
+                return front_end_block + name_variable(response['entities']['VariableName:VariableName'][0]['body']) + ' = None'
+    else:
+       return front_end_error + "Variable Name not found"
 
 
 def parse_if_else_statement(response):
-    variables, operators = parse(response['entities']['Expression:Expression'][0]['body'])
-    output_string = ""
-    counter = -1
-    for variable in variables:
-        if counter >= 0:
-            output_string += " " + operators[counter] + " "
-        output_string += str(variable)
-        counter += 1
-    variables2, operators2 = parse(response['entities']['Expression:Expression'][1]['body'])
-    output_string2 = ""
-    counter = -1
-    for variable2 in variables2:
-        if counter >= 0:
-            output_string2 += " " + operators2[counter] + " "
-        output_string2 += str(variable2)
-        counter += 1
-    if response['entities']['comparisons:comparisons'][0]['body'] == 'equal to' or \
-            response['entities']['comparisons:comparisons'][0]['body'] == 'is equal to':
-        print("if " + output_string + "==" + output_string2 + " :")
-
-    if response['entities']['comparisons:comparisons'][0]['body'] == 'non equal to' or \
-            response['entities']['comparisons:comparisons'][0]['body'] == 'is non equal to':
-        print("if " + output_string + "!=" + output_string2 + " :")
-
-    if response['entities']['comparisons:comparisons'][0]['body'] == 'greater than' or \
-            response['entities']['comparisons:comparisons'][0]['body'] == 'is greater than':
-        print("if " + output_string + ">" + output_string2 + " :")
-
-    if response['entities']['comparisons:comparisons'][0]['body'] == 'less than' or \
-            response['entities']['comparisons:comparisons'][0]['body'] == 'is less than':
-        print("if " + output_string + "<" + output_string2 + " :")
-
-    if response['entities']['comparisons:comparisons'][0]['body'] == 'greater or equal to' or \
-            response['entities']['comparisons:comparisons'][0]['body'] == 'is greater or equal to':
-        print("if " + output_string + ">=" + output_string2 + " :")
-
-    if response['entities']['comparisons:comparisons'][0]['body'] == 'less or equal to' or \
-            response['entities']['comparisons:comparisons'][0]['body'] == 'is less or equal to':
-        print("if " + output_string + "<=" + output_string2 + " :")
+    expression = parse(response['entities']['Expression:Expression'][0]['body'])
+    return "if " + expression + " :\n\t"
 
 
 def parse_if_statement(response):
     if 'command:command' in response['entities']:
-        variables, operators = parse(response['entities']['Expression:Expression'][0]['body'])
-        output_string = ""
-        counter = -1
-        for variable in variables:
-            if counter >= 0:
-                output_string += " " + operators[counter] + " "
-            output_string += str(variable)
-            counter += 1
-        variables2, operators2 = parse(response['entities']['Expression:Expression'][1]['body'])
-        output_string2 = ""
-        counter = -1
-        for variable2 in variables2:
-            if counter >= 0:
-                output_string2 += " " + operators2[counter] + " "
-            output_string2 += str(variable2)
-            counter += 1
-        if response['entities']['comparisons:comparisons'][0]['body'] == 'equal to' or \
-                response['entities']['comparisons:comparisons'][0]['body'] == 'is equal to':
-            print("if " + output_string + "==" + output_string2 + " :")
-
-        if response['entities']['comparisons:comparisons'][0]['body'] == 'non equal to' or \
-                response['entities']['comparisons:comparisons'][0]['body'] == 'is non equal to':
-            print("if " + output_string + "!=" + output_string2 + " :")
-
-        if response['entities']['comparisons:comparisons'][0]['body'] == 'greater than' or \
-                response['entities']['comparisons:comparisons'][0]['body'] == 'is greater than':
-            print("if " + output_string + ">" + output_string2 + " :")
-
-        if response['entities']['comparisons:comparisons'][0]['body'] == 'less than' or \
-                response['entities']['comparisons:comparisons'][0]['body'] == 'is less than':
-            print("if " + output_string + "<" + output_string2 + " :")
-
-        if response['entities']['comparisons:comparisons'][0]['body'] == 'greater or equal to' or \
-                response['entities']['comparisons:comparisons'][0]['body'] == 'is greater or equal to':
-            print("if " + output_string + ">=" + output_string2 + " :")
-
-        if response['entities']['comparisons:comparisons'][0]['body'] == 'less or equal to' or \
-                response['entities']['comparisons:comparisons'][0]['body'] == 'is less or equal to':
-            print("if " + output_string + "<=" + output_string2 + " :\n\t ")
+        expression = parse(response['entities']['Expression:Expression'][0]['body'])
+        return "if " + expression + " :\n\t"
     else:
-        print("if #Condition :\n\t#Command")
+        return "if " + placeholder_string + " :\n\t" + placeholder_string
 
 
 def parse_add_comment(response):
-    if len(response['entities']['CommentText:CommentText'][0]['body']) > 120:
-        words = response['entities']['CommentText:CommentText'][0]['body'].split(" ")
-        out = "#"
-        for i in range(0, int(len(words) / 2)):
-            out += " " + words[i]
-        print(out)
-        out = "#"
-        for i in range(int(len(words) / 2), len(words)):
-            out += " " + words[i]
-        print(out)
-    else:
-        print("# " + response['entities']['CommentText:CommentText'][0]['body'])
+    try:
+        if len(response['entities']['CommentText:CommentText'][0]['body']) > 120:
+
+            final_output = ""
+            words = response['entities']['CommentText:CommentText'][0]['body'].split(" ")
+            out = "#"
+            for i in range(0, int(len(words) / 2)):
+                out += " " + words[i]
+            final_output += out
+            out = "#"
+            for i in range(int(len(words) / 2), len(words)):
+                out += " " + words[i]
+            final_output += out
+            return front_end_block + final_output
+        else:
+            if response['entities']['CommentText:CommentText'][0]['body'][0] == "command":
+                response['entities']['CommentText:CommentText'][0]['body'].replace("command ", "")
+            return front_end_block + "# " + response['entities']['CommentText:CommentText'][0]['body']
+    except KeyError:
+        if len(response['entities']['Expression:Expression'][0]['body']) > 120:
+            if response['entities']['Expression:Expression'][0]['body'][0] == "command":
+                response['entities']['Expression:Expression'][0]['body'].replace("command ", "")
+            final_output = ""
+            words = response['entities']['Expression:Expression'][0]['body'].split(" ")
+            out = "#"
+            for i in range(0, int(len(words) / 2)):
+                out += " " + words[i]
+            final_output += out
+            out = "#"
+            for i in range(int(len(words) / 2), len(words)):
+                out += " " + words[i]
+            final_output += out
+            return front_end_block + final_output
+        else:
+            if response['entities']['Expression:Expression'][0]['body'][:7] == "command":
+                return front_end_block + "# " + response['entities']['Expression:Expression'][0]['body'].replace("command ", "")
+            return front_end_block + "# " + response['entities']['Expression:Expression'][0]['body']
 
 
 def parse_for_loop(response):
     if 'Expression:Expression' in response['entities']:
         try:
-            variables1, operators1 = parse(response['entities']['Expression:Expression'][0]['body'])
-            variables2, operators2 = parse(response['entities']['Expression:Expression'][1]['body'])
+            first_expression = parse(response['entities']['Expression:Expression'][0]['body'])
+            second_expression = parse(response['entities']['Expression:Expression'][1]['body'])
         except KeyError:
-            print(front_end_error)
-            print("Missing an expression in for loop command")
-            return
+            return  front_end_error + "Missing an expression in for loop command"
         except IndexError:
-            print(front_end_error)
-            print("Second Expression name was not understood in for loop")
-            return
+            return front_end_error + "Second Expression name was not understood in for loop"
         try:
             variable = response['entities']['VariableName:VariableName'][0]['body']
         except KeyError:
-            print(front_end_error)
-            print("Variable Name not understood")
-            return
-        first_expression = ""
-        second_expression = ""
-        counter = -1
-        for variable1 in variables1:
-            if counter >= 0:
-                first_expression += " " + operators1[counter] + " "
-            first_expression += str(variable1)
-            counter += 1
-        counter = -1
-        for variable2 in variables2:
-            if counter >= 0:
-                second_expression += " " + operators2[counter] + " "
-            second_expression += str(variable2)
-            counter += 1
-        message = "for " + variable + " in ranage ( " + first_expression + " , " + second_expression + "):\n\t"
-        message += "#command"
-        print(message)
+            return front_end_error + "Variable Name not understood"
+        message = "for " + variable + " in range ( " + first_expression + " , " + second_expression + " ):\n\t"
+        message += placeholder_string
+        return front_end_block + message
     elif 'VariableName:VariableName' in response['entities']:
         try:
             variable1 = response['entities']['VariableName:VariableName'][0]['body']
             variable2 = response['entities']['VariableName:VariableName'][1]['body']
         except KeyError:
-            print(front_end_error)
-            print("Variable Name not found in for loop")
-            return
+            return front_end_error + "Variable Name not found in for loop"
         except IndexError:
-            print(front_end_error)
-            print("Second Variable name was not understood in for loop")
-            return
+            return front_end_error + "Second Variable name was not understood in for loop"
         message = "for " + variable1 + " in " + variable2 + ":\n\t"
-        message += "#command"
-        print(message)
+        message += placeholder_string
+        return front_end_block + message
     else:
-        print("for #variable in range( #expression,#expression ):\n\t")
+        return front_end_block + "for " + placeholder_string + " in range( " + placeholder_string + \
+               "," + placeholder_string + " ):\n\t" + placeholder_string
 
 
 def parse_while_loop(response):
-    if 'comparisons:comparisons' in response['entities']:
-        variables, operators = parse(response['entities']['Expression:Expression'][0]['body'])
-        output_string = ""
-        counter = -1
-        for variable in variables:
-            if counter >= 0:
-                output_string += " " + operators[counter] + " "
-            output_string += str(variable)
-            counter += 1
-        variables2, operators2 = parse(response['entities']['Expression:Expression'][1]['body'])
-        output_string2 = ""
-        counter = -1
-        for variable2 in variables2:
-            if counter >= 0:
-                output_string2 += " " + operators2[counter] + " "
-            output_string2 += str(variable2)
-            counter += 1
-        if response['entities']['comparisons:comparisons'][0]['body'] == 'equal to' or \
-                response['entities']['comparisons:comparisons'][0]['body'] == 'is equal to':
-            print("while " + output_string + " ==  " + output_string2 + " :\n\t#command")
+    
+    try:
+        if 'Expression:Expression' in response['entities']:
+            return front_end_block + "while " + parse(response['entities']['Expression:Expression'][0]['body']) + ":\n\t" + placeholder_string
+        else:
+            return front_end_block + "while " + placeholder_string + ":\n\t" + placeholder_string
+    except IndexError:
+        return front_end_error + "Expression not found"
 
-        if response['entities']['comparisons:comparisons'][0]['body'] == 'non equal to' or \
-                response['entities']['comparisons:comparisons'][0]['body'] == 'is non equal to':
-            print("while " + output_string + "!=" + output_string2 + " :\n\t#command")
 
-        if response['entities']['comparisons:comparisons'][0]['body'] == 'greater than' or \
-                response['entities']['comparisons:comparisons'][0]['body'] == 'is greater than':
-            print("while " + output_string + ">" + output_string2 + " :\n\tcommand")
-
-        if response['entities']['comparisons:comparisons'][0]['body'] == 'less than' or \
-                response['entities']['comparisons:comparisons'][0]['body'] == 'is less than':
-            print("while " + output_string + "<" + output_string2 + " :\n\t#command")
-
-        if response['entities']['comparisons:comparisons'][0]['body'] == 'greater or equal to' or \
-                response['entities']['comparisons:comparisons'][0]['body'] == 'is greater or equal to':
-            print("while " + output_string + ">=" + output_string2 + " :\n\t#command")
-
-        if response['entities']['comparisons:comparisons'][0]['body'] == 'less or equal to' or \
-                response['entities']['comparisons:comparisons'][0]['body'] == 'is less or equal to':
-            print("while " + output_string + "<=" + output_string2 + " :\n\t#command ")
-    elif 'Expression:Expression' in response['entities']:
-        variables, operators = parse(response['entities']['Expression:Expression'][0]['body'])
-        output_string = ""
-        counter = -1
-        for variable in variables:
-            if counter >= 0:
-                output_string += " " + operators[counter] + " "
-            output_string += str(variable)
-            counter += 1
-        print("while" + output_string + ":\n\t#command")
+def parse_create_function(response):
+    if 'Parameter:Parameter' in response['entities']:
+        try:
+            functionName = name_variable(response['entities']['FunctionName:FunctionName'][0]['body'])
+        except KeyError:
+            return front_end_error + "FunctionName not found"
+        message = "def " + functionName + " ("
+        i=0
+        for x in response['entities']['Parameter:Parameter']:
+            message += response['entities']['Parameter:Parameter'][i]['body'] + ", "
+            i+=1
+        message = message[:-2]
+        message += "):"
+        return front_end_block + message
     else:
-        print("while #exp com exp :\n\t#command")
+        try:
+            functionName = name_variable(response['entities']['FunctionName:FunctionName'][0]['body'])
+        except KeyError:
+            return front_end_error + "FunctionName not found"
+        message = "def " + functionName + " ():"
+        return front_end_block + message
 
 
-# takes a string and converts it to operations and variables
-def parse(string):
-    expression_operators = ['plus', 'minus', 'times', 'asterisk', 'multiplication', 'division', 'modulo', 'mod',
-                            'multiply',
-                            'multiplied']
+def parse_call_function(response):
+    if 'Parameter:Parameter' in response['entities']:
+        try:
+            functionName = name_variable(response['entities']['FunctionName:FunctionName'][0]['body'])
+        except KeyError:
+            return front_end_error + "FunctionName not found"
+        message = functionName + " ("
+        i=0
+        for x in response['entities']['Parameter:Parameter']:
+            message += response['entities']['Parameter:Parameter'][i]['body'] + ", "
+            i+=1
+        message = message[:-2]
+        message += ")"
+        return front_end_block + message
+    else:
+        try:
+            functionName = name_variable(response['entities']['FunctionName:FunctionName'][0]['body'])
+        except KeyError:
+            return front_end_error + "FunctionName not found"
+        message = functionName + " ()"
+        return front_end_block + message
+
+
+def parse_return(response):
+    try:
+        expression = parse(response['entities']['Expression:Expression'][0]['body'])
+        return "return " + expression
+    except KeyError:
+        return "return"
+
+
+def parse_delete(response):
+    try:
+        number1 = parse(response['entities']['Number:Number'][0]['body'])
+    except KeyError:
+        return front_end_error + "numbers where not understood"
+    try:
+        number2 = parse(response['entities']['Number:Number'][1]['body'])
+        return "vocoder-line-delete\n" + number1 + "\n" + number2
+    except IndexError:
+        return front_end_error + "numbers where not understood"
+    
+
+def parse_undo(response):
+    try:
+        number = parse(response['entities']['Number:Number'][0]['body'])
+        return front_end_undo + number
+    except KeyError:
+        return front_end_undo
+
+
+def parse_redo(response):
+    try:
+        number = parse(response['entities']['Number:Number'][0]['body'])
+        return front_end_redo + number
+    except KeyError:
+        return front_end_redo
+
+
+def parse_expression(string):
+    expression_operators = ['plus',
+                            'multiply', 'multiplied', 'multiplication', 'times', 'asterisk',
+                            'modulo', 'mod',
+                            'minus', 'unary'
+                                     'division', 'divide by', 'divided by',
+                            'to the power of',
+                            ]
     op_out = []  # This holds the operators that are found in the string (left to right)
     num_out = []  # this holds the non-operators that are found in the string (left to right)
     buffer = []
@@ -300,9 +262,13 @@ def parse(string):
         try:
             if word in expression_operators:
                 VariableName = ""
+                counter = 0
                 for index in buffer:
                     variableDetectionFlag = True
-                    VariableName = VariableName + index
+                    VariableName += index
+                    if naming_style == "snake" and counter == len(buffer):
+                        VariableName += "_"
+                    counter += 1
                 if variableDetectionFlag:
                     num_out.append(VariableName)
                     variableDetectionFlag = False
@@ -310,23 +276,13 @@ def parse(string):
                 # found an operator.
                 if word == "plus":
                     op_out.append("+")
-                if word == "minus":
+                if word == "minus" or word == "unary":
                     op_out.append("-")
                 if word == "division":
                     op_out.append("÷")
-                if word == "modulo":
+                if word == "modulo" or word == "mod":
                     op_out.append("%")
-                if word == "mod":
-                    op_out.append("%")
-                if word == "multiply":
-                    op_out.append("*")
-                if word == "multiply":
-                    op_out.append("*")
-                if word == "asterisk":
-                    op_out.append("*")
-                if word == "multiplication":
-                    op_out.append("*")
-                if word == "times":
+                if word == "multiply" or word == "asterisk" or word == "multiplication" or word == "times":
                     op_out.append("*")
             elif str(w2n.word_to_num(word)).isnumeric():
                 # if it is a valid number.  Just accumulate this number in num_out.
@@ -334,95 +290,195 @@ def parse(string):
                 num_out.append(digit)
         except ValueError:
             # else this is a variable name so convert it
-            if variableDetectionFlag:
+            if variableDetectionFlag and naming_style == "camel":
                 buffer.append(word.capitalize())
             else:
-                buffer.append(decapitalize(word))
+                buffer.append(decapitalize_word(word))
                 variableDetectionFlag = True
     if buffer:
         VariableName = ""
+        counter = 1
         for index in buffer:
             variableDetectionFlag = True
             VariableName = VariableName + index
+            if naming_style == "snake" and counter != len(buffer):
+                VariableName += "_"
+            counter += 1
         if variableDetectionFlag:
             num_out.append(VariableName)
+    counter = -1
+    expression = ""
+    for variable in num_out:
+        if counter >= 0:
+            expression += " " + op_out[counter] + " "
+        expression += str(variable)
+        counter += 1
+    return expression
 
-    return num_out, op_out
+
+def parse(string):
+    final_output = ""
+    string = string.replace("greater or equal to", "GreaterOrEqual")
+    string = string.replace("less or equal to", "LessOrEqual")
+    logical_expressions = re.findall('and|or', string)
+    if len(logical_expressions) == 0:
+        logical_expressions.append(None)
+    for comparison_operator in logical_expressions:
+        comparison_operators = []
+        if comparison_operator is not None:
+            comparison_operators = string.split(comparison_operator)
+        else:
+            comparison_operators.append(string)
+        counter_comparison = 0
+        for logical_expression in comparison_operators:
+            counter_comparison += 1
+            logical_operators = re.findall(
+                'GreaterOrEqual|LessOrEqual|is equal to|equal to|equals|is greater than|is less than|greater than|less than',
+                logical_expression)
+            if len(logical_operators) == 0:
+                final_output += parse_expression(logical_expression)
+                continue
+            for logical_operator in logical_operators:
+                arithmetic_value = logical_expression.split(logical_operator)
+                counter_arithemtic_value = 0
+                for arithmetic_operation in arithmetic_value:  # examine 1 expression at a time
+                    counter_arithemtic_value += 1
+                    if arithmetic_operation[-1] == ' ':
+                        arithmetic_operation = arithmetic_operation[:len(arithmetic_operation) - 1]
+                    if arithmetic_operation[0] == ' ':
+                        arithmetic_operation = arithmetic_operation[1:]
+                    final_output += parse_expression(arithmetic_operation)
+                    if counter_arithemtic_value != len(arithmetic_value):
+                        if logical_operator == "greater than" or logical_operator == "is greater than":
+                            final_output += " > "
+                        elif logical_operator == "less than" or logical_operator == "is less than":
+                            final_output += " < "
+                        elif logical_operator == "equals" or logical_operator == "equal to" or logical_operator == "is equal to":
+                            final_output += " == "
+                        elif logical_operator == "GreaterOrEqual":
+                            final_output += " >= "
+                        elif logical_operator == "LessOrEqual":
+                            final_output += " <= "
+            if counter_comparison != len(comparison_operators):
+                final_output += " " + comparison_operator + " "
+        return final_output
 
 
-naming_style = "snake"
-if len(sys.argv) > 0 and sys.argv[1] == "-snake":
-    naming_style = "snake"
-elif len(sys.argv) > 0 and sys.argv[1] == "-camel":
-    naming_style = "camel"
-client = Wit("3OXTFKTQZFCKO3PEYBN3VYS23BDRCVRC")
-with open('output.wav', 'rb') as f:
-    resp = client.speech(f, {'Content-Type': 'audio/wav'})
-print(resp)
+def parse_response(file_name):
+    with open(file_name, 'rb') as f:
+        response = client.speech(f, {'Content-Type': 'audio/wav'})
+    print(response)
+    if response['intents'][0]['name'] == 'AssignVariable':
+        if response['intents'][0]['confidence'] > confidence_threshold:
+            return parse_assign_variable(response)
 
-front_end_error = "dsd-section\nvocoder-error-message"
-front_end_block = "dsd-section\nvocoder-code-block"
-confidence_threshold = 0.75
-
-if resp['intents'][0]['name'] == 'DeclareVariable':
-    if resp['intents'][0]['confidence'] > confidence_threshold:
-        print(front_end_block)
-        parse_declare_variable(resp)
-
-elif resp['intents'][0]['name'] == 'IfElseStatement':
-    if resp['intents'][0]['confidence'] > confidence_threshold:
-        print(front_end_block)
-        parse_if_else_statement(resp)
-        command_if = client.message(resp['entities']['command:command'][0]['body'])
-        nested_if = True
-        if command_if['intents'][0]['name'] == 'DeclareVariable':
-            if command_if['intents'][0]['confidence'] > confidence_threshold:
-                parse_declare_variable(command_if)
-        if command_if['intents'][0]['name'] == 'AddingComment':
-            if command_if['intents'][0]['confidence'] > confidence_threshold:
-                parse_add_comment(command_if)
-        print("else:")
-        resp3 = client.message(resp['entities']['command:command'][1]['body'])
-        if resp3['intents'][0]['name'] == 'DeclareVariable':
-            if resp3['intents'][0]['confidence'] > confidence_threshold:
-                parse_declare_variable(resp3)
-        if resp3['intents'][0]['name'] == 'AddingComment':
-            if resp3['intents'][0]['confidence'] > confidence_threshold:
-                parse_add_comment(resp3)
-        # missing nested ifs or nested if+ifElse
-
-elif resp['intents'][0]['name'] == 'IfStatements':
-    if resp['intents'][0]['confidence'] > confidence_threshold:
-        print(front_end_block)
-        parse_if_statement(resp)
-        if 'command:command' in resp['entities']:
-            command_if = client.message(resp['entities']['command:command'][0]['body'])
+    elif response['intents'][0]['name'] == 'IfElseStatement':
+        if response['intents'][0]['confidence'] > confidence_threshold:
+            final_output = parse_if_else_statement(response)
+            command_if = client.message(response['entities']['command:command'][0]['body'])
             nested_if = True
             if command_if['intents'][0]['name'] == 'DeclareVariable':
                 if command_if['intents'][0]['confidence'] > confidence_threshold:
-                    parse_declare_variable(command_if)
+                    final_output += parse_assign_variable(command_if)
             if command_if['intents'][0]['name'] == 'AddingComment':
                 if command_if['intents'][0]['confidence'] > confidence_threshold:
-                    parse_add_comment(command_if)
+                    final_output += parse_add_comment(command_if)
+            if command_if['intents'][0]['name'] == 'Return':
+                        if command_if['intents'][0]['confidence'] > confidence_threshold:
+                            final_output += parse_return(command_if)
+            final_output += "else:\n\t"
+            command_else = client.message(response['entities']['command:command'][1]['body'])
+            if command_else['intents'][0]['name'] == 'DeclareVariable':
+                if command_else['intents'][0]['confidence'] > confidence_threshold:
+                    final_output += parse_assign_variable(command_else)
+            if command_else['intents'][0]['name'] == 'AddingComment':
+                if command_else['intents'][0]['confidence'] > confidence_threshold:
+                    final_output += parse_add_comment(command_else)
+            if command_else['intents'][0]['name'] == 'Return':
+                        if command_if['intents'][0]['confidence'] > confidence_threshold:
+                            final_output += parse_return(command_else)
+            return front_end_block + final_output
             # missing nested ifs or nested if+ifElse
 
-elif resp['intents'][0]['name'] == 'AddingComment':
-    if resp['intents'][0]['confidence'] > confidence_threshold:
-        print(front_end_block)
-        parse_add_comment(resp)
+    elif response['intents'][0]['name'] == 'IfStatements':
+        if response['intents'][0]['confidence'] > confidence_threshold:
+            final_output = parse_if_statement(response)
+            if 'command:command' in response['entities']:
+                command_if = client.message(response['entities']['command:command'][0]['body'])
+                nested_if = True
+                try:
+                    if command_if['intents'][0]['name'] == 'DeclareVariable':
+                        if command_if['intents'][0]['confidence'] > confidence_threshold:
+                            final_output += parse_assign_variable(command_if)
+                    if command_if['intents'][0]['name'] == 'AddingComment':
+                        if command_if['intents'][0]['confidence'] > confidence_threshold:
+                            final_output += parse_add_comment(command_if)
+                    if command_if['intents'][0]['name'] == 'Return':
+                        if command_if['intents'][0]['confidence'] > confidence_threshold:
+                            final_output += parse_return(command_if) 
+                except IndexError:
+                    final_output += placeholder_string
+                    print("no inner command found")
+            return front_end_block + final_output
+            # missing nested ifs or nested if+ifElse
 
-elif resp['intents'][0]['name'] == 'ForLoop':
-    if resp['intents'][0]['confidence'] > confidence_threshold:
-        print(front_end_block)
-        parse_for_loop(resp)
+    elif response['intents'][0]['name'] == 'AddingComment':
+        if response['intents'][0]['confidence'] > confidence_threshold:
+            return parse_add_comment(response)
 
-elif resp['intents'][0]['name'] == 'WhileLoop':
-    if resp['intents'][0]['confidence'] > confidence_threshold:
-        print(front_end_block)
-        parse_while_loop(resp)
+    elif response['intents'][0]['name'] == 'ForLoop':
+        if response['intents'][0]['confidence'] > confidence_threshold:
+            return parse_for_loop(response)
 
-elif resp['intents'][0]['name'] == 'UndoCommand':
-    if resp['intents'][0]['confidence'] > confidence_threshold:
-        print("dsd-section\nvocoder-undo\n")
-else:
-    print("dsd-section\nintent not found")
+    elif response['intents'][0]['name'] == 'WhileLoop':
+        if response['intents'][0]['confidence'] > confidence_threshold:
+            return parse_while_loop(response)
+
+    elif response['intents'][0]['name'] == 'UndoCommand':
+        if response['intents'][0]['confidence'] > confidence_threshold:
+            return parse_undo(response)
+
+    elif response['intents'][0]['name'] == 'CreateFunction':
+        if response['intents'][0]['confidence'] > confidence_threshold:
+            return parse_create_function(response)
+
+    elif response['intents'][0]['name'] == 'Return':
+        if response['intents'][0]['confidence'] > confidence_threshold:
+            return front_end_block + parse_return(response)
+
+    elif response['intents'][0]['name'] == 'Delete':
+        if response['intents'][0]['confidence'] > confidence_threshold:
+            return parse_delete(response)
+
+    elif response['intents'][0]['name'] == 'InsertExpression':
+        if response['intents'][0]['confidence'] > confidence_threshold:
+            message_string = response['entities'][0]['Expression:Expression']['body']
+            return front_end_block + parse_expression(message_string)
+
+    elif response['intents'][0]['name'] == 'CallFunction':
+        if response['intents'][0]['confidence'] > confidence_threshold:
+            return parse_call_function(response)
+
+    elif response['intents'][0]['name'] == 'RedoCommand':
+        if response['intents'][0]['confidence'] > confidence_threshold:
+            return parse_redo(response)
+
+    else:
+        return front_end_error + "intent not found"
+
+
+naming_style = "snake"
+if len(sys.argv) > 1 and sys.argv[1] == "-snake":
+    naming_style = "snake"
+elif len(sys.argv) > 1 and sys.argv[1] == "-camel":
+    naming_style = "camel"
+client = Wit("3OXTFKTQZFCKO3PEYBN3VYS23BDRCVRC")
+front_end_error = "dsd-section\nvocoder-error-message\n"
+front_end_warning = "dsd-section\nvocoder-warning-message\n"
+front_end_block = "dsd-section\nvocoder-code-block\n"
+front_end_undo = "dsd-section\nvocoder-undo\n"
+front_end_redo = "dsd-section\nvocoder-redo\n"
+placeholder_string = "$$"
+confidence_threshold = 0.75
+print(parse_response('ForElemInCount.wav'))
+
