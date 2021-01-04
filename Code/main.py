@@ -3,7 +3,6 @@ import sys
 from wit import Wit
 from word2number import w2n
 
-nested_if = False
 nested_while = False
 
 
@@ -48,7 +47,7 @@ def name_variable(variable_name):
         return string_to_camel(variable_name)
 
 
-def parse_assign_variable(response):
+def parse_assign_variable(response, nested_if):
     if 'VariableName:VariableName' in response['entities']:
         if 'Expression:Expression' in response['entities']:
             expression = parse(response['entities']['Expression:Expression'][0]['body'])
@@ -81,7 +80,7 @@ def parse_if_statement(response):
         return "if " + placeholder_string + " :\n\t" + placeholder_string
 
 
-def parse_add_comment(response):
+def parse_add_comment(response, nested_if):
     try:
         if len(response['entities']['CommentText:CommentText'][0]['body']) > 120:
 
@@ -95,11 +94,17 @@ def parse_add_comment(response):
             for i in range(int(len(words) / 2), len(words)):
                 out += " " + words[i]
             final_output += out
-            return front_end_block + final_output
+            if nested_if == True:
+                return final_output
+            else:
+                return front_end_block + final_output
         else:
             if response['entities']['CommentText:CommentText'][0]['body'][0] == "command":
                 response['entities']['CommentText:CommentText'][0]['body'].replace("command ", "")
-            return front_end_block + "# " + response['entities']['CommentText:CommentText'][0]['body']
+            if nested_if == True:
+                return "# " + response['entities']['CommentText:CommentText'][0]['body']
+            else:
+                return front_end_block + "# " + response['entities']['CommentText:CommentText'][0]['body']
     except KeyError:
         if len(response['entities']['Expression:Expression'][0]['body']) > 120:
             if response['entities']['Expression:Expression'][0]['body'][0] == "command":
@@ -114,12 +119,18 @@ def parse_add_comment(response):
             for i in range(int(len(words) / 2), len(words)):
                 out += " " + words[i]
             final_output += out
-            return front_end_block + final_output
+            if nested_if == True:
+                return final_output
+            else:
+                return front_end_block + final_output
         else:
             if response['entities']['Expression:Expression'][0]['body'][:7] == "command":
                 return front_end_block + "# " + response['entities']['Expression:Expression'][0]['body'].replace(
                     "command ", "")
-            return front_end_block + "# " + response['entities']['Expression:Expression'][0]['body']
+            if nested_if == True:
+                return "# " + response['entities']['Expression:Expression'][0]['body']
+            else:
+                return front_end_block + "# " + response['entities']['Expression:Expression'][0]['body']
 
 
 def parse_for_loop(response):
@@ -164,13 +175,16 @@ def parse_for_loop(response):
                "," + placeholder_string + " ):\n\t" + placeholder_string
 
 
-def parse_while_loop(response):
+def parse_while_loop(response, nested_if):
     try:
         if 'Expression:Expression' in response['entities']:
             return front_end_block + "while " + parse(
                 response['entities']['Expression:Expression'][0]['body']) + ":\n\t" + placeholder_string
         else:
-            return front_end_block + "while " + placeholder_string + ":\n\t" + placeholder_string
+            if nested_if == True:
+                return "while " + placeholder_string + ":\n\t" + placeholder_string
+            else:
+                return front_end_block + "while " + placeholder_string + ":\n\t" + placeholder_string
     except IndexError:
         return front_end_warning + "Expression not found\n" \
                + front_end_block + "while " + placeholder_string + ":\n\t" + placeholder_string
@@ -189,18 +203,18 @@ def parse_create_function(response):
             message += name_parameter + ", "
             i += 1
         message = message[:-2]
-        message += "):"
+        message += "):\n\t"
         return front_end_block + message
     else:
         try:
             functionName = name_variable(response['entities']['FunctionName:FunctionName'][0]['body'])
         except KeyError:
             return front_end_error + "FunctionName not found"
-        message = "def " + functionName + " ():"
+        message = "def " + functionName + " ():\n\t"
         return front_end_block + message
 
 
-def parse_call_function(response):
+def parse_call_function(response, nested_if):
     if 'Parameter:Parameter' in response['entities']:
         try:
             functionName = name_variable(response['entities']['FunctionName:FunctionName'][0]['body'])
@@ -214,18 +228,24 @@ def parse_call_function(response):
                 name_parameter = w2n.word_to_num(name_variable(response['entities']['Parameter:Parameter'][i]['body']))
             except ValueError:
                 name_parameter = name_variable(response['entities']['Parameter:Parameter'][i]['body'])
-            message += name_parameter + ", "
+            message += str(name_parameter) + ", "
             i += 1
         message = message[:-2]
         message += ")"
-        return front_end_block + message
+        if nested_if:
+            return message
+        else:
+            return front_end_block + message
     else:
         try:
             functionName = name_variable(response['entities']['FunctionName:FunctionName'][0]['body'])
         except KeyError:
             return front_end_error + "FunctionName not found"
         message = functionName + " ()"
-        return front_end_block + message
+        if nested_if:
+            return message
+        else:
+            return front_end_block + message
 
 
 def parse_return(response):
@@ -354,7 +374,7 @@ def parse(string):
         for logical_expression in comparison_operators:
             counter_comparison += 1
             logical_operators = re.findall(
-                'GreaterOrEqual|LessOrEqual|is equal to|equal to|equals|is greater than|is less than|greater than|less than',
+                'GreaterOrEqual|LessOrEqual|is equal to|equal to|is equal|equals|is greater than|is less than|greater than|less than',
                 logical_expression)
             if len(logical_operators) == 0:
                 final_output += parse_expression(logical_expression)
@@ -374,7 +394,7 @@ def parse(string):
                             final_output += " > "
                         elif logical_operator == "less than" or logical_operator == "is less than":
                             final_output += " < "
-                        elif logical_operator == "equals" or logical_operator == "equal to" or logical_operator == "is equal to":
+                        elif logical_operator == "equals" or logical_operator == "equal to" or logical_operator == "is equal to" or logical_operator == "is equal":
                             final_output += " == "
                         elif logical_operator == "GreaterOrEqual":
                             final_output += " >= "
@@ -389,12 +409,13 @@ def parse_response(file_name):
     with open(file_name, 'rb') as f:
         response = client.speech(f, {'Content-Type': 'audio/wav'})
     print(response)
+    nested_if = False
     if response['intents'][0]['name'] == 'AssignVariable':
         if response['intents'][0]['confidence'] > confidence_threshold:
-            return parse_assign_variable(response)
+            return parse_assign_variable(response, nested_if)
         else:
             print(front_end_warning + "The confidence is low")
-            return parse_assign_variable(response)
+            return parse_assign_variable(response, nested_if)
 
     elif response['intents'][0]['name'] == 'IfElseStatement':
         if response['intents'][0]['confidence'] > confidence_threshold:
@@ -403,30 +424,30 @@ def parse_response(file_name):
             nested_if = True
             if command_if['intents'][0]['name'] == 'AssignVariable':
                 if command_if['intents'][0]['confidence'] > confidence_threshold:
-                    final_output += parse_assign_variable(command_if)
+                    final_output += parse_assign_variable(command_if, nested_if)
             if command_if['intents'][0]['name'] == 'AddingComment':
                 if command_if['intents'][0]['confidence'] > confidence_threshold:
-                    final_output += parse_add_comment(command_if)
+                    final_output += parse_add_comment(command_if, nested_if)
             if command_if['intents'][0]['name'] == 'Return':
                 if command_if['intents'][0]['confidence'] > confidence_threshold:
                     final_output += parse_return(command_if)
             if command_if['intents'][0]['name'] == 'CallFunction':
                 if command_if['intents'][0]['confidence'] > confidence_threshold:
-                    final_output += parse_call_function(command_if)
+                    final_output += parse_call_function(command_if, nested_if)
             final_output += "else:\n\t"
             command_else = client.message(response['entities']['command:command'][1]['body'])
             if command_else['intents'][0]['name'] == 'AssignVariable':
                 if command_else['intents'][0]['confidence'] > confidence_threshold:
-                    final_output += parse_assign_variable(command_else)
+                    final_output += parse_assign_variable(command_else, nested_if)
             if command_else['intents'][0]['name'] == 'AddingComment':
                 if command_else['intents'][0]['confidence'] > confidence_threshold:
-                    final_output += parse_add_comment(command_else)
+                    final_output += parse_add_comment(command_else, nested_if)
             if command_else['intents'][0]['name'] == 'Return':
                 if command_if['intents'][0]['confidence'] > confidence_threshold:
                     final_output += parse_return(command_else)
             if command_else['intents'][0]['name'] == 'CallFunction':
                 if command_else['intents'][0]['confidence'] > confidence_threshold:
-                    final_output += parse_call_function(command_else)
+                    final_output += parse_call_function(command_else, nested_if)
             return front_end_block + final_output
             # missing nested ifs or nested if+ifElse
         else:
@@ -441,19 +462,19 @@ def parse_response(file_name):
                 try:
                     if command_if['intents'][0]['name'] == 'DeclareVariable':
                         if command_if['intents'][0]['confidence'] > confidence_threshold:
-                            final_output += parse_assign_variable(command_if)
+                            final_output += parse_assign_variable(command_if, nested_if)
                     if command_if['intents'][0]['name'] == 'AddingComment':
                         if command_if['intents'][0]['confidence'] > confidence_threshold:
-                            final_output += parse_add_comment(command_if)
+                            final_output += parse_add_comment(command_if, nested_if)
                     if command_if['intents'][0]['name'] == 'Return':
                         if command_if['intents'][0]['confidence'] > confidence_threshold:
                             final_output += parse_return(command_if)
                     if command_if['intents'][0]['name'] == 'CallFunction':
                         if command_if['intents'][0]['confidence'] > confidence_threshold:
-                            final_output += parse_call_function(command_if)
+                            final_output += parse_call_function(command_if, nested_if)
                 except IndexError:
                     final_output += placeholder_string
-                    print("no inner command found")
+                    print(front_end_warning + "no inner command found")
             return front_end_block + final_output
             # missing nested ifs or nested if+ifElse
         else:
@@ -461,10 +482,10 @@ def parse_response(file_name):
 
     elif response['intents'][0]['name'] == 'AddingComment':
         if response['intents'][0]['confidence'] > confidence_threshold:
-            return parse_add_comment(response)
+            return parse_add_comment(response, nested_if)
         else:
             print(front_end_warning + "The confidence is low")
-            return parse_add_comment(response)
+            return parse_add_comment(response, nested_if)
 
     elif response['intents'][0]['name'] == 'ForLoop':
         if response['intents'][0]['confidence'] > confidence_threshold:
@@ -475,10 +496,10 @@ def parse_response(file_name):
 
     elif response['intents'][0]['name'] == 'WhileLoop':
         if response['intents'][0]['confidence'] > confidence_threshold:
-            return parse_while_loop(response)
+            return parse_while_loop(response, nested_if)
         else:
             print(front_end_warning + "The confidence is low")
-            return parse_while_loop(response)
+            return parse_while_loop(response, nested_if)
 
     elif response['intents'][0]['name'] == 'UndoCommand':
         if response['intents'][0]['confidence'] > confidence_threshold:
@@ -525,10 +546,10 @@ def parse_response(file_name):
 
     elif response['intents'][0]['name'] == 'CallFunction':
         if response['intents'][0]['confidence'] > confidence_threshold:
-            return parse_call_function(response)
+            return parse_call_function(response, nested_if)
         else:
             print(front_end_warning + "The confidence is low")
-            return parse_call_function(response)
+            return parse_call_function(response, nested_if)
 
     elif response['intents'][0]['name'] == 'RedoCommand':
         if response['intents'][0]['confidence'] > confidence_threshold:
@@ -554,4 +575,4 @@ front_end_undo = "dsd-section\nvocoder-undo\n"
 front_end_redo = "dsd-section\nvocoder-redo\n"
 placeholder_string = "$$"
 confidence_threshold = 0.75
-# print(parse_response('ForElemInCount.wav'))
+print(parse_response('CreateAnIfStatement.wav'))
