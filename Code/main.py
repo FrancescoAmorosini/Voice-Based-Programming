@@ -172,7 +172,8 @@ def parse_create_function(response):
         message = "def " + functionName + " ("
         i=0
         for x in response['entities']['Parameter:Parameter']:
-            message += response['entities']['Parameter:Parameter'][i]['body'] + ", "
+            name_parameter = name_variable(response['entities']['Parameter:Parameter'][i]['body'])
+            message += name_parameter + ", "
             i+=1
         message = message[:-2]
         message += "):"
@@ -195,7 +196,8 @@ def parse_call_function(response):
         message = functionName + " ("
         i=0
         for x in response['entities']['Parameter:Parameter']:
-            message += response['entities']['Parameter:Parameter'][i]['body'] + ", "
+            name_parameter = name_variable(response['entities']['Parameter:Parameter'][i]['body'])
+            message += name_parameter + ", "
             i+=1
         message = message[:-2]
         message += ")"
@@ -377,7 +379,7 @@ def parse_response(file_name):
             final_output = parse_if_else_statement(response)
             command_if = client.message(response['entities']['command:command'][0]['body'])
             nested_if = True
-            if command_if['intents'][0]['name'] == 'DeclareVariable':
+            if command_if['intents'][0]['name'] == 'AssignVariable':
                 if command_if['intents'][0]['confidence'] > confidence_threshold:
                     final_output += parse_assign_variable(command_if)
             if command_if['intents'][0]['name'] == 'AddingComment':
@@ -386,9 +388,12 @@ def parse_response(file_name):
             if command_if['intents'][0]['name'] == 'Return':
                         if command_if['intents'][0]['confidence'] > confidence_threshold:
                             final_output += parse_return(command_if)
+            if command_if['intents'][0]['name'] == 'CallFunction':
+                        if command_if['intents'][0]['confidence'] > confidence_threshold:
+                            final_output += parse_call_function(command_if)
             final_output += "else:\n\t"
             command_else = client.message(response['entities']['command:command'][1]['body'])
-            if command_else['intents'][0]['name'] == 'DeclareVariable':
+            if command_else['intents'][0]['name'] == 'AssignVariable':
                 if command_else['intents'][0]['confidence'] > confidence_threshold:
                     final_output += parse_assign_variable(command_else)
             if command_else['intents'][0]['name'] == 'AddingComment':
@@ -397,6 +402,9 @@ def parse_response(file_name):
             if command_else['intents'][0]['name'] == 'Return':
                         if command_if['intents'][0]['confidence'] > confidence_threshold:
                             final_output += parse_return(command_else)
+            if command_else['intents'][0]['name'] == 'CallFunction':
+                        if command_else['intents'][0]['confidence'] > confidence_threshold:
+                            final_output += parse_call_function(command_else)
             return front_end_block + final_output
             # missing nested ifs or nested if+ifElse
 
@@ -416,6 +424,9 @@ def parse_response(file_name):
                     if command_if['intents'][0]['name'] == 'Return':
                         if command_if['intents'][0]['confidence'] > confidence_threshold:
                             final_output += parse_return(command_if) 
+                    if command_if['intents'][0]['name'] == 'CallFunction':
+                        if command_if['intents'][0]['confidence'] > confidence_threshold:
+                            final_output += parse_call_function(command_if) 
                 except IndexError:
                     final_output += placeholder_string
                     print("no inner command found")
