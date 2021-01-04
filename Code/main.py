@@ -127,32 +127,35 @@ def parse_for_loop(response):
         message = ""
         try:
             first_expression = parse(response['entities']['Expression:Expression'][0]['body'])
-            second_expression = parse(response['entities']['Expression:Expression'][1]['body'])
         except KeyError:
-            second_expression = placeholder_string
-            message += front_end_warning + "Missing an expression in for loop command"
-        except IndexError:
             first_expression = placeholder_string
+            message += front_end_warning + "Missing an expression in for loop command"
+        try:
+            second_expression = parse(response['entities']['Expression:Expression'][1]['body'])
+        except IndexError:
+            second_expression = placeholder_string
             message += front_end_warning + "Second Expression name was not understood in for loop"
         try:
-            variable = response['entities']['VariableName:VariableName'][0]['body']
+            variable = name_variable(response['entities']['VariableName:VariableName'][0]['body'])
         except KeyError:
             variable = placeholder_string
-            message += front_end_warning + "Variable Name not understood"
-        message = front_end_block + "for " + variable + " in range ( " + first_expression + " , " + second_expression + " ):\n\t"
+            message += front_end_warning + "Variable Name not understood\n"
+        message += front_end_block + "for " + variable + " in range ( " + first_expression + \
+                  " , " + second_expression + " ):\n\t"
         message += placeholder_string
         return message
     elif 'VariableName:VariableName' in response['entities']:
         message = ""
         try:
-            variable1 = response['entities']['VariableName:VariableName'][0]['body']
-            variable2 = response['entities']['VariableName:VariableName'][1]['body']
+            variable1 = name_variable(response['entities']['VariableName:VariableName'][0]['body'])
         except KeyError:
             variable1 = placeholder_string
-            message += front_end_error + "Variable Name not found in for loop"
+            message += front_end_warning + "Variable Name not found in for loop"
+        try:
+            variable2 = name_variable(response['entities']['VariableName:VariableName'][1]['body'])
         except IndexError:
-            variable1 = placeholder_string
-            message += front_end_error + "Second Variable name was not understood in for loop"
+            variable2 = placeholder_string
+            message += front_end_warning + "Second Variable name was not understood in for loop\n"
         message += front_end_block + "for " + variable1 + " in " + variable2 + ":\n\t"
         message += placeholder_string
         return message
