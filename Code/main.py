@@ -192,9 +192,13 @@ def parse_create_function(response):
 def parse_call_function(response):
     if 'Parameter:Parameter' in response['entities']:
         try:
-            functionName = name_variable(response['entities']['FunctionName:FunctionName'][0]['body'])
-        except KeyError:
-            return front_end_error + "FunctionName not found"
+            functionName = w2n.word_to_num(name_variable(response['entities']['FunctionName:FunctionName'][0]['body']))
+        except ValueError:
+            try:
+                functionName = name_variable(response['entities']['FunctionName:FunctionName'][0]['body'])
+            except KeyError:
+                return front_end_error + "FunctionName not found"
+
         message = functionName + " ("
         i = 0
         for x in response['entities']['Parameter:Parameter']:
@@ -375,6 +379,9 @@ def parse_response(file_name):
     if response['intents'][0]['name'] == 'AssignVariable':
         if response['intents'][0]['confidence'] > confidence_threshold:
             return parse_assign_variable(response)
+        else:
+            print(front_end_warning + "The confidence is low")
+            return parse_assign_variable(response)
 
     elif response['intents'][0]['name'] == 'IfElseStatement':
         if response['intents'][0]['confidence'] > confidence_threshold:
@@ -409,6 +416,8 @@ def parse_response(file_name):
                     final_output += parse_call_function(command_else)
             return front_end_block + final_output
             # missing nested ifs or nested if+ifElse
+        else:
+            print(front_end_warning + "The confidence is low")
 
     elif response['intents'][0]['name'] == 'IfStatements':
         if response['intents'][0]['confidence'] > confidence_threshold:
@@ -434,46 +443,85 @@ def parse_response(file_name):
                     print("no inner command found")
             return front_end_block + final_output
             # missing nested ifs or nested if+ifElse
+        else:
+            print(front_end_warning + "The confidence is low")
 
     elif response['intents'][0]['name'] == 'AddingComment':
         if response['intents'][0]['confidence'] > confidence_threshold:
+            return parse_add_comment(response)
+        else:
+            print(front_end_warning + "The confidence is low")
             return parse_add_comment(response)
 
     elif response['intents'][0]['name'] == 'ForLoop':
         if response['intents'][0]['confidence'] > confidence_threshold:
             return parse_for_loop(response)
+        else:
+            print(front_end_warning + "The confidence is low")
+            return parse_for_loop(response)
 
     elif response['intents'][0]['name'] == 'WhileLoop':
         if response['intents'][0]['confidence'] > confidence_threshold:
+            return parse_while_loop(response)
+        else:
+            print(front_end_warning + "The confidence is low")
             return parse_while_loop(response)
 
     elif response['intents'][0]['name'] == 'UndoCommand':
         if response['intents'][0]['confidence'] > confidence_threshold:
             return parse_undo(response)
+        else:
+            print(front_end_warning + "The confidence is low")
+            return parse_undo(response)
 
     elif response['intents'][0]['name'] == 'CreateFunction':
         if response['intents'][0]['confidence'] > confidence_threshold:
+            return parse_create_function(response)
+        else:
+            print(front_end_warning + "The confidence is low")
             return parse_create_function(response)
 
     elif response['intents'][0]['name'] == 'Return':
         if response['intents'][0]['confidence'] > confidence_threshold:
             return front_end_block + parse_return(response)
+        else:
+            print(front_end_warning + "The confidence is low")
+            return front_end_block + parse_return(response)
 
     elif response['intents'][0]['name'] == 'Delete':
         if response['intents'][0]['confidence'] > confidence_threshold:
             return parse_delete(response)
+        else:
+            print(front_end_warning + "The confidence is low")
+            return parse_delete(response)
 
     elif response['intents'][0]['name'] == 'InsertExpression':
         if response['intents'][0]['confidence'] > confidence_threshold:
-            message_string = response['entities'][0]['Expression:Expression']['body']
-            return front_end_block + parse_expression(message_string)
+            try:
+                message_string = response['entities']['Expression:Expression'][0]['body']
+                return front_end_block + parse_expression(message_string)
+            except KeyError:
+                print(front_end_error)
+        else:
+            print(front_end_warning + "The confidence is low")
+            try:
+                message_string = response['entities']['Expression:Expression'][0]['body']
+                return front_end_block + parse_expression(message_string)
+            except KeyError:
+                print(front_end_error)
 
     elif response['intents'][0]['name'] == 'CallFunction':
         if response['intents'][0]['confidence'] > confidence_threshold:
             return parse_call_function(response)
+        else:
+            print(front_end_warning + "The confidence is low")
+            return parse_call_function(response)
 
     elif response['intents'][0]['name'] == 'RedoCommand':
         if response['intents'][0]['confidence'] > confidence_threshold:
+            return parse_redo(response)
+        else:
+            print(front_end_warning + "The confidence is low")
             return parse_redo(response)
 
     else:
