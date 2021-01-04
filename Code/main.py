@@ -124,31 +124,41 @@ def parse_add_comment(response):
 
 def parse_for_loop(response):
     if 'Expression:Expression' in response['entities']:
+        message = ""
         try:
             first_expression = parse(response['entities']['Expression:Expression'][0]['body'])
+        except KeyError:
+            first_expression = placeholder_string
+            message += front_end_warning + "Missing an expression in for loop command"
+        try:
             second_expression = parse(response['entities']['Expression:Expression'][1]['body'])
-        except KeyError:
-            return front_end_error + "Missing an expression in for loop command"
         except IndexError:
-            return front_end_error + "Second Expression name was not understood in for loop"
+            second_expression = placeholder_string
+            message += front_end_warning + "Second Expression name was not understood in for loop"
         try:
-            variable = response['entities']['VariableName:VariableName'][0]['body']
+            variable = name_variable(response['entities']['VariableName:VariableName'][0]['body'])
         except KeyError:
-            return front_end_error + "Variable Name not understood"
-        message = "for " + variable + " in range ( " + first_expression + " , " + second_expression + " ):\n\t"
+            variable = placeholder_string
+            message += front_end_warning + "Variable Name not understood\n"
+        message += front_end_block + "for " + variable + " in range ( " + first_expression + \
+                  " , " + second_expression + " ):\n\t"
         message += placeholder_string
-        return front_end_block + message
+        return message
     elif 'VariableName:VariableName' in response['entities']:
+        message = ""
         try:
-            variable1 = response['entities']['VariableName:VariableName'][0]['body']
-            variable2 = response['entities']['VariableName:VariableName'][1]['body']
+            variable1 = name_variable(response['entities']['VariableName:VariableName'][0]['body'])
         except KeyError:
-            return front_end_error + "Variable Name not found in for loop"
+            variable1 = placeholder_string
+            message += front_end_warning + "Variable Name not found in for loop"
+        try:
+            variable2 = name_variable(response['entities']['VariableName:VariableName'][1]['body'])
         except IndexError:
-            return front_end_error + "Second Variable name was not understood in for loop"
-        message = "for " + variable1 + " in " + variable2 + ":\n\t"
+            variable2 = placeholder_string
+            message += front_end_warning + "Second Variable name was not understood in for loop\n"
+        message += front_end_block + "for " + variable1 + " in " + variable2 + ":\n\t"
         message += placeholder_string
-        return front_end_block + message
+        return message
     else:
         return front_end_block + "for " + placeholder_string + " in range( " + placeholder_string + \
                "," + placeholder_string + " ):\n\t" + placeholder_string
@@ -162,7 +172,8 @@ def parse_while_loop(response):
         else:
             return front_end_block + "while " + placeholder_string + ":\n\t" + placeholder_string
     except IndexError:
-        return front_end_error + "Expression not found"
+        return front_end_warning + "Expression not found\n" \
+               + front_end_block + "while " + placeholder_string + ":\n\t" + placeholder_string
 
 
 def parse_create_function(response):
@@ -229,12 +240,12 @@ def parse_delete(response):
     try:
         number1 = parse(response['entities']['Number:Number'][0]['body'])
     except KeyError:
-        return front_end_error + "numbers where not understood"
+        return "vocoder-line-delete\n"
     try:
         number2 = parse(response['entities']['Number:Number'][1]['body'])
         return "vocoder-line-delete\n" + number1 + "\n" + number2
     except IndexError:
-        return front_end_error + "numbers where not understood"
+        return front_end_error + "delete line numbers where not understood"
 
 
 def parse_undo(response):
@@ -297,6 +308,8 @@ def parse_expression(string):
                 digit = w2n.word_to_num(word)
                 num_out.append(digit)
         except ValueError:
+            if word == "":
+                continue
             # else this is a variable name so convert it
             if variableDetectionFlag and naming_style == "camel":
                 buffer.append(word.capitalize())
@@ -541,4 +554,4 @@ front_end_undo = "dsd-section\nvocoder-undo\n"
 front_end_redo = "dsd-section\nvocoder-redo\n"
 placeholder_string = "$$"
 confidence_threshold = 0.75
-print(parse_response('ForElemInCount.wav'))
+# print(parse_response('ForElemInCount.wav'))
