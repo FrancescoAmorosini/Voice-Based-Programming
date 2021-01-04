@@ -45,12 +45,21 @@ Place the cursor where you want your next code block to be inserted. You can als
 
   > **Declare** _variable_name_ **equals** _expression_
 
+  When declaring a variable without any expression assigned to it, `None` will be assigned as default.
+
 * Assignment
   > **Assign** _expression_  **to**  _variable_name_
 
   > **Assign** _variable_name_ **equals** _expression_
 
   > **Assign** _variable_name_ **the value** _expression_
+
+* Expressions
+  > **Insert expression** _expression_
+
+  > **Expression** _expression_
+
+  The command is thought for the programmer to be able to update assignments when coding, or to later input pieces of code like loop/if conditions.
 
 * Comment
   > **Add comment** _text_
@@ -60,8 +69,6 @@ Place the cursor where you want your next code block to be inserted. You can als
 * If statement
   > **Create if statement**
 
-  > **If** _expression_ _comparison_ _expression_ **then** _command_
-
   > **If** _expression_ **then** _command_
 
   When creating a non-empty if statement it is possible to input the first instruction within the statement. Note that it cannot be another if based statement.
@@ -69,20 +76,14 @@ Place the cursor where you want your next code block to be inserted. You can als
 * If-else statement
   > **Create if else statement**
 
-  > **If** _expression_ _comparison_ _expression_ **then** _command_ **else** _command_
-
   > **If** _expression_ **then** _command_ **else** _command_
 
-  When creating a non-empty if-else statement it is possible to input the first instruction within the statement. Note that it cannot be another if based statement.
+  When creating a non-empty if-else statement it is possible to input the first instruction within the then and else sections. Note that it cannot be another if based statement.
 
 * While loop
   > **Create while loop**
 
-  > **Create while loop until** _expression_ _comparison_ _expression_
-
   > **Create while loop until** _expression_
-
-  > **While** _expression_ _comparison_ _expression_ 
 
   > **While** _expression_
 
@@ -93,14 +94,41 @@ Place the cursor where you want your next code block to be inserted. You can als
 
   > **Create for loop with** _variable_name_ **in range from** _expression_ **to** _expression_
 
+* Function definition
+  > **Create function** _function_name_
+
+  > **Define function** _function_name_
+
+  > **Create function** _function_name_ **with parameters** _parameter_1_ **comma** _parameter_2_
+
+* Function call
+  > **Call function** _function_name_
+
+  > **Call function** _function_name_ **with parameters** _parameter_1_ **comma** _parameter_2_
+
+* Return statement
+  > **Return**
+
+  > **Return** _expression_
 
 ### Editing Commands
 * Undo
   > **Undo**
 
-  Allows you to revert the last action, both when it is a voice command and when it is keyboard input.
+  > **Undo** _number_ **times**
+
+  Allows you to revert the specified number of last actions, both when it is a voice command and when it is keyboard input.
+
+* Redo
+  > **Redo**
+
+  > **Redo** _number_ **times**
+
+  Allows you to redo the specified number of undone actions.
 
 * Delete
   > **Delete**
   
-  Deletes the selected text in the editor
+  > **Delete from line** _number_ **to line** _number_
+
+  Deletes the selected text in the editor in the first case, the specified lines in the second. If text is selected when specifying line ranges, the latter will have priority.
