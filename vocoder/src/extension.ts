@@ -214,12 +214,12 @@ function elaborateCommand(){
             return;
         }
         console.log(`stdout: ${stdout}`);
-        var sections = stdout.split("dsd-section\n");
+        var sections = stdout.split("dsd-section\r\n");
         var intent = sections[0].match(/intents.*\}/).toString().match(/name': '[A-Z, a-z, 0-9]*'/).toString().match(/'[A-Z, a-z, 0-9]*'/).toString();
         outputChannel.appendLine('Intent detected: '.concat(intent));
         
-        const vocoderSec = sections[1].split("vocoder-parsed-command\n");
-        const vocoderMessages = vocoderSec[0];
+        const vocoderSec = sections[sections.length - 1].split("vocoder-parsed-command\r\n");
+        const vocoderMessages = sections[sections.length - 2];
         if(vocoderMessages.includes("vocoder-error")){
             const message = vocoderMessages.split("vocoder-error")[1];
             vscode.window.showErrorMessage(message);
@@ -258,13 +258,13 @@ function elaborateCommand(){
             deleteFromEditor(true,parseInt(lines[0]),parseInt(lines[1]));
             return;
         }
-        const codeSec = vocoderCommand.split("vocoder-code-block\n");
+        /*const codeSec = vocoderCommand.split("vocoder-code-block\n");
         if(codeSec.length!==2){
             console.log(`Bad format from backend processing: no command or code-block section found`);
             vscode.window.showErrorMessage('Code processing failed');
             return;
-        }
-        writeOnEditor(codeSec[1]);
+        }*/
+        writeOnEditor(vocoderCommand);
     });
 }
 

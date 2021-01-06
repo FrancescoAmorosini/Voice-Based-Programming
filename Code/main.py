@@ -623,11 +623,11 @@ if len(sys.argv) > 1 and sys.argv[1] == "-snake":
 elif len(sys.argv) > 1 and sys.argv[1] == "-camel":
     naming_style = "camel"
 client = Wit("3OXTFKTQZFCKO3PEYBN3VYS23BDRCVRC")
-front_end_error = "dsd-section\nvocoder-error-message\n"
-front_end_warning = "dsd-section\nvocoder-warning-message\n"
-front_end_block = "dsd-section\nvocoder-code-block\n"
+front_end_error = "dsd-section\nvocoder-error\n"
+front_end_warning = "dsd-section\nvocoder-warning\n"
+front_end_block = "dsd-section\nvocoder-parsed-command\n"
 front_end_undo = "dsd-section\nvocoder-undo\n"
 front_end_redo = "dsd-section\nvocoder-redo\n"
 placeholder_string = "$$"
 confidence_threshold = 0.75
-# print(parse_response('CreateAnIfStatement.wav'))
+print(parse_response('..\..\..\..\..\Code\DefineCount=1+1.wav'))
