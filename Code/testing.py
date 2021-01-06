@@ -1,5 +1,7 @@
 import unittest
 
+from word2number import w2n
+
 from main import parse_response, parse_expression, parse
 
 front_end_error = "dsd-section\nvocoder-error-message\n"
@@ -83,4 +85,8 @@ class MyTestCase(unittest.TestCase):
                                                                                              "< 4")
         self.assertEqual(parse("three plus four is less than number of cars and x is greater than five"),
                          "3 + 4 < number_of_cars and x > 5")
+        self.assertEqual(parse("index or number of times"),
+                         "index or numberof")
+        self.assertEqual(parse("one hundred and twenty-eight"),"128")
+
     # Missing RedoCommand and InsertExpression
