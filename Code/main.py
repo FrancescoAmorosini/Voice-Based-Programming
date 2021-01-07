@@ -152,7 +152,7 @@ def parse_for_loop(response):
             variable = placeholder_string
             message += front_end_warning + "Variable Name not understood\n"
         message += front_end_block + "for " + variable + " in range ( " + first_expression + \
-                  " , " + second_expression + " ):\n\t"
+                   " , " + second_expression + " ):\n\t"
         message += placeholder_string
         return message
     elif 'VariableName:VariableName' in response['entities']:
@@ -260,10 +260,10 @@ def parse_delete(response):
     try:
         number1 = parse(response['entities']['Number:Number'][0]['body'])
     except KeyError:
-        return "vocoder-line-delete\n"
+        return front_end_delete
     try:
         number2 = parse(response['entities']['Number:Number'][1]['body'])
-        return "vocoder-line-delete\n" + number1 + "\n" + number2
+        return "vocoder-line-delete" + number1 + "\n" + number2
     except IndexError:
         return front_end_error + "delete line numbers where not understood"
 
@@ -623,11 +623,13 @@ if len(sys.argv) > 1 and sys.argv[1] == "-snake":
 elif len(sys.argv) > 1 and sys.argv[1] == "-camel":
     naming_style = "camel"
 client = Wit("3OXTFKTQZFCKO3PEYBN3VYS23BDRCVRC")
-front_end_error = "dsd-section\nvocoder-error-message\n"
-front_end_warning = "dsd-section\nvocoder-warning-message\n"
+front_end_error = "dsd-section\nvocoder-error\n"
+front_end_warning = "dsd-section\nvocoder-warning\n"
 front_end_block = "dsd-section\nvocoder-code-block\n"
 front_end_undo = "dsd-section\nvocoder-undo\n"
 front_end_redo = "dsd-section\nvocoder-redo\n"
+front_end_delete = "dsd-section\nvocoder-delete\n"
+
 placeholder_string = "$$"
 confidence_threshold = 0.75
 # print(parse_response('CreateAnIfStatement.wav'))
