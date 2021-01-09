@@ -117,7 +117,7 @@ class MyTestCase(unittest.TestCase):
                                                                                              "number_of_cars "
                                                                                              "< 4")
         self.assertEqual(parse("three plus four is less than number of cars and x is greater than five"),
-                         "3 + 4 < number_of_cars and x > 5")
+                         "7 < number_of_cars and x > 5")
         self.assertEqual(parse("index or number of times"),
                          "index or numberof")
         self.assertEqual(parse_expression("three mod four division two"), "3 % 4 / 2")
@@ -125,5 +125,9 @@ class MyTestCase(unittest.TestCase):
                                                                                              "and "
                                                                                              "number_of_cars "
                                                                                              "<= 4")
+        self.assertEqual(parse("space greater or equal to one hundred and number of cars less or equal to four"), "space >= 100 "
+                                                                                                           "and "
+                                                                                                           "number_of_cars "
+                                                                                                           "<= 4")
         #self.assertEqual(parse("one hundred and twenty-eight"),"128")
 
