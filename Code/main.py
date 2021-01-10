@@ -376,10 +376,7 @@ def parse(string):
                         arithmetic_operation = arithmetic_operation[:len(arithmetic_operation) - 1]
                     if arithmetic_operation[0] == ' ':
                         arithmetic_operation = arithmetic_operation[1:]
-                    try:
-                        final_output += str(w2n.word_to_num(arithmetic_operation))
-                    except ValueError:
-                        final_output += parse_expression(arithmetic_operation)
+                    final_output += parse_expression(arithmetic_operation)
                     if counter_arithemtic_value != len(arithmetic_value):
                         if logical_operator == "greater than" or logical_operator == "is greater than":
                             final_output += " > "
