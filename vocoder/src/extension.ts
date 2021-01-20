@@ -214,12 +214,12 @@ function elaborateCommand(){
             return;
         }
         console.log(`stdout: ${stdout}`);
-        var sections = stdout.split("dsd-section\n");
+        var sections = stdout.split("dsd-section\r\n");
         var intent = sections[0].match(/intents.*\}/).toString().match(/name': '[A-Z, a-z, 0-9]*'/).toString().match(/'[A-Z, a-z, 0-9]*'/).toString();
         outputChannel.appendLine('Intent detected: '.concat(intent));
         
-        const vocoderSec = sections[1].split("vocoder-parsed-command\n");
-        const vocoderMessages = vocoderSec[0];
+        const vocoderSec = sections[sections.length - 1].split("vocoder-parsed-command\r\n");
+        const vocoderMessages = sections[sections.length - 1];
         if(vocoderMessages.includes("vocoder-error")){
             const message = vocoderMessages.split("vocoder-error")[1];
             vscode.window.showErrorMessage(message);
@@ -231,40 +231,42 @@ function elaborateCommand(){
         }
 
         const vocoderCommand = vocoderSec[1];
-        if(vocoderCommand.includes("vocoder-undo")){
-            const num = parseInt(vocoderCommand.split("vocoder-undo\n")[1]);
+        if(vocoderSec[0].includes("vocoder-undo")){
+            var num = parseInt(vocoderSec[0].match(/[0-9]+/));
+            if (isNaN(num)){num = 1;}
             for(var i =0; i<num; i++)
-                vscode.commands.executeCommand("undo");
+                {vscode.commands.executeCommand("undo");}
             return;
         }
-        if(vocoderCommand.includes("vocoder-redo")){
-            const num = parseInt(vocoderCommand.split("vocoder-redo\n")[1]);
+        if(vocoderSec[0].includes("vocoder-redo")){
+            var num = parseInt(vocoderSec[0].match(/[0-9]+/));
+            if (isNaN(num)){num = 1;}
             for(var i =0; i<num; i++)
-                vscode.commands.executeCommand("redo");
+                {vscode.commands.executeCommand("redo");}
             return;
         }
-        if(vocoderCommand.includes("vocoder-delete")){
+        if(vocoderSec[0].includes("vocoder-delete")){
             deleteFromEditor(false,0,0);
             return;
         }
-        if(vocoderCommand.includes("vocoder-line-delete")){
-            let lines = vocoderCommand.split("vocoder-line-delete\n");
+        if(vocoderSec[0].includes("vocoder-line-delete")){
+            let lines = vocoderSec[0].split("vocoder-line-delete\r\n");
             if(lines.length!==2){
                 console.log(`Bad format from backend processing: incorrect specification of lines`);
                 vscode.window.showErrorMessage('Code processing failed');
                 return;
             }
-            lines = lines.split(/\r\n|\r|\n/);
+            lines = lines[1].split(/\r\n|\r|\n/);
             deleteFromEditor(true,parseInt(lines[0]),parseInt(lines[1]));
             return;
         }
-        const codeSec = vocoderCommand.split("vocoder-code-block\n");
+        /*const codeSec = vocoderCommand.split("vocoder-code-block\n");
         if(codeSec.length!==2){
             console.log(`Bad format from backend processing: no command or code-block section found`);
             vscode.window.showErrorMessage('Code processing failed');
             return;
-        }
-        writeOnEditor(codeSec[1]);
+        }*/
+        writeOnEditor(vocoderCommand);
     });
 }
 
@@ -328,18 +330,18 @@ function deleteFromEditor(lines: boolean, start: number, end: number){
     let toDelete:vscode.Selection;
     if(lines){
         if(start <= 0)
-            start = 1;
-        const maxLines = editor.document.lineCount
+            {start = 1;}
+        const maxLines = editor.document.lineCount;
         if(end > maxLines)
-            end = maxLines;
-        const startPos = new vscode.Position(start,0);
-        const endPos = new vscode.Position(end,0);
+            {end = maxLines;}
+        const startPos = new vscode.Position(start-2,0);
+        const endPos = new vscode.Position(end-2,0);
         toDelete = new vscode.Selection(startPos, endPos);
     }
     else{
         toDelete = editor.selection;
     }
-    editor.edit( (edit) => { edit.replace(toDelete,''); } )
+    editor.edit( (edit) => { edit.replace(toDelete,''); } );
 }
 
 // this method is called when your extension is deactivated
