@@ -94,14 +94,14 @@ def parse_add_comment(response, nested_if):
             for i in range(int(len(words) / 2), len(words)):
                 out += " " + words[i]
             final_output += out
-            if nested_if == True:
+            if nested_if:
                 return final_output
             else:
                 return front_end_block + final_output
         else:
             if response['entities']['CommentText:CommentText'][0]['body'][0] == "command":
                 response['entities']['CommentText:CommentText'][0]['body'].replace("command ", "")
-            if nested_if == True:
+            if nested_if:
                 return "# " + response['entities']['CommentText:CommentText'][0]['body']
             else:
                 return front_end_block + "# " + response['entities']['CommentText:CommentText'][0]['body']
@@ -119,7 +119,7 @@ def parse_add_comment(response, nested_if):
             for i in range(int(len(words) / 2), len(words)):
                 out += " " + words[i]
             final_output += out
-            if nested_if == True:
+            if nested_if:
                 return final_output
             else:
                 return front_end_block + final_output
@@ -127,7 +127,7 @@ def parse_add_comment(response, nested_if):
             if response['entities']['Expression:Expression'][0]['body'][:7] == "command":
                 return front_end_block + "# " + response['entities']['Expression:Expression'][0]['body'].replace(
                     "command ", "")
-            if nested_if == True:
+            if nested_if:
                 return "# " + response['entities']['Expression:Expression'][0]['body']
             else:
                 return front_end_block + "# " + response['entities']['Expression:Expression'][0]['body']
@@ -252,7 +252,7 @@ def parse_delete(response):
         return front_end_delete
     try:
         number2 = parse(response['entities']['Number:Number'][1]['body'])
-        return "vocoder-line-delete\n" + number1 + "\n" + number2
+        return front_end_delete + number1 + "\n" + number2
     except IndexError:
         return front_end_error + "delete line numbers where not understood"
 
@@ -274,123 +274,189 @@ def parse_redo(response):
 
 
 def parse_expression(string):
+    expression = ""
     expression_operators = ['plus',
                             'multiply', 'multiplied', 'multiplication', 'times', 'asterisk',
                             'modulo', 'mod',
                             'minus', 'unary',
-                                     'division', 'divide by', 'divided by',
+                            'division', 'divide by', 'divided by',
                             'to the power of',
                             ]
+    comparison_operators = ['GreaterOrEqual', 'LessOrEqual', 'IsEqualTo', 'GreaterThan', 'LessThan']
+    logical_operators = ['and', 'or']
     op_out = []  # This holds the operators that are found in the string (left to right)
-    num_out = []  # this holds the non-operators that are found in the string (left to right)
-    buffer = []
+    # num_out = []  # this holds the non-operators that are found in the string (left to right)
+    variableBuffer = []
+    numberBuffer = []
     words = string.split(" ")
-    variableDetectionFlag = False
+    variableFlag = False
+    numberFlag = False
+    logicalOperatorSpotted = False
     for word in words:  # examine 1 word at a time
         try:
-            if word in expression_operators:
-                VariableName = ""
-                counter = 0
-                for index in buffer:
-                    variableDetectionFlag = True
-                    VariableName += index
-                    if naming_style == "snake" and counter == len(buffer):
-                        VariableName += "_"
-                    counter += 1
-                if variableDetectionFlag:
-                    num_out.append(VariableName)
-                    variableDetectionFlag = False
-                buffer = []
-                # found an operator.
+            if word in logical_operators :
+
+                logicalOperatorSpotted = word
+                if variableBuffer:
+                    VariableName = ""
+                    counter = 1
+                    for index in variableBuffer:
+                        variableFlag = True
+                        VariableName = VariableName + index
+                        if naming_style == "snake" and counter != len(variableBuffer):
+                            VariableName += "_"
+                        counter += 1
+                    if variableFlag:
+                        expression += VariableName +" "
+                    variableFlag = False
+                    variableBuffer = []
+                if numberFlag == False:
+                    if variableFlag:
+                        VariableName = ""
+                        counter = 0
+                        for index in variableBuffer:
+                            variableFlag = True
+                            VariableName += index
+                            if naming_style == "snake" and counter == len(variableBuffer):
+                                VariableName += "_"
+                            counter += 1
+                        expression += VariableName + " "
+                        variableFlag = False
+                        variableBuffer = []
+                    expression += word + " "
+                    logicalOperatorSpotted = False
+
+            elif word in comparison_operators:
+                if numberFlag:
+                    numberFlag = False
+                    numberString = ""
+                    for index in numberBuffer:
+                        numberString += index + " "
+                    expression += str(w2n.word_to_num(numberString))+" "
+                    numberBuffer = []
+
+                if variableBuffer:
+                    VariableName = ""
+                    counter = 1
+                    for index in variableBuffer:
+                        variableFlag = True
+                        VariableName = VariableName + index
+                        if naming_style == "snake" and counter != len(variableBuffer):
+                            VariableName += "_"
+                        counter += 1
+                    if variableFlag:
+                        expression += VariableName +" "
+                    variableFlag = False
+                    variableBuffer = []
+
+                if word == "GreaterThan":
+                    expression += "> "
+                elif word == "LessThan":
+                    expression += "< "
+                elif word == "IsEqualTo":
+                    expression += "== "
+                elif word == "GreaterOrEqual":
+                    expression += ">= "
+                elif word == "LessOrEqual":
+                    expression += "<= "
+                logicalOperatorSpotted=False
+
+            elif word in expression_operators:  # found an operator.
+                if numberFlag:
+                    numberFlag = False
+                    numberString = ""
+                    for index in numberBuffer:
+                        numberString += index + " "
+                    expression += str(w2n.word_to_num(numberString))+" "
+                    numberBuffer = []
+
+                if variableBuffer:
+                    VariableName = ""
+                    counter = 1
+                    for index in variableBuffer:
+                        variableFlag = True
+                        VariableName = VariableName + index
+                        if naming_style == "snake" and counter != len(variableBuffer):
+                            VariableName += "_"
+                        counter += 1
+                    if variableFlag:
+                        expression += VariableName +" "
+                    variableFlag = False
+                    variableBuffer = []
                 if word == "plus":
-                    op_out.append("+")
+                    # op_out.append("+")
+                    expression += "+ "
                 if word == "minus" or word == "unary":
-                    op_out.append("-")
+                    # op_out.append("-")
+                    expression += "- "
                 if word == "division" or word == "divided by" or word == "divide by":
-                    op_out.append("/")
+                    # op_out.append("/")
+                    expression += "/ "
                 if word == "modulo" or word == "mod":
-                    op_out.append("%")
+                    # op_out.append("%")
+                    expression += "% "
                 if word == "multiply" or word == "asterisk" or word == "multiplication" or word == "times":
-                    op_out.append("*")
+                    # op_out.append("*")
+                    expression += "* "
+                logicalOperatorSpotted=False
+
+
             elif str(w2n.word_to_num(word)).isnumeric():
-                # if it is a valid number.  Just accumulate this number in num_out.
-                digit = w2n.word_to_num(word)
-                num_out.append(digit)
+                numberFlag = True
+                numberBuffer.append(word)
+
+                # if it is a valid number.  Just accumulate this number.
         except ValueError:
+            if numberFlag:
+                numberFlag = False
+                numberString = ""
+                for index in numberBuffer:
+                    numberString += index + " "
+                expression += str(w2n.word_to_num(numberString))+" "
+                numberBuffer = []
+            if logicalOperatorSpotted:
+
+                expression += logicalOperatorSpotted + " "
+            logicalOperatorSpotted=False
             if word == "":
                 continue
             # else this is a variable name so convert it
-            if variableDetectionFlag and naming_style == "camel":
-                buffer.append(word.capitalize())
+            if variableFlag and naming_style == "camel":
+                variableBuffer.append(word.capitalize())
             else:
-                buffer.append(decapitalize_word(word))
-                variableDetectionFlag = True
-    if buffer:
+                variableBuffer.append(decapitalize_word(word))
+                variableFlag = True
+    if variableBuffer:
         VariableName = ""
         counter = 1
-        for index in buffer:
-            variableDetectionFlag = True
+        for index in variableBuffer:
+            variableFlag = True
             VariableName = VariableName + index
-            if naming_style == "snake" and counter != len(buffer):
+            if naming_style == "snake" and counter != len(variableBuffer):
                 VariableName += "_"
             counter += 1
-        if variableDetectionFlag:
-            num_out.append(VariableName)
-    counter = -1
-    expression = ""
-    for variable in num_out:
-        if counter >= 0 and counter < len(op_out):
-            expression += " " + op_out[counter] + " "
-        expression += str(variable)
-        counter += 1
+        if variableFlag:
+            expression += VariableName
+    if numberBuffer:
+        numberString = ""
+        for index in numberBuffer:
+            numberString += index + " "
+        expression += str(w2n.word_to_num(numberString))
+
     return expression
 
-
 def parse(string):
-    final_output = ""
-    string = string.replace("greater or equal to", "GreaterOrEqual")
-    string = string.replace("less or equal to", "LessOrEqual")
-    logical_expressions = re.findall('and|or', string)
-    if len(logical_expressions) == 0:
-        logical_expressions.append(None)
-    for comparison_operator in logical_expressions:
-        comparison_operators = []
-        if comparison_operator is not None:
-            comparison_operators = string.split(comparison_operator)
-        else:
-            comparison_operators.append(string)
-        counter_comparison = 0
-        for logical_expression in comparison_operators:
-            counter_comparison += 1
-            logical_operators = re.findall(
-                'GreaterOrEqual|LessOrEqual|is equal to|equal to|is equal|equals|is greater than|is less than|greater than|less than',
-                logical_expression)
-            if len(logical_operators) == 0:
-                final_output += parse_expression(logical_expression)
-            for logical_operator in logical_operators:
-                arithmetic_value = logical_expression.split(logical_operator)
-                counter_arithemtic_value = 0
-                for arithmetic_operation in arithmetic_value:  # examine 1 expression at a time
-                    counter_arithemtic_value += 1
-                    if arithmetic_operation[-1] == ' ':
-                        arithmetic_operation = arithmetic_operation[:len(arithmetic_operation) - 1]
-                    if arithmetic_operation[0] == ' ':
-                        arithmetic_operation = arithmetic_operation[1:]
-                    final_output += parse_expression(arithmetic_operation)
-                    if counter_arithemtic_value != len(arithmetic_value):
-                        if logical_operator == "greater than" or logical_operator == "is greater than":
-                            final_output += " > "
-                        elif logical_operator == "less than" or logical_operator == "is less than":
-                            final_output += " < "
-                        elif logical_operator == "equals" or logical_operator == "equal to" or logical_operator == "is equal to" or logical_operator == "is equal":
-                            final_output += " == "
-                        elif logical_operator == "GreaterOrEqual":
-                            final_output += " >= "
-                        elif logical_operator == "LessOrEqual":
-                            final_output += " <= "
-            if counter_comparison != len(comparison_operators):
-                final_output += " " + comparison_operator + " "
-        return final_output
+    string = string.replace("greater or equal to", " GreaterOrEqual")
+    string = string.replace("less or equal to", " LessOrEqual")
+    string = string.replace("is equal to", " IsEqualTo")
+    string = string.replace("is equal", " IsEqualTo")
+    string = string.replace("equal to", " IsEqualTo")
+    string = string.replace("equals", " IsEqualTo")
+    string = string.replace("is greater than", " GreaterThan")
+    string = string.replace("greater than", " GreaterThan")
+    string = string.replace("is less than", " LessThan")
+    string = string.replace("less than", " LessThan")
+    return parse_expression(string)
 
 
 def parse_response(file_name):
@@ -438,8 +504,8 @@ def parse_response(file_name):
                 if command_else['intents'][0]['confidence'] > confidence_threshold:
                     final_output += parse_call_function(command_else, nested_if)
             return front_end_block + final_output
-                # missing nested ifs or nested if+ifElse
-            
+            # missing nested ifs or nested if+ifElse
+
         elif response['intents'][0]['name'] == 'IfStatements':
             if response['intents'][0]['confidence'] < confidence_threshold:
                 print(front_end_warning + "The confidence is low")
@@ -526,6 +592,7 @@ def parse_response(file_name):
     except IndexError:
         return front_end_error + "intent not Detected"
 
+
 naming_style = "snake"
 if len(sys.argv) > 1 and sys.argv[1] == "-snake":
     naming_style = "snake"
@@ -534,7 +601,7 @@ elif len(sys.argv) > 1 and sys.argv[1] == "-camel":
 client = Wit("3OXTFKTQZFCKO3PEYBN3VYS23BDRCVRC")
 front_end_error = "dsd-section\nvocoder-error\n"
 front_end_warning = "dsd-section\nvocoder-warning\n"
-front_end_block = "dsd-section\nvocoder-parsed-command\n"
+front_end_block = "dsd-section\nvocoder-code-block\n"
 front_end_undo = "dsd-section\nvocoder-undo\n"
 front_end_redo = "dsd-section\nvocoder-redo\n"
 front_end_delete = "dsd-section\nvocoder-delete\n"
