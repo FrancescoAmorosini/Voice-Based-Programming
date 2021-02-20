@@ -192,7 +192,7 @@ def parse_create_function(response):
             message += name_parameter + ", "
             i += 1
         message = message[:-2]
-        message += "):\n\t"
+        message += "):\n\t" + placeholder_string
         return front_end_block + message
     else:
         try:
@@ -274,6 +274,16 @@ def parse_redo(response):
 
 
 def parse_expression(string):
+    string = string.replace("greater or equal to", " GreaterOrEqual")
+    string = string.replace("less or equal to", " LessOrEqual")
+    string = string.replace("is equal to", " IsEqualTo")
+    string = string.replace("is equal", " IsEqualTo")
+    string = string.replace("equal to", " IsEqualTo")
+    string = string.replace("equals", " IsEqualTo")
+    string = string.replace("is greater than", " GreaterThan")
+    string = string.replace("greater than", " GreaterThan")
+    string = string.replace("is less than", " LessThan")
+    string = string.replace("less than", " LessThan")
     expression = ""
     expression_operators = ['plus',
                             'multiply', 'multiplied', 'multiplication', 'times', 'asterisk',
@@ -295,7 +305,6 @@ def parse_expression(string):
     for word in words:  # examine 1 word at a time
         try:
             if word in logical_operators :
-
                 logicalOperatorSpotted = word
                 if variableBuffer:
                     VariableName = ""
@@ -325,7 +334,6 @@ def parse_expression(string):
                         variableBuffer = []
                     expression += word + " "
                     logicalOperatorSpotted = False
-
             elif word in comparison_operators:
                 if numberFlag:
                     numberFlag = False
@@ -608,4 +616,5 @@ front_end_delete = "dsd-section\nvocoder-delete\n"
 
 placeholder_string = "$$"
 confidence_threshold = 0.75
+#print(parse_response('vocoder\src\scripts\cmd\conda\output.wav'))
 print(parse_response('output.wav'))

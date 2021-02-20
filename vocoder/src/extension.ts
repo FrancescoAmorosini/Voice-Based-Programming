@@ -218,7 +218,7 @@ function elaborateCommand(){
         var intent = sections[0].match(/intents.*\}/).toString().match(/name': '[A-Z, a-z, 0-9]*'/).toString().match(/'[A-Z, a-z, 0-9]*'/).toString();
         outputChannel.appendLine('Intent detected: '.concat(intent));
         
-        const vocoderSec = sections[sections.length - 1].split("vocoder-parsed-command\r\n");
+        const vocoderCommand = sections[sections.length - 1].split("vocoder-parsed-command\r\n")[0];
         const vocoderMessages = sections[sections.length - 1];
         if(vocoderMessages.includes("vocoder-error")){
             const message = vocoderMessages.split("vocoder-error")[1];
@@ -230,27 +230,26 @@ function elaborateCommand(){
             outputChannel.appendLine("Warning:" + message);
         }
 
-        const vocoderCommand = vocoderSec[1];
-        if(vocoderSec[0].includes("vocoder-undo")){
-            var num = parseInt(vocoderSec[0].match(/[0-9]+/));
+        if(vocoderCommand.includes("vocoder-undo")){
+            var num = parseInt(vocoderCommand.match(/[0-9]+/));
             if (isNaN(num)){num = 1;}
             for(var i =0; i<num; i++)
                 {vscode.commands.executeCommand("undo");}
             return;
         }
-        if(vocoderSec[0].includes("vocoder-redo")){
-            var num = parseInt(vocoderSec[0].match(/[0-9]+/));
+        if(vocoderCommand.includes("vocoder-redo")){
+            var num = parseInt(vocoderCommand.match(/[0-9]+/));
             if (isNaN(num)){num = 1;}
             for(var i =0; i<num; i++)
                 {vscode.commands.executeCommand("redo");}
             return;
         }
-        if(vocoderSec[0].includes("vocoder-delete")){
+        if(vocoderCommand.includes("vocoder-delete")){
             deleteFromEditor(false,0,0);
             return;
         }
-        if(vocoderSec[0].includes("vocoder-line-delete")){
-            let lines = vocoderSec[0].split("vocoder-line-delete\r\n");
+        if(vocoderCommand.includes("vocoder-line-delete")){
+            let lines = vocoderCommand.split("vocoder-line-delete\r\n");
             if(lines.length!==2){
                 console.log(`Bad format from backend processing: incorrect specification of lines`);
                 vscode.window.showErrorMessage('Code processing failed');
@@ -260,13 +259,13 @@ function elaborateCommand(){
             deleteFromEditor(true,parseInt(lines[0]),parseInt(lines[1]));
             return;
         }
-        /*const codeSec = vocoderCommand.split("vocoder-code-block\n");
-        if(codeSec.length!==2){
+        const codeSec = vocoderCommand.split("vocoder-code-block\r\n")[1];
+        /*if(codeSec.length!==2){
             console.log(`Bad format from backend processing: no command or code-block section found`);
             vscode.window.showErrorMessage('Code processing failed');
             return;
         }*/
-        writeOnEditor(vocoderCommand);
+        writeOnEditor(codeSec);
     });
 }
 
@@ -277,7 +276,6 @@ async function writeOnEditor(s: string){
         return;
     }
     const currSel = editor.selection;
-
     // line from which the selection starts: does not depend on which direction the sel is made (start>end)
     const currLine = currSel.start.line;
     //selection of what stays before the selection --> to be used to align
