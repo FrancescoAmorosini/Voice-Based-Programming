@@ -52,14 +52,14 @@ def parse_assign_variable(response, nested_if):
         if 'Expression:Expression' in response['entities']:
             expression = parse(response['entities']['Expression:Expression'][0]['body'])
             if nested_if:
-                return (name_variable(
+                return ("\t" + name_variable(
                     response['entities']['VariableName:VariableName'][0]['body']) + ' = ' + expression)
             else:
                 return (front_end_block + name_variable(
                     response['entities']['VariableName:VariableName'][0]['body']) + ' = ' + expression)
         else:
             if nested_if:
-                return name_variable(response['entities']['VariableName:VariableName'][0]['body']) + ' = None\n'
+                return "\t" + name_variable(response['entities']['VariableName:VariableName'][0]['body']) + ' = None\n'
             else:
                 return front_end_block + name_variable(
                     response['entities']['VariableName:VariableName'][0]['body']) + ' = ' + placeholder_string
@@ -90,18 +90,18 @@ def parse_add_comment(response, nested_if):
             for i in range(0, int(len(words) / 2)):
                 out += " " + words[i]
             final_output += out
-            out = "\n#"
+            out = "#"
             for i in range(int(len(words) / 2), len(words)):
                 out += " " + words[i]
             final_output += out
-            if nested_if:
+            if nested_if == True:
                 return final_output
             else:
                 return front_end_block + final_output
         else:
             if response['entities']['CommentText:CommentText'][0]['body'][0] == "command":
                 response['entities']['CommentText:CommentText'][0]['body'].replace("command ", "")
-            if nested_if:
+            if nested_if == True:
                 return "# " + response['entities']['CommentText:CommentText'][0]['body']
             else:
                 return front_end_block + "# " + response['entities']['CommentText:CommentText'][0]['body']
@@ -115,11 +115,11 @@ def parse_add_comment(response, nested_if):
             for i in range(0, int(len(words) / 2)):
                 out += " " + words[i]
             final_output += out
-            out = "\n#"
+            out = "#"
             for i in range(int(len(words) / 2), len(words)):
                 out += " " + words[i]
             final_output += out
-            if nested_if:
+            if nested_if == True:
                 return final_output
             else:
                 return front_end_block + final_output
@@ -127,7 +127,7 @@ def parse_add_comment(response, nested_if):
             if response['entities']['Expression:Expression'][0]['body'][:7] == "command":
                 return front_end_block + "# " + response['entities']['Expression:Expression'][0]['body'].replace(
                     "command ", "")
-            if nested_if:
+            if nested_if == True:
                 return "# " + response['entities']['Expression:Expression'][0]['body']
             else:
                 return front_end_block + "# " + response['entities']['Expression:Expression'][0]['body']
@@ -136,24 +136,32 @@ def parse_add_comment(response, nested_if):
 def parse_for_loop(response):
     if 'Expression:Expression' in response['entities']:
         message = ""
-        first_expression = parse(response['entities']['Expression:Expression'][0]['body'])
+        try:
+            first_expression = parse(response['entities']['Expression:Expression'][0]['body'])
+        except KeyError:
+            first_expression = placeholder_string
+            message += front_end_warning + "Missing an expression in for loop command"
         try:
             second_expression = parse(response['entities']['Expression:Expression'][1]['body'])
         except IndexError:
             second_expression = placeholder_string
-            message += front_end_warning + "Second Expression name was not understood in for loop\n"
+            message += front_end_warning + "Second Expression name was not understood in for loop"
         try:
             variable = name_variable(response['entities']['VariableName:VariableName'][0]['body'])
         except KeyError:
             variable = placeholder_string
             message += front_end_warning + "Variable Name not understood\n"
         message += front_end_block + "for " + variable + " in range ( " + first_expression + \
-                   " , " + second_expression + " ):\n\t"
+                  " , " + second_expression + " ):\n\t"
         message += placeholder_string
         return message
     elif 'VariableName:VariableName' in response['entities']:
         message = ""
-        variable1 = name_variable(response['entities']['VariableName:VariableName'][0]['body'])
+        try:
+            variable1 = name_variable(response['entities']['VariableName:VariableName'][0]['body'])
+        except KeyError:
+            variable1 = placeholder_string
+            message += front_end_warning + "Variable Name not found in for loop"
         try:
             variable2 = name_variable(response['entities']['VariableName:VariableName'][1]['body'])
         except IndexError:
@@ -173,7 +181,10 @@ def parse_while_loop(response, nested_if):
             return front_end_block + "while " + parse(
                 response['entities']['Expression:Expression'][0]['body']) + ":\n\t" + placeholder_string
         else:
-            return front_end_block + "while " + placeholder_string + ":\n\t" + placeholder_string
+            if nested_if == True:
+                return "while " + placeholder_string + ":\n\t" + placeholder_string
+            else:
+                return front_end_block + "while " + placeholder_string + ":\n\t" + placeholder_string
     except IndexError:
         return front_end_warning + "Expression not found\n" \
                + front_end_block + "while " + placeholder_string + ":\n\t" + placeholder_string
@@ -249,10 +260,10 @@ def parse_delete(response):
     try:
         number1 = parse(response['entities']['Number:Number'][0]['body'])
     except KeyError:
-        return front_end_delete
+        return "vocoder-line-delete\n"
     try:
         number2 = parse(response['entities']['Number:Number'][1]['body'])
-        return front_end_delete + number1 + "\n" + number2
+        return "vocoder-line-delete\n" + number1 + "\n" + number2
     except IndexError:
         return front_end_error + "delete line numbers where not understood"
 
@@ -472,129 +483,208 @@ def parse_response(file_name):
         response = client.speech(f, {'Content-Type': 'audio/wav'})
     print(response)
     nested_if = False
-
     try:
         if response['intents'][0]['name'] == 'AssignVariable':
-            if response['intents'][0]['confidence'] < confidence_threshold:
+            if response['intents'][0]['confidence'] > confidence_threshold:
+                return parse_assign_variable(response, nested_if)
+            else:
                 print(front_end_warning + "The confidence is low")
-            return parse_assign_variable(response, nested_if)
+                return parse_assign_variable(response, nested_if)
 
         elif response['intents'][0]['name'] == 'IfElseStatement':
-            if response['intents'][0]['confidence'] < confidence_threshold:
-                print(front_end_warning + "The confidence is low")
-            final_output = parse_if_else_statement(response)
-            command_if = client.message(response['entities']['command:command'][0]['body'])
-            nested_if = True
-            if command_if['intents'][0]['name'] == 'AssignVariable':
-                if command_if['intents'][0]['confidence'] > confidence_threshold:
-                    final_output += parse_assign_variable(command_if, nested_if)
-            if command_if['intents'][0]['name'] == 'AddingComment':
-                if command_if['intents'][0]['confidence'] > confidence_threshold:
-                    final_output += parse_add_comment(command_if, nested_if)
-            if command_if['intents'][0]['name'] == 'Return':
-                if command_if['intents'][0]['confidence'] > confidence_threshold:
-                    final_output += parse_return(command_if)
-            if command_if['intents'][0]['name'] == 'CallFunction':
-                if command_if['intents'][0]['confidence'] > confidence_threshold:
-                    final_output += parse_call_function(command_if, nested_if)
-            final_output += "\nelse:\n\t"
-            command_else = client.message(response['entities']['command:command'][1]['body'])
-            if command_else['intents'][0]['name'] == 'AssignVariable':
-                if command_else['intents'][0]['confidence'] > confidence_threshold:
-                    final_output += parse_assign_variable(command_else, nested_if)
-            if command_else['intents'][0]['name'] == 'AddingComment':
-                if command_else['intents'][0]['confidence'] > confidence_threshold:
-                    final_output += parse_add_comment(command_else, nested_if)
-            if command_else['intents'][0]['name'] == 'Return':
-                if command_if['intents'][0]['confidence'] > confidence_threshold:
-                    final_output += parse_return(command_else)
-            if command_else['intents'][0]['name'] == 'CallFunction':
-                if command_else['intents'][0]['confidence'] > confidence_threshold:
-                    final_output += parse_call_function(command_else, nested_if)
-            return front_end_block + final_output
-            # missing nested ifs or nested if+ifElse
-
-        elif response['intents'][0]['name'] == 'IfStatements':
-            if response['intents'][0]['confidence'] < confidence_threshold:
-                print(front_end_warning + "The confidence is low")
-            final_output = parse_if_statement(response)
-            if 'command:command' in response['entities']:
+            if response['intents'][0]['confidence'] > confidence_threshold:
+                final_output = parse_if_else_statement(response)
                 command_if = client.message(response['entities']['command:command'][0]['body'])
                 nested_if = True
-                try:
-                    if command_if['intents'][0]['name'] == 'AssignVariable':
-                        if command_if['intents'][0]['confidence'] > confidence_threshold:
-                            final_output += parse_assign_variable(command_if, nested_if)
-                    if command_if['intents'][0]['name'] == 'AddingComment':
-                        if command_if['intents'][0]['confidence'] > confidence_threshold:
-                            final_output += parse_add_comment(command_if, nested_if)
-                    if command_if['intents'][0]['name'] == 'Return':
-                        if command_if['intents'][0]['confidence'] > confidence_threshold:
-                            final_output += parse_return(command_if)
-                    if command_if['intents'][0]['name'] == 'CallFunction':
-                        if command_if['intents'][0]['confidence'] > confidence_threshold:
-                            final_output += parse_call_function(command_if, nested_if)
-                    else:
+                if command_if['intents'][0]['name'] == 'AssignVariable':
+                    if command_if['intents'][0]['confidence'] > confidence_threshold:
+                        final_output += parse_assign_variable(command_if, nested_if)
+                if command_if['intents'][0]['name'] == 'AddingComment':
+                    if command_if['intents'][0]['confidence'] > confidence_threshold:
+                        final_output += parse_add_comment(command_if, nested_if)
+                if command_if['intents'][0]['name'] == 'Return':
+                    if command_if['intents'][0]['confidence'] > confidence_threshold:
+                        final_output += parse_return(command_if)
+                if command_if['intents'][0]['name'] == 'CallFunction':
+                    if command_if['intents'][0]['confidence'] > confidence_threshold:
+                        final_output += parse_call_function(command_if, nested_if)
+                final_output += "else:\n\t"
+                command_else = client.message(response['entities']['command:command'][1]['body'])
+                if command_else['intents'][0]['name'] == 'AssignVariable':
+                    if command_else['intents'][0]['confidence'] > confidence_threshold:
+                        final_output += parse_assign_variable(command_else, nested_if)
+                if command_else['intents'][0]['name'] == 'AddingComment':
+                    if command_else['intents'][0]['confidence'] > confidence_threshold:
+                        final_output += parse_add_comment(command_else, nested_if)
+                if command_else['intents'][0]['name'] == 'Return':
+                    if command_if['intents'][0]['confidence'] > confidence_threshold:
+                        final_output += parse_return(command_else)
+                if command_else['intents'][0]['name'] == 'CallFunction':
+                    if command_else['intents'][0]['confidence'] > confidence_threshold:
+                        final_output += parse_call_function(command_else, nested_if)
+                return front_end_block + final_output
+                # missing nested ifs or nested if+ifElse
+            else:
+                print(front_end_warning + "The confidence is low")
+                final_output = parse_if_else_statement(response)
+                command_if = client.message(response['entities']['command:command'][0]['body'])
+                nested_if = True
+                if command_if['intents'][0]['name'] == 'AssignVariable':
+                    if command_if['intents'][0]['confidence'] > confidence_threshold:
+                        final_output += parse_assign_variable(command_if, nested_if)
+                if command_if['intents'][0]['name'] == 'AddingComment':
+                    if command_if['intents'][0]['confidence'] > confidence_threshold:
+                        final_output += parse_add_comment(command_if, nested_if)
+                if command_if['intents'][0]['name'] == 'Return':
+                    if command_if['intents'][0]['confidence'] > confidence_threshold:
+                        final_output += parse_return(command_if)
+                if command_if['intents'][0]['name'] == 'CallFunction':
+                    if command_if['intents'][0]['confidence'] > confidence_threshold:
+                        final_output += parse_call_function(command_if, nested_if)
+                final_output += "else:\n\t"
+                command_else = client.message(response['entities']['command:command'][1]['body'])
+                if command_else['intents'][0]['name'] == 'AssignVariable':
+                    if command_else['intents'][0]['confidence'] > confidence_threshold:
+                        final_output += parse_assign_variable(command_else, nested_if)
+                if command_else['intents'][0]['name'] == 'AddingComment':
+                    if command_else['intents'][0]['confidence'] > confidence_threshold:
+                        final_output += parse_add_comment(command_else, nested_if)
+                if command_else['intents'][0]['name'] == 'Return':
+                    if command_if['intents'][0]['confidence'] > confidence_threshold:
+                        final_output += parse_return(command_else)
+                if command_else['intents'][0]['name'] == 'CallFunction':
+                    if command_else['intents'][0]['confidence'] > confidence_threshold:
+                        final_output += parse_call_function(command_else, nested_if)
+                return front_end_block + final_output
+                # missing nested ifs or nested if+ifElse
+
+
+        elif response['intents'][0]['name'] == 'IfStatements':
+            if response['intents'][0]['confidence'] > confidence_threshold:
+                final_output = parse_if_statement(response)
+                if 'command:command' in response['entities']:
+                    command_if = client.message(response['entities']['command:command'][0]['body'])
+                    nested_if = True
+                    try:
+                        if command_if['intents'][0]['name'] == 'DeclareVariable':
+                            if command_if['intents'][0]['confidence'] > confidence_threshold:
+                                final_output += parse_assign_variable(command_if, nested_if)
+                        if command_if['intents'][0]['name'] == 'AddingComment':
+                            if command_if['intents'][0]['confidence'] > confidence_threshold:
+                                final_output += parse_add_comment(command_if, nested_if)
+                        if command_if['intents'][0]['name'] == 'Return':
+                            if command_if['intents'][0]['confidence'] > confidence_threshold:
+                                final_output += parse_return(command_if)
+                        if command_if['intents'][0]['name'] == 'CallFunction':
+                            if command_if['intents'][0]['confidence'] > confidence_threshold:
+                                final_output += parse_call_function(command_if, nested_if)
+                    except IndexError:
+                        final_output += placeholder_string
                         print(front_end_warning + "no inner command found")
-                        return front_end_block + final_output
-                except IndexError:
-                    final_output += placeholder_string
-                    print(front_end_warning + "no inner command found")
-            return front_end_block + final_output
+                return front_end_block + final_output
+                # missing nested ifs or nested if+ifElse
+            else:
+                print(front_end_warning + "The confidence is low")
+                final_output = parse_if_statement(response)
+                if 'command:command' in response['entities']:
+                    command_if = client.message(response['entities']['command:command'][0]['body'])
+                    nested_if = True
+                    try:
+                        if command_if['intents'][0]['name'] == 'DeclareVariable':
+                            if command_if['intents'][0]['confidence'] > confidence_threshold:
+                                final_output += parse_assign_variable(command_if, nested_if)
+                        if command_if['intents'][0]['name'] == 'AddingComment':
+                            if command_if['intents'][0]['confidence'] > confidence_threshold:
+                                final_output += parse_add_comment(command_if, nested_if)
+                        if command_if['intents'][0]['name'] == 'Return':
+                            if command_if['intents'][0]['confidence'] > confidence_threshold:
+                                final_output += parse_return(command_if)
+                        if command_if['intents'][0]['name'] == 'CallFunction':
+                            if command_if['intents'][0]['confidence'] > confidence_threshold:
+                                final_output += parse_call_function(command_if, nested_if)
+                    except IndexError:
+                        final_output += placeholder_string
+                        print(front_end_warning + "no inner command found")
+                return front_end_block + final_output
+                # missing nested ifs or nested if+ifElse
 
         elif response['intents'][0]['name'] == 'AddingComment':
-            if response['intents'][0]['confidence'] < confidence_threshold:
+            if response['intents'][0]['confidence'] > confidence_threshold:
+                return parse_add_comment(response, nested_if)
+            else:
                 print(front_end_warning + "The confidence is low")
-            return parse_add_comment(response, nested_if)
+                return parse_add_comment(response, nested_if)
 
         elif response['intents'][0]['name'] == 'ForLoop':
-            if response['intents'][0]['confidence'] < confidence_threshold:
+            if response['intents'][0]['confidence'] > confidence_threshold:
+                return parse_for_loop(response)
+            else:
                 print(front_end_warning + "The confidence is low")
-            return parse_for_loop(response)
+                return parse_for_loop(response)
 
         elif response['intents'][0]['name'] == 'WhileLoop':
-            if response['intents'][0]['confidence'] < confidence_threshold:
+            if response['intents'][0]['confidence'] > confidence_threshold:
+                return parse_while_loop(response, nested_if)
+            else:
                 print(front_end_warning + "The confidence is low")
-            return parse_while_loop(response, nested_if)
+                return parse_while_loop(response, nested_if)
 
         elif response['intents'][0]['name'] == 'UndoCommand':
-            if response['intents'][0]['confidence'] < confidence_threshold:
+            if response['intents'][0]['confidence'] > confidence_threshold:
+                return parse_undo(response)
+            else:
                 print(front_end_warning + "The confidence is low")
-            return parse_undo(response)
+                return parse_undo(response)
 
         elif response['intents'][0]['name'] == 'CreateFunction':
-            if response['intents'][0]['confidence'] < confidence_threshold:
+            if response['intents'][0]['confidence'] > confidence_threshold:
+                return parse_create_function(response)
+            else:
                 print(front_end_warning + "The confidence is low")
-            return parse_create_function(response)
+                return parse_create_function(response)
 
         elif response['intents'][0]['name'] == 'Return':
-            if response['intents'][0]['confidence'] < confidence_threshold:
+            if response['intents'][0]['confidence'] > confidence_threshold:
+                return front_end_block + parse_return(response)
+            else:
                 print(front_end_warning + "The confidence is low")
-            return front_end_block + parse_return(response)
+                return front_end_block + parse_return(response)
 
         elif response['intents'][0]['name'] == 'Delete':
-            if response['intents'][0]['confidence'] < confidence_threshold:
+            if response['intents'][0]['confidence'] > confidence_threshold:
+                return parse_delete(response)
+            else:
                 print(front_end_warning + "The confidence is low")
-            return parse_delete(response)
+                return parse_delete(response)
 
         elif response['intents'][0]['name'] == 'InsertExpression':
-            if response['intents'][0]['confidence'] < confidence_threshold:
+            if response['intents'][0]['confidence'] > confidence_threshold:
+                try:
+                    message_string = response['entities']['Expression:Expression'][0]['body']
+                    return front_end_block + parse_expression(message_string)
+                except KeyError:
+                    print(front_end_error)
+            else:
                 print(front_end_warning + "The confidence is low")
-            try:
-                message_string = response['entities']['Expression:Expression'][0]['body']
-                return front_end_block + parse_expression(message_string)
-            except KeyError:
-                return front_end_error + "Expression not found"
+                try:
+                    message_string = response['entities']['Expression:Expression'][0]['body']
+                    return front_end_block + parse_expression(message_string)
+                except KeyError:
+                    print(front_end_error)
 
         elif response['intents'][0]['name'] == 'CallFunction':
-            if response['intents'][0]['confidence'] < confidence_threshold:
+            if response['intents'][0]['confidence'] > confidence_threshold:
+                return parse_call_function(response, nested_if)
+            else:
                 print(front_end_warning + "The confidence is low")
-            return parse_call_function(response, nested_if)
+                return parse_call_function(response, nested_if)
 
         elif response['intents'][0]['name'] == 'RedoCommand':
-            if response['intents'][0]['confidence'] < confidence_threshold:
+            if response['intents'][0]['confidence'] > confidence_threshold:
+                return parse_redo(response)
+            else:
                 print(front_end_warning + "The confidence is low")
-            return parse_redo(response)
+                return parse_redo(response)
         else:
             return front_end_error + "intent not in the list"
     except IndexError:
