@@ -482,6 +482,7 @@ def parse_response(file_name):
     with open(file_name, 'rb') as f:
         response = client.speech(f, {'Content-Type': 'audio/wav'})
     print(response)
+    print('dsd-section')
     nested_if = False
     try:
         if response['intents'][0]['name'] == 'AssignVariable':
@@ -697,12 +698,12 @@ if len(sys.argv) > 1 and sys.argv[1] == "-snake":
 elif len(sys.argv) > 1 and sys.argv[1] == "-camel":
     naming_style = "camel"
 client = Wit("3OXTFKTQZFCKO3PEYBN3VYS23BDRCVRC")
-front_end_error = "dsd-parsed-command\nvocoder-error\n"
-front_end_warning = "dsd-parsed-command\nvocoder-warning\n"
-front_end_block = "dsd-parsed-command\nvocoder-code-block\n"
-front_end_undo = "dsd-parsed-command\nvocoder-undo\n"
-front_end_redo = "dsd-parsed-command\nvocoder-redo\n"
-front_end_delete = "dsd-parsed-command\nvocoder-delete\n"
+front_end_error = "vocoder-error\n"
+front_end_warning = "vocoder-warning\n"
+front_end_block = "vocoder-parsed-command\nvocoder-code-block\n"
+front_end_undo = "vocoder-parsed-command\nvocoder-undo\n"
+front_end_redo = "vocoder-parsed-command\nvocoder-redo\n"
+front_end_delete = "vocoder-parsed-command\nvocoder-delete\n"
 
 placeholder_string = "$$"
 confidence_threshold = 0.75
