@@ -4,6 +4,9 @@ All notable changes to the "vocoder" extension will be documented in this file.
 
 ## [Unreleased]
 
+## [0.0.3] - 2021-02-27
+### Added
+- Mac Support fixes
 ## [0.0.2] - 2021-02-27
 ### Fixed
 - Relative paths

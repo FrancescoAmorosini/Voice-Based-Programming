@@ -3,7 +3,7 @@
 	"displayName": "vocoder",
 	"publisher": "vocoder",
 	"description": "",
-	"version": "0.0.2",
+	"version": "0.0.3",
 	"icon": "style/logo.png",
 	"engines": {
 		"vscode": "^1.50.0"
