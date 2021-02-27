@@ -4,7 +4,7 @@ const { exec } = require("child_process");
 const path = require('path');
 const fs = require("fs");
 
-const cwd = path.resolve(__dirname, '../src');
+const cwd = path.resolve(__dirname, '../out');
 const landingURI = vscode.Uri.file(path.resolve(__dirname, '../landing.md'));
 const dsdVenv = path.resolve(cwd, '../../dsd-env');
 const outputChannel = vscode.window.createOutputChannel("Vocoder");

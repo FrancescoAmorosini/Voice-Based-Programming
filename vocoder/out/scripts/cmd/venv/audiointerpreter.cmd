@@ -1,2 +1,2 @@
 ..\..\..\..\..\dsd-env\Scripts\activate &&^
-python ..\..\..\..\parser\main.py %1
+python ..\..\..\parser\main.py %1
