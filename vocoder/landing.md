@@ -8,12 +8,6 @@
 - Vocoder will not share any sensible data with Wit.ai. Voice commands are recorded locally and sent to Wit.ai anonymously for the sole purposes of recognition and training of the underlying recognition model.
 - Vocoder is not responsible for any inappropriate usage of voice recordings by Wit.ai. Please refer to their [Terms of Service](https://wit.ai/terms) for further information.
 ***
-
-## Why voice-based programming?
-Thousands of software developers suffer from repetitive strain injuries such as carpal tunnel syndrome and tendonitis. Support for programming by voice has the potential to increase the productivity of developers afflicted by these problems. In addition, it can enable individuals with upper-body motor impairments, e.g, due to spinal cord injuries or strokes, to write code.
-
-Vocoder is a Visual Studio Code extension that intends to help injured programmers by allowing them to code with their voice.
-
 ## Prerequisites
 Vocoder is currently available for `Python` language, which should be properly installed and set up in Visual Studio Code. If you don't have it, you can get it on [Python's official website](https://www.python.org/downloads/) for free.
 ### Performance
