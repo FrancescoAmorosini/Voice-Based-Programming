@@ -5,7 +5,7 @@
 	"contributors": ["Francesco Amorosini", "Serena Allkja", "Alessandro Passoni", "Hilal Taha", "Alberto Cabellos Jimenez", "Jaime Pascual"],
 	"keywords": ["Python", "Voice", "Natural Language Processor", "NLP", "Voice Recognition"],
 	"description": "VOice COmputer for Developers' Requests - Program with your voice!",
-	"version": "0.0.3",
+	"version": "0.0.4",
 	"icon": "style/logo.png",
 	"galleryBanner": {
 		"color": "#4d6ca4",
