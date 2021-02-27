@@ -697,12 +697,12 @@ if len(sys.argv) > 1 and sys.argv[1] == "-snake":
 elif len(sys.argv) > 1 and sys.argv[1] == "-camel":
     naming_style = "camel"
 client = Wit("3OXTFKTQZFCKO3PEYBN3VYS23BDRCVRC")
-front_end_error = "dsd-section\nvocoder-error\n"
-front_end_warning = "dsd-section\nvocoder-warning\n"
-front_end_block = "dsd-section\nvocoder-code-block\n"
-front_end_undo = "dsd-section\nvocoder-undo\n"
-front_end_redo = "dsd-section\nvocoder-redo\n"
-front_end_delete = "dsd-section\nvocoder-delete\n"
+front_end_error = "dsd-parsed-command\nvocoder-error\n"
+front_end_warning = "dsd-parsed-command\nvocoder-warning\n"
+front_end_block = "dsd-parsed-command\nvocoder-code-block\n"
+front_end_undo = "dsd-parsed-command\nvocoder-undo\n"
+front_end_redo = "dsd-parsed-command\nvocoder-redo\n"
+front_end_delete = "dsd-parsed-command\nvocoder-delete\n"
 
 placeholder_string = "$$"
 confidence_threshold = 0.75
