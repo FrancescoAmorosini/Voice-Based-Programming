@@ -210,7 +210,6 @@ function elaborateCommand() {
         var sections = stdout.split("dsd-section\r\n");
         var intent = sections[0].match(/intents.*\}/).toString().match(/name': '[A-Z, a-z, 0-9]*'/).toString().match(/'[A-Z, a-z, 0-9]*'/).toString();
         outputChannel.appendLine('Intent detected: '.concat(intent));
-        debugger;
         const vocoderCommand = sections[sections.length - 1].split("vocoder-parsed-command\r\n")[1];
         const vocoderMessages = sections[sections.length - 1].split("vocoder-parsed-command\r\n")[0];
         if (vocoderMessages.includes("vocoder-error")) {
@@ -353,6 +352,16 @@ function getPlaceholderPos(s) {
 }
 function prepareMacScript() {
     return __awaiter(this, void 0, void 0, function* () {
+        grantMacExecutablePermission('/conda', 'check.sh');
+        grantMacExecutablePermission('/venv', 'check.sh');
+        grantMacExecutablePermission('/conda', 'setup.sh');
+        grantMacExecutablePermission('/venv', 'setup.sh');
+        grantMacExecutablePermission('/conda', 'audiointerpreter.sh');
+        grantMacExecutablePermission('/venv', 'audiointerpreter.sh');
+        grantMacExecutablePermission('/conda', 'audiorecorderActivator.sh');
+        grantMacExecutablePermission('/venv', 'audiorecorderActivator.sh');
+        grantMacExecutablePermission('/conda', 'audiorecorderConstActivator.sh');
+        grantMacExecutablePermission('/venv', 'audiorecorderConstActivator.sh');
         yield exec(`python macscriptcreator.py ${path.resolve(cwd, shell)}`, { cwd: path.resolve(cwd, shell) }, (error, stdout, stderr) => {
             if (error) {
                 console.log(`Writing mac scritp failed`);

@@ -2,8 +2,12 @@
 
 All notable changes to the "vocoder" extension will be documented in this file.
 
-Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
-
 ## [Unreleased]
 
-- Initial release
+## [0.0.2] - 2021-02-27
+### Fixed
+- Relative paths
+- Integration
+## [0.0.1] - 2021-02-27
+### Added
+- First release

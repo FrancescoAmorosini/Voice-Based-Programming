@@ -353,6 +353,17 @@ function getPlaceholderPos(s:string){
 }
 
 async function prepareMacScript(){
+    grantMacExecutablePermission('/conda','check.sh');
+    grantMacExecutablePermission('/venv','check.sh');
+    grantMacExecutablePermission('/conda','setup.sh');
+    grantMacExecutablePermission('/venv','setup.sh');
+    grantMacExecutablePermission('/conda','audiointerpreter.sh');
+    grantMacExecutablePermission('/venv','audiointerpreter.sh');
+    grantMacExecutablePermission('/conda','audiorecorderActivator.sh');
+    grantMacExecutablePermission('/venv','audiorecorderActivator.sh');
+    grantMacExecutablePermission('/conda','audiorecorderConstActivator.sh');
+    grantMacExecutablePermission('/venv','audiorecorderConstActivator.sh');
+
     await exec(`python macscriptcreator.py ${path.resolve(cwd, shell)}`, {cwd: path.resolve(cwd, shell)}, (error: any, stdout: any, stderr: any) => {
         if (error) {
             console.log(`Writing mac scritp failed`);

@@ -10,3 +10,4 @@ vocoder/out/scripts/bash/venv/audiorecorderConst.sh
 vocoder/out/scripts/bash/conda/audiorecorder.sh
 vocoder/out/scripts/bash/venv/audiorecorder.sh
 vocoder/out/scripts/bash/done.data
+**/*.vsix
