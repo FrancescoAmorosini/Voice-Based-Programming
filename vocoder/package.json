@@ -1,7 +1,7 @@
 {
 	"name": "vocoder",
 	"displayName": "Vocoder",
-	"publisher": "VBP",
+	"publisher": "vocoder",
 	"contributors": ["Francesco Amorosini", "Serena Allkja", "Alessandro Passoni", "Hilal Taha", "Alberto Cabellos Jimenez", "Jaime Pascual"],
 	"keywords": ["Python", "Voice", "Natural Language Processor", "NLP", "Voice Recognition"],
 	"description": "VOice COmputer for Developers' Requests - Program with your voice!",

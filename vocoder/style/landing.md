@@ -1,6 +1,6 @@
 # Welcome to Vocoder!
 
-![Vocoder logo](style/logo.png)
+![Vocoder logo](logo.png)
 
 ***
 ## Terms and Contitions **⚠️** 
