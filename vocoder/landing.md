@@ -15,7 +15,7 @@ Thousands of software developers suffer from repetitive strain injuries such as 
 Vocoder is a Visual Studio Code extension that intends to help injured programmers by allowing them to code with their voice.
 
 ## Prerequisites
-For Vocoder to work properly you will need to have `npm` installed on your machine. If you don't, you can get it on [npm's official website](https://www.npmjs.com/get-npm) for free.
+Vocoder is currently available for `Python` language, which should be properly installed and set up in Visual Studio Code. If you don't have it, you can get it on [Python's official website](https://www.python.org/downloads/) for free.
 ### Performance
 We also suggest you to have `conda` installed on your machine. This will allow Vocoder to work on a virtual environment with noticeably better time performances, with respect to any virtual environment created by the default tools availble on your machine (i.e Python3's `venv`). You can get `anaconda`, or its lighter version `miniconda`, for free on [conda's official website](https://docs.conda.io/projects/conda/en/latest/user-guide/install/download.html).
 

@@ -1,10 +1,17 @@
 {
 	"name": "vocoder",
-	"displayName": "vocoder",
-	"publisher": "vocoder",
-	"description": "",
+	"displayName": "Vocoder",
+	"publisher": "VBP",
+	"contributors": ["Francesco Amorosini", "Serena Allkja", "Alessandro Passoni", "Hilal Taha", "Alberto Cabellos Jimenez", "Jaime Pascual"],
+	"keywords": ["Python", "Voice", "Natural Language Processor", "NLP", "Voice Recognition"],
+	"description": "VOice COmputer for Developers' Requests - Program with your voice!",
 	"version": "0.0.3",
 	"icon": "style/logo.png",
+	"galleryBanner": {
+		"color": "#4d6ca4",
+		"theme": "dark"
+	  },
+	"license": "GPL-3.0 License",
 	"engines": {
 		"vscode": "^1.50.0"
 	},
