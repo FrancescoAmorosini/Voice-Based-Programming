@@ -34,3 +34,8 @@ This project has no specific restrictions. It is suggested, however, that machin
 
 ### Project License
 The suggested license for this project is GPL 3.0. This is not a requirement, however. The team is free to choose any license they deem appropriate, as long as it is a free software license. A comprehensive list of licenses that meet this requirement is available in the following address: https://www.gnu.org/licenses/license-list.en.html  
+
+### Tutorial
+Here you can find a demo that shows how to use VOCODE:
+
+[![Tutorial](https://i9.ytimg.com/vi/VJDOLsqvzjY/mq1.jpg?sqp=CNzZ74MG&rs=AOn4CLBBCf_FQrBRyfQ80GxyjKH-QyRl6Q)](https://www.youtube.com/watch?v=VJDOLsqvzjY) 

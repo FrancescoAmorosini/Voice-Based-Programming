@@ -2,15 +2,28 @@
 	"name": "vocoder",
 	"displayName": "Vocoder",
 	"publisher": "vocoder",
-	"contributors": ["Francesco Amorosini", "Serena Allkja", "Alessandro Passoni", "Hilal Taha", "Alberto Cabellos Jimenez", "Jaime Pascual"],
-	"keywords": ["Python", "Voice", "Natural Language Processor", "NLP", "Voice Recognition"],
+	"contributors": [
+		"Francesco Amorosini",
+		"Serena Allkja",
+		"Alessandro Passoni",
+		"Hilal Taha",
+		"Alberto Cabellos Jimenez",
+		"Jaime Pascual"
+	],
+	"keywords": [
+		"Python",
+		"Voice",
+		"Natural Language Processor",
+		"NLP",
+		"Voice Recognition"
+	],
 	"description": "VOice COmputer for Developers' Requests - Program with your voice!",
-	"version": "0.0.4",
+	"version": "0.0.5",
 	"icon": "style/logo.png",
 	"galleryBanner": {
 		"color": "#4d6ca4",
 		"theme": "dark"
-	  },
+	},
 	"license": "GPL-3.0 License",
 	"engines": {
 		"vscode": "^1.50.0"
@@ -135,5 +148,5 @@
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/FrancescoAmorosini/Voice-Based-Programming"
-	  }
+	}
 }

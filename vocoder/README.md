@@ -21,7 +21,12 @@ Full project assignment: https://docs.google.com/document/d/1ly9NTnhpajnhPrgtFI8
 - Vocoder will not share any sensible data with Wit.ai. Voice commands are recorded locally and sent to Wit.ai anonymously for the sole purposes of recognition and training of the underlying recognition model.
 - Vocoder is not responsible for any inappropriate usage of voice recordings by Wit.ai. Please refer to their [Terms of Service](https://wit.ai/terms) for further information.
 ***
-## Prerequisites
+### Prerequisites
 Vocoder is currently available for `Python` language, which should be properly installed and set up in Visual Studio Code. If you don't have it, you can get it on [Python's official website](https://www.python.org/downloads/) for free.
 ### Performance
 We also **suggest** you to have `conda` installed on your machine. This will allow Vocoder to work on a virtual environment with noticeably better time performances, with respect to any virtual environment created by the default tools availble on your machine (i.e Python3's `venv`). You can get `anaconda`, or its lighter version `miniconda`, for free on [conda's official website](https://docs.conda.io/projects/conda/en/latest/user-guide/install/download.html).
+
+### Tutorial
+Here you can find a demo that shows how to use VOCODE:
+
+[![Tutorial](https://i9.ytimg.com/vi/VJDOLsqvzjY/mq1.jpg?sqp=CNzZ74MG&rs=AOn4CLBBCf_FQrBRyfQ80GxyjKH-QyRl6Q)](https://www.youtube.com/watch?v=VJDOLsqvzjY) 
