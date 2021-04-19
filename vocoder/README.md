@@ -27,6 +27,6 @@ Vocoder is currently available for `Python` language, which should be properly i
 We also **suggest** you to have `conda` installed on your machine. This will allow Vocoder to work on a virtual environment with noticeably better time performances, with respect to any virtual environment created by the default tools availble on your machine (i.e Python3's `venv`). You can get `anaconda`, or its lighter version `miniconda`, for free on [conda's official website](https://docs.conda.io/projects/conda/en/latest/user-guide/install/download.html).
 
 ### Tutorial
-Here you can find a demo that shows how to use VOCODE:
+Here you can find a demo that shows how to use VOCODER:
 
 [![Tutorial](https://i9.ytimg.com/vi/VJDOLsqvzjY/mq1.jpg?sqp=CNzZ74MG&rs=AOn4CLBBCf_FQrBRyfQ80GxyjKH-QyRl6Q)](https://www.youtube.com/watch?v=VJDOLsqvzjY) 

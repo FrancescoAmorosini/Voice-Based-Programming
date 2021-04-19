@@ -127,6 +127,6 @@ Place the cursor where you want your next code block to be inserted. You can als
 
   Deletes the selected text in the editor in the first case, the specified lines in the second. If text is selected when specifying line ranges, the latter will have priority.
 ### Tutorial
-Here you can find a demo that shows how to use VOCODE:
+Here you can find a demo that shows how to use VOCODER:
 
 [![Tutorial](https://i9.ytimg.com/vi/VJDOLsqvzjY/mq1.jpg?sqp=CNzZ74MG&rs=AOn4CLBBCf_FQrBRyfQ80GxyjKH-QyRl6Q)](https://www.youtube.com/watch?v=VJDOLsqvzjY) 
