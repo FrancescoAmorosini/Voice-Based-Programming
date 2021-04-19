@@ -4,6 +4,9 @@ All notable changes to the "vocoder" extension will be documented in this file.
 
 ## [Unreleased]
 
+## [0.0.6] - 2021-04-19
+### Fixed
+- Thumbnail + division operation bug
 ## [0.0.5] - 2021-04-18
 ### Added
 - Video tutorial in the README and VS Code Marketplace page
