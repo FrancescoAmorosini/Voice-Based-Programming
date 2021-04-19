@@ -295,12 +295,13 @@ def parse_expression(string):
     string = string.replace("greater than", " GreaterThan")
     string = string.replace("is less than", " LessThan")
     string = string.replace("less than", " LessThan")
+    string = string.replace("divided by", "dividedBy")
     expression = ""
     expression_operators = ['plus',
                             'multiply', 'multiplied', 'multiplication', 'times', 'asterisk',
                             'modulo', 'mod',
                             'minus', 'unary',
-                            'division', 'divide by', 'divided by',
+                            'division', 'divide by', 'dividedBy',
                             'to the power of',
                             ]
     comparison_operators = ['GreaterOrEqual', 'LessOrEqual', 'IsEqualTo', 'GreaterThan', 'LessThan']
@@ -408,7 +409,7 @@ def parse_expression(string):
                 if word == "minus" or word == "unary":
                     # op_out.append("-")
                     expression += "- "
-                if word == "division" or word == "divided by" or word == "divide by":
+                if word == "division" or word == "divided by" or word == "dividedBy":
                     # op_out.append("/")
                     expression += "/ "
                 if word == "modulo" or word == "mod":
@@ -707,5 +708,5 @@ front_end_delete = "vocoder-parsed-command\nvocoder-delete\n"
 
 placeholder_string = "$$"
 confidence_threshold = 0.75
-#print(parse_response('vocoder\src\scripts\cmd\conda\output.wav'))
-print(parse_response('output.wav'))
+print(parse_response('C:\\Users\\f.amorosini\\.vscode\\extensions\\vocoder.vocoder-0.0.5\\out\\scripts\\cmd\\conda\\output.wav'))
+#print(parse_response('output.wav'))
