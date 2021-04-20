@@ -2,8 +2,14 @@
 
 All notable changes to the "vocoder" extension will be documented in this file.
 
+## [Known Issues]
+- There is a problem when setting up the python environment using VENV on Mac.
 ## [Unreleased]
 
+## [0.0.7] - 2021-04-20
+### Fixed
+- Now landing page correctly displays
+- Small fix on script paths
 ## [0.0.6] - 2021-04-19
 ### Fixed
 - Thumbnail + division operation bug

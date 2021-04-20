@@ -708,5 +708,5 @@ front_end_delete = "vocoder-parsed-command\nvocoder-delete\n"
 
 placeholder_string = "$$"
 confidence_threshold = 0.75
-print(parse_response('C:\\Users\\f.amorosini\\.vscode\\extensions\\vocoder.vocoder-0.0.5\\out\\scripts\\cmd\\conda\\output.wav'))
-#print(parse_response('output.wav'))
+#print(parse_response('C:\\Users\\f.amorosini\\.vscode\\extensions\\vocoder.vocoder-0.0.5\\out\\scripts\\cmd\\conda\\output.wav'))
+print(parse_response('output.wav'))
