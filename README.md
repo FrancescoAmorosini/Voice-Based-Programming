@@ -38,4 +38,4 @@ The suggested license for this project is GPL 3.0. This is not a requirement, ho
 ### Tutorial
 Here you can find a demo that shows how to use VOCODER:
 
-[![Tutorial](https://i9.ytimg.com/vi/VJDOLsqvzjY/mq1.jpg?sqp=CNzZ74MG&rs=AOn4CLBBCf_FQrBRyfQ80GxyjKH-QyRl6Q)](https://www.youtube.com/watch?v=VJDOLsqvzjY) 
+[![Tutorial](https://raw.githubusercontent.com/FrancescoAmorosini/Voice-Based-Programming/main/vocoder/style/tutorial.jpg)](https://www.youtube.com/watch?v=VJDOLsqvzjY) 
